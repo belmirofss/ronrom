@@ -12,17 +12,70 @@ O site (`web/`) é publicado na Vercel, plano **Hobby** (grátis), no projeto `r
 | Install Command       | `pnpm install --frozen-lockfile`                          |
 | Build Command         | `pnpm build`                                              |
 | Ignored Build Step    | `bash ../scripts/vercel-ignorar-build.sh`                 |
+| Function Region       | `gru1` (São Paulo), junto do Redis em `sa-east-1`         |
+| Node.js               | `22.x`, pelo `engines` do `web/package.json`              |
 | Production Branch     | `main` → https://ronrom-blog.vercel.app                   |
 | Preview               | todo push em outra branch e todo PR, com comentário no PR |
 | Deployment Protection | Vercel Authentication (padrão) nos previews               |
 
 O subdomínio `ronrom.vercel.app` já pertence a outro projeto da Vercel, então a produção usa `ronrom-blog.vercel.app`, configurado em Settings → Domains. O `ronrom-chi.vercel.app`, que a Vercel atribuiu na criação do projeto, foi removido sem redirect. Ele fica como endereço de produção até o domínio próprio da #63.
 
-Install, build e Ignored Build Step ficam versionados em [`web/vercel.json`](../web/vercel.json), que tem prioridade sobre o painel. Mudar esses comandos é um PR comum.
+Install, build, Ignored Build Step e região das funções ficam versionados em [`web/vercel.json`](../web/vercel.json), que tem prioridade sobre o painel. Mudar esses comandos é um PR comum.
 
 ### Ignored Build Step
 
 [`scripts/vercel-ignorar-build.sh`](../scripts/vercel-ignorar-build.sh) compara o commit com o último deploy da branch (`VERCEL_GIT_PREVIOUS_SHA`) e cancela o build quando só mudaram `docs/`, `studio/`, `.github/` ou arquivos `.md`. Na dúvida (primeiro deploy da branch ou commit anterior fora do clone raso), builda. O deploy cancelado aparece como `CANCELED` na Vercel e **ainda conta na cota diária**, mas não gasta minutos de build.
+
+## Saída estática e rotas sob demanda
+
+O site usa o [`@astrojs/vercel`](https://docs.astro.build/en/guides/integrations-guide/vercel/) com a saída estática, que é o padrão do Astro (não há `output` no `astro.config.mjs`). Toda página é gerada no build e servida pela CDN; só as rotas com `export const prerender = false` rodam sob demanda, numa Vercel Function. A decisão está no [ADR 0001](adr/0001-site-estatico-com-rotas-sob-demanda.md).
+
+O build gera `web/.vercel/output`, que a Vercel publica como está:
+
+- `static/`: as páginas e os assets (as mesmas páginas ficam em `web/dist/client`, que o CI guarda como artifact).
+- `functions/_render.func`: **uma única função** com todas as rotas sob demanda. Uma rota nova não cria outra função, só entra nas `routes` do `config.json`, apontando para `_render`.
+
+Hoje a única rota sob demanda é [`/api/health`](../web/src/pages/api/health.ts), a rota de fumaça: responde `{ "ok": true, "commit": "<sha>" }` com `Cache-Control: no-store`. O `commit` vem da variável de sistema `VERCEL_GIT_COMMIT_SHA`, fixada no build; fora da Vercel, é `null`.
+
+### Como adicionar uma rota sob demanda
+
+1. Crie a página ou o endpoint em `web/src/pages/` (endpoints de API em `web/src/pages/api/`) e exporte `export const prerender = false`. Sem essa linha, a rota é gerada no build como arquivo estático.
+2. Leia variáveis só de `astro:env/server`. Uma variável `secret` é lida em tempo de execução na função; uma `public` fica fixa no valor do build.
+3. Defina o `Cache-Control` da resposta. Para algo que muda a cada requisição (contador, preview), use `no-store`; para algo que pode ficar em cache na CDN, use `s-maxage`.
+4. Teste com `pnpm dev`, que serve as rotas sob demanda. O `pnpm preview` não existe: o adapter da Vercel não suporta o comando.
+5. Rode `pnpm build` e confira em `web/.vercel/output/config.json` que a rota aponta para `_render`. No preview do PR, confira a resposta e o cabeçalho.
+
+Cada requisição a uma rota sob demanda é uma invocação de função e conta na cota do Hobby (1 milhão por mês). Prefira uma página estática sempre que o conteúdo puder ser gerado no build.
+
+**Página 404:** enquanto não existir `web/src/pages/404.astro`, qualquer URL inexistente cai na função, que renderiza o 404 padrão do Astro e gasta uma invocação. A página da #47 deve ser estática (sem `prerender = false`): com ela, o adapter passa a servir o `404.html` direto da CDN.
+
+### Região e versão de Node
+
+- **Região:** `"regions": ["gru1"]` no `web/vercel.json`. O Hobby permite uma única região, à escolha ([docs](https://vercel.com/docs/functions/configuring-functions/region)), então ficou São Paulo, junto do Redis em `sa-east-1`, como decidido na #1. As páginas estáticas são servidas pela CDN em todas as regiões, independentemente dessa configuração.
+- **Node:** o adapter grava o runtime da função (`nodejs22.x`) a partir da versão de Node que roda o build. Na Vercel, quem escolhe essa versão é o `engines.node` do `web/package.json`, que tem prioridade sobre o painel. Ele fica em `22.x`, a mesma linha do `.nvmrc`, porque um intervalo como `>=22` faria a Vercel usar o Node 24. A Vercel só deixa escolher a versão major e aplica sozinha as minor e patch. Ao trocar de versão, mude o `.nvmrc`, os dois `engines` e os `@types/node` juntos. Um build local com outro Node (o 24, por exemplo) grava outro runtime, mas esse build não é publicado.
+
+### Opções do adapter
+
+| Opção            | Valor                | Por quê                                                                                        |
+| ---------------- | -------------------- | ---------------------------------------------------------------------------------------------- |
+| `imageService`   | `false`              | As imagens vêm do CDN do Sanity, que já redimensiona; o otimizador da Vercel gastaria a cota   |
+| `webAnalytics`   | `{ enabled: false }` | O analytics é o Umami Cloud, sem cookies (#58)                                                 |
+| `isr`            | não usado            | Nada é renderizado sob demanda com cache; o conteúdo novo entra por rebuild (deploy hook, #17) |
+| `maxDuration`    | padrão               | O health responde na hora; reavaliar se uma rota nova precisar de mais tempo                   |
+| `skewProtection` | não usado            | Só nos planos Pro e Enterprise                                                                 |
+| `middlewareMode` | não usado            | Não há middleware                                                                              |
+
+### Conferir em produção
+
+```bash
+curl -si https://ronrom-blog.vercel.app/api/health
+```
+
+Deve responder `200`, `cache-control: no-store` e o hash do commit que está no ar. Uma página estática, como a home, responde com `x-vercel-cache: HIT` (ou `PRERENDER` logo depois do deploy):
+
+```bash
+curl -sI https://ronrom-blog.vercel.app/
+```
 
 ## Limites do Hobby
 
@@ -71,6 +124,7 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 | `SANITY_API_READ_TOKEN` | segredo | não             | opcional            | pendente (Secret)                 | pendente (Secret)            | Secret, já cadastrado    | `area:cms`   |
 | `KV_REST_API_URL`       | segredo | não (até a #56) | opcional            | injetada pelo Marketplace (#56)   | injetada pelo Marketplace    | não usada                | `area:dados` |
 | `KV_REST_API_TOKEN`     | segredo | não (até a #56) | opcional            | injetada pelo Marketplace (#56)   | injetada pelo Marketplace    | não usada                | `area:dados` |
+| `VERCEL_GIT_COMMIT_SHA` | pública | não             | não definida        | sistema da Vercel                 | sistema da Vercel            | não usada                | `area:infra` |
 
 (\*) Sem `SITE_URL`, o `astro.config.mjs` usa `https://` + `VERCEL_URL` nos previews (a URL do próprio deploy) e `https://ronrom-blog.vercel.app` no resto (local e CI). `VERCEL_ENV` e `VERCEL_URL` são variáveis de sistema da Vercel, expostas no build sem cadastro.
 
@@ -78,6 +132,7 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 
 - **`SANITY_API_READ_TOKEN`** é o token `viewer` do Sanity, só para o preview de rascunhos (#43). Sem ele, o site lê só o conteúdo publicado. Cadastre na Vercel como **Secret**.
 - **`KV_REST_API_URL` e `KV_REST_API_TOKEN`** são os nomes que o `Redis.fromEnv()` do `@upstash/redis` lê. A #56 confere, ao instalar o Upstash Redis pelo Marketplace, se a integração injeta exatamente esses nomes; se não, renomeia no schema, no `.env.example` e aqui.
+- **`VERCEL_GIT_COMMIT_SHA`** é variável de sistema da Vercel, sem cadastro. Entra no schema só para o `/api/health` ler o commit pelo `astro:env`.
 - **Os tokens do Studio** (`SANITY_AUTH_TOKEN`) e as variáveis `SANITY_STUDIO_*` não são do site: veja [`studio/README.md`](../studio/README.md).
 
 ### Sem o Sanity configurado: fixtures
@@ -104,5 +159,4 @@ O `link` é feito uma vez e cria `web/.vercel/` (não versionado). O `env pull` 
 
 ## Pendências
 
-- **`/api/health`:** depende do adapter da Vercel e da rota sob demanda da #9.
 - **`SANITY_API_READ_TOKEN` na Vercel:** o dono do projeto cadastra como Secret.

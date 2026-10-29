@@ -59,10 +59,11 @@ jobs:
           # Sem as variáveis do Sanity, o build usa as fixtures: sem rede e sem segredo.
           # Veja docs/ambientes.md.
           SITE_URL: ${{ vars.SITE_URL }}
-      # Usado pela checagem de links (#45) para não buildar de novo.
+      # Usado pela checagem de links (#45) para não buildar de novo. Com o adapter da Vercel,
+      # as páginas estáticas ficam em web/dist/client (a saída da Vercel é web/.vercel/output).
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: web-dist
-          path: web/dist
+          path: web/dist/client
           retention-days: 3
           if-no-files-found: error

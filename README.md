@@ -8,7 +8,7 @@ Antes de abrir uma branch ou um PR, leia o [guia de contribuição](CONTRIBUTING
 
 ## Requisitos
 
-- Node 22.23.4 ou mais novo (versão em `.nvmrc`)
+- Node 22, a partir do 22.23.4 (versão em `.nvmrc`; a mesma linha 22 roda as funções na Vercel)
 - pnpm (versão fixada em `packageManager` no `package.json`; com o Corepack ou o próprio pnpm, a versão certa é usada automaticamente)
 
 ## Comandos
@@ -19,8 +19,7 @@ Rode na raiz do repositório:
 | -------------------- | ------------------------------------------------- |
 | `pnpm install`       | Instala as dependências de todos os workspaces    |
 | `pnpm dev`           | Sobe o site em `http://localhost:4321`            |
-| `pnpm build`         | Gera o site em `web/dist`                         |
-| `pnpm preview`       | Serve o build localmente                          |
+| `pnpm build`         | Gera o site em `web/.vercel/output`               |
 | `pnpm check`         | Roda o `astro check` (diagnóstico de .astro e TS) |
 | `pnpm typecheck`     | Roda o `tsc --noEmit` no site e no Studio         |
 | `pnpm studio:dev`    | Sobe o Sanity Studio em `http://localhost:3333`   |
@@ -63,7 +62,7 @@ Monorepo com workspaces do pnpm (`pnpm-workspace.yaml`):
 │       └── styles/         # CSS global e tokens
 ├── studio/                 # Sanity Studio (veja studio/README.md)
 │   └── schemaTypes/        # schemas de conteúdo
-├── docs/                   # documentação (ambientes e limites da Vercel)
+├── docs/                   # documentação (ambientes, limites da Vercel e ADRs)
 └── scripts/                # scripts de infraestrutura (Ignored Build Step da Vercel)
 ```
 
@@ -71,7 +70,7 @@ Imports dentro de `web/src` usam o alias `@/*` (ex.: `import { NOME_DO_SITE } fr
 
 ## Deploy
 
-O site é publicado na Vercel: a `main` vai para produção em https://ronrom-blog.vercel.app e cada PR ganha um preview, com o link comentado no PR. Configuração, limites do plano Hobby e o que pula build estão em [`docs/ambientes.md`](docs/ambientes.md).
+O site é publicado na Vercel: a `main` vai para produção em https://ronrom-blog.vercel.app e cada PR ganha um preview, com o link comentado no PR. As páginas são estáticas; só as rotas com `export const prerender = false` (hoje, `/api/health`) rodam numa Vercel Function. Não há `pnpm preview`, porque o adapter da Vercel não suporta o comando: teste as rotas sob demanda com o `pnpm dev` e o resto no preview do PR. Configuração, limites do plano Hobby e o que pula build estão em [`docs/ambientes.md`](docs/ambientes.md).
 
 ## Variáveis de ambiente
 

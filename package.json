@@ -9,7 +9,6 @@
   "scripts": {
     "dev": "pnpm --filter web dev",
     "build": "pnpm --filter web build",
-    "preview": "pnpm --filter web preview",
     "check": "pnpm --filter web check",
     "typecheck": "pnpm -r typecheck",
     "studio:dev": "pnpm --filter studio dev",

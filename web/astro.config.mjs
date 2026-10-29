@@ -1,4 +1,5 @@
 // @ts-check
+import vercel from '@astrojs/vercel';
 import { defineConfig, envField } from 'astro/config';
 import { loadEnv } from 'vite';
 
@@ -28,6 +29,15 @@ export default defineConfig({
   site: urlDoSite,
   // Decidido na #1: URLs sem barra no final.
   trailingSlash: 'never',
+  // Saída estática (o padrão do Astro): só as rotas com `export const prerender = false` viram
+  // Vercel Function. Decisão no docs/adr/0001; como criar uma rota sob demanda: docs/ambientes.md.
+  adapter: vercel({
+    // As imagens vêm do CDN do Sanity, que já redimensiona. O otimizador da Vercel só gastaria
+    // a cota de transformações do Hobby.
+    imageService: false,
+    // O analytics é o Umami (#58), sem cookies; o Web Analytics da Vercel fica desligado.
+    webAnalytics: { enabled: false },
+  }),
   env: {
     // Valida também os segredos (formato), não só as variáveis públicas.
     validateSecrets: true,
@@ -86,6 +96,14 @@ export default defineConfig({
       KV_REST_API_TOKEN: envField.string({
         context: 'server',
         access: 'secret',
+        optional: true,
+      }),
+
+      // Variável de sistema da Vercel (sem cadastro): o commit do deploy, lido pelo /api/health.
+      // Pública, então entra fixa no build, que é justamente o commit que está no ar.
+      VERCEL_GIT_COMMIT_SHA: envField.string({
+        context: 'server',
+        access: 'public',
         optional: true,
       }),
     },

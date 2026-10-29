@@ -3,5 +3,6 @@
   "framework": "astro",
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm build",
-  "ignoreCommand": "bash ../scripts/vercel-ignorar-build.sh"
+  "ignoreCommand": "bash ../scripts/vercel-ignorar-build.sh",
+  "regions": ["gru1"]
 }
