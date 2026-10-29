@@ -16,7 +16,7 @@ O site (`web/`) é publicado na Vercel, plano **Hobby** (grátis), no projeto `r
 | Preview               | todo push em outra branch e todo PR, com comentário no PR |
 | Deployment Protection | Vercel Authentication (padrão) nos previews               |
 
-O subdomínio `ronrom.vercel.app` já pertence a outro projeto da Vercel, então a produção usa `ronrom-blog.vercel.app`, configurado em Settings → Domains. Ele fica como endereço de produção até o domínio próprio da #63.
+O subdomínio `ronrom.vercel.app` já pertence a outro projeto da Vercel, então a produção usa `ronrom-blog.vercel.app`, configurado em Settings → Domains. O `ronrom-chi.vercel.app`, que a Vercel atribuiu na criação do projeto, foi removido sem redirect. Ele fica como endereço de produção até o domínio próprio da #63.
 
 Install, build e Ignored Build Step ficam versionados em [`web/vercel.json`](../web/vercel.json), que tem prioridade sobre o painel. Mudar esses comandos é um PR comum.
 
