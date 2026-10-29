@@ -15,3 +15,7 @@ export const projectId = obrigatoria(
 );
 
 export const dataset = obrigatoria('SANITY_STUDIO_DATASET', process.env.SANITY_STUDIO_DATASET);
+
+// Versão da API nas consultas do Studio: a mesma do site (SANITY_API_VERSION no
+// web/astro.config.mjs).
+export const API_VERSION = '2025-02-19';

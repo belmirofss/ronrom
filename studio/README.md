@@ -41,15 +41,40 @@ O token precisa do papel **Deploy Studio** (ou Administrator). Com Editor, o dep
 
 ## Schemas
 
-Ficam em [`schemaTypes/`](schemaTypes); campos repetidos (nome, slug, descrição, ordem, tags) em [`schemaTypes/campos.ts`](schemaTypes/campos.ts).
+Ficam em [`schemaTypes/`](schemaTypes); campos repetidos (nome, slug, descrição, ordem, tags, texto alternativo) em [`schemaTypes/campos.ts`](schemaTypes/campos.ts).
 
 | Tipo        | Campos                                              | Observação                                                     |
 | ----------- | --------------------------------------------------- | -------------------------------------------------------------- |
+| `post`      | veja [Post](#post)                                  | Review e pensamento num tipo só, separados pelo campo `tipo`   |
 | `categoria` | `nome`, `slug`, `descricao`, `ordem`, `modeloFicha` | Categorias das reviews; `modeloFicha` define a ficha da review |
 | `formato`   | `nome`, `slug`, `descricao`, `ordem`                | Formatos dos pensamentos                                       |
 | `tag`       | `nome`, `slug`                                      | Criada direto do post, pelo "Criar novo" do campo de tags      |
 
-Slugs seguem a [política de URLs](../docs/seo-urls.md#slugs): o botão "Gerar" usa o `slugify` de [`lib/slug.ts`](lib/slug.ts), que tira acentos e cedilha ("Séries" vira `series`), e a validação recusa slug fora do formato e o reservado `pagina`. A unicidade é a padrão do Sanity, dentro do mesmo tipo: duas tags não podem ter o mesmo slug, mas uma tag e uma categoria podem. O post (#19) usa o mesmo `campoSlug` e o `campoTags`.
+Slugs seguem a [política de URLs](../docs/seo-urls.md#slugs): o botão "Gerar" usa o `slugify` de [`lib/slug.ts`](lib/slug.ts), que tira acentos e cedilha ("Séries" vira `series`), e a validação recusa slug fora do formato e o reservado `pagina`. A unicidade é a padrão do Sanity, dentro do mesmo tipo: duas tags não podem ter o mesmo slug, mas uma tag e uma categoria podem. O post usa o mesmo `campoSlug` e o `campoTags`.
+
+### Post
+
+Um único tipo `post`, com o campo `tipo` (`review` ou `pensamento`), para que slug, listagens, "Mais lidos" e busca usem um namespace e uma consulta só. O formulário tem três abas: **Conteúdo**, **Review** (só em review) e **SEO**.
+
+| Campo              | Regras                                                                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `tipo`             | Obrigatório; fica só leitura assim que é escolhido, porque faz parte do endereço                                         |
+| `categoria`        | Referência, obrigatória e visível só em review                                                                           |
+| `formato`          | Referência, obrigatória e visível só em pensamento                                                                       |
+| `titulo`           | Obrigatório; aviso acima de 70 caracteres                                                                                |
+| `subtitulo`        | Opcional                                                                                                                 |
+| `slug`             | Gerado do título, obrigatório e único entre os posts                                                                     |
+| `dataDePublicacao` | Obrigatória, começa com a hora da criação e não aceita data no futuro (não há agendamento)                               |
+| `capa`             | Imagem com hotspot, obrigatória; `alt` obrigatório e `legenda` (legenda ou crédito) opcional                             |
+| `corpo`            | Portable Text; por enquanto só parágrafos (a #22 configura estilos, links, imagens e citações)                           |
+| `tags`             | Referências a `tag`, sem repetir                                                                                         |
+| `destaque`         | Destaque na home (boolean, padrão falso)                                                                                 |
+| `seo`              | `titulo` (aviso acima de 60), `descricao` (aviso acima de 160), `imagem` (`alt` obrigatório se houver imagem), `noindex` |
+| `slugsAnteriores`  | Caminhos antigos do post, só leitura, dentro de "Avançado" na aba SEO                                                    |
+
+A nota em corações (#20) e a ficha (#21) entram na aba Review. A lista de posts mostra a capa, o título e um subtítulo como "Review · Filmes · ♥♥♥♥" ou "Pensamento · Frases soltas"; as funções puras por trás disso (caminho, slugs anteriores, data, corações) ficam em [`lib/post.ts`](lib/post.ts), com testes.
+
+**Endereço antigo.** O botão "Publicar" do post é envolvido por [`acoes/publicarPost.ts`](acoes/publicarPost.ts): ao publicar um post que já estava no ar com outro slug, categoria ou formato, ele guarda o caminho publicado (`/reviews/filmes/slug-antigo`) em `slugsAnteriores`, para a #53 gerar o redirect. Se a consulta ao Sanity falhar, o post não é publicado e a autora vê um aviso para tentar de novo. Mudar o slug, a categoria ou o formato de um post publicado mostra um aviso amarelo no campo, sem impedir a publicação.
 
 ### Taxonomia inicial
 
