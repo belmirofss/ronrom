@@ -1,13 +1,18 @@
-import { defineArrayMember, defineField, type SlugValue } from 'sanity';
+import { defineArrayMember, defineField, type SlugRule, type SlugValue } from 'sanity';
 
 import { problemaNoSlug, slugify, TAMANHO_MAXIMO_DO_SLUG } from '../lib/slug';
 
-// Campos repetidos entre os schemas. O post (#19) reaproveita o slug e as tags.
+// Campos repetidos entre os schemas. O post reaproveita o slug, as tags e o texto alternativo.
 
 // Slug gerado a partir de outro campo (o nome ou o título). A unicidade fica com a checagem
 // padrão do Sanity, que compara só com documentos do mesmo tipo: uma tag pode ter o mesmo
 // slug de uma categoria, porque as URLs não se cruzam (/tags/cafe e /reviews/cafe).
-export function campoSlug(source: string, description: string) {
+// `aviso` acrescenta uma regra de nível warning, como a do post publicado.
+export function campoSlug(
+  source: string,
+  description: string,
+  aviso?: (rule: SlugRule) => SlugRule,
+) {
   return defineField({
     name: 'slug',
     title: 'Slug',
@@ -18,13 +23,15 @@ export function campoSlug(source: string, description: string) {
       maxLength: TAMANHO_MAXIMO_DO_SLUG,
       slugify: (texto: string) => slugify(texto),
     },
-    validation: (rule) =>
+    validation: (rule) => [
       rule.required().custom((valor: SlugValue | undefined) => {
         if (!valor?.current) {
           return 'Preencha o slug. Clique em "Gerar" para criar automaticamente.';
         }
         return problemaNoSlug(valor.current) ?? true;
       }),
+      ...(aviso ? [aviso(rule)] : []),
+    ],
   });
 }
 
@@ -40,7 +47,7 @@ export function campoNome(description: string) {
 }
 
 // Acima disso o Google corta a description no resultado da busca.
-const TAMANHO_IDEAL_DA_DESCRICAO = 160;
+export const TAMANHO_IDEAL_DA_DESCRICAO = 160;
 
 type Taxonomia = 'categoria' | 'formato';
 
@@ -94,4 +101,20 @@ export const campoTags = defineField({
   description: 'Escolha tags que já existem ou crie uma nova pelo botão "Criar novo".',
   of: [defineArrayMember({ type: 'reference', to: [{ type: 'tag' }] })],
   validation: (rule) => rule.unique().error('Esta tag já está no post.'),
+});
+
+// Texto alternativo de uma imagem, obrigatório só quando há imagem escolhida: assim serve para a
+// capa (que já exige a imagem) e para a imagem de compartilhamento (opcional).
+export const campoAlt = defineField({
+  name: 'alt',
+  title: 'Texto alternativo',
+  type: 'string',
+  description:
+    'Descreva a imagem para quem não consegue vê-la, como quem usa leitor de tela. Por exemplo: "Xícara de café sobre uma mesa de madeira".',
+  validation: (rule) =>
+    rule.custom((alt: string | undefined, contexto) => {
+      const imagem = contexto.parent as { asset?: unknown } | undefined;
+      if (imagem?.asset && !alt?.trim()) return 'Descreva a imagem no texto alternativo.';
+      return true;
+    }),
 });

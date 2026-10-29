@@ -3,6 +3,7 @@ import { visionTool } from '@sanity/vision';
 import { defineConfig, isDev } from 'sanity';
 import { structureTool } from 'sanity/structure';
 
+import { publicarPost } from './acoes/publicarPost';
 import { dataset, projectId } from './env';
 import { IconeRonrom } from './marca/IconeRonrom';
 import { temaRonrom } from './marca/tema';
@@ -26,5 +27,12 @@ export default defineConfig({
 
   schema: {
     types: schemaTypes,
+  },
+
+  document: {
+    actions: (anteriores, { schemaType }) =>
+      schemaType === 'post'
+        ? anteriores.map((acao) => (acao.action === 'publish' ? publicarPost(acao) : acao))
+        : anteriores,
   },
 });

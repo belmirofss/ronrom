@@ -136,7 +136,7 @@ O nome exibido pode mudar à vontade; o slug de categoria e de formato fica cong
 
 - **Post:** slug gerado do título, **único entre todos os posts** (não só dentro da categoria), para que o slug sozinho identifique o post na URL e nos redirects. A URL inclui a categoria ou o formato, mas o slug não repete essa informação.
 - **Tag:** slug gerado do nome, único entre as tags. A autora cria tags novas direto do post (#18).
-- **Mudou o slug, a categoria ou o formato de um post publicado?** A URL antiga vira um redirect 301 para a nova no próximo build (#53). Para cobrir também a troca de categoria/formato, recomendação para a #19 e a #53: guardar nos "slugs anteriores" o **caminho completo** antigo (`/reviews/filmes/slug-antigo`), não só o slug.
+- **Mudou o slug, a categoria ou o formato de um post publicado?** A URL antiga vira um redirect 301 para a nova no próximo build (#53). Para cobrir também a troca de categoria/formato, o `slugsAnteriores` guarda o **caminho completo** antigo (`/reviews/filmes/slug-antigo`), não só o slug. Quem preenche é o botão "Publicar" do Studio (#19): ao publicar um post que já estava no ar com outro endereço, ele acrescenta o caminho publicado à lista e tira dela o caminho novo, se a autora voltou a um endereço antigo. O Studio também mostra um aviso (não erro) no slug, na categoria e no formato quando eles diferem da versão publicada.
 
 ## Identificador estável do post
 
@@ -213,20 +213,20 @@ Com `SITE_URL=https://ronrom-blog.vercel.app`:
 
 ## Campos do Sanity usados pela área de SEO
 
-Os nomes finais dos campos saem dos schemas (#18, #19, #21, #24); a coluna "Campo" usa os nomes sugeridos nessas issues. Toda consulta que alimenta uma página de post, listagem, sitemap, RSS ou JSON-LD traz o que estiver marcado para ela.
+Os nomes finais dos campos saem dos schemas (#18, #19, #21, #24); os do post já são os do [`studio/schemaTypes/post.ts`](../studio/schemaTypes/post.ts), e os da nota, da ficha e da autora ainda são os sugeridos nas issues. Toda consulta que alimenta uma página de post, listagem, sitemap, RSS ou JSON-LD traz o que estiver marcado para ela.
 
 | Campo                                                 | Documento                     | Usado em                                                            |
 | ----------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------- |
 | `_id`                                                 | post                          | Contador, ranking, `/posts-index.json`, lista de ids válidos        |
 | `slug.current`                                        | post, categoria, formato, tag | URLs (`rotas.ts`)                                                   |
-| `slugsAnteriores[]`                                   | post                          | Redirects 301 (#53)                                                 |
+| `slugsAnteriores[]` (caminhos completos)              | post                          | Redirects 301 (#53)                                                 |
 | `tipo` (`review` \| `pensamento`)                     | post                          | URL, JSON-LD (Review ou BlogPosting), filtros da busca              |
 | `categoria->{nome, slug, modeloFicha, descricao}`     | post (review)                 | URL, breadcrumb, `itemReviewed` (#51), descrição da listagem        |
 | `formato->{nome, slug, descricao}`                    | post (pensamento)             | URL, breadcrumb, `articleSection` (#50), descrição da listagem      |
 | `tags[]->{nome, slug}`                                | post                          | Links de tag, `article:tag`, `keywords`, categorias do RSS          |
 | `titulo`                                              | post                          | `<title>`, `og:title`, `headline`, RSS                              |
 | `subtitulo`                                           | post                          | Fallback da description, metadado da busca                          |
-| `capa{asset, alt, hotspot, crop}`                     | post                          | `og:image` (1200×630 no hotspot), imagens do JSON-LD, RSS, cards    |
+| `capa{asset, alt, legenda, hotspot, crop}`            | post                          | `og:image` (1200×630 no hotspot), imagens do JSON-LD, RSS, cards    |
 | `seo{titulo, descricao, imagem{asset, alt}, noindex}` | post                          | Sobrescreve título, description e imagem; `noindex` tira do sitemap |
 | `dataDePublicacao`                                    | post                          | `article:published_time`, `datePublished`, ordenação, RSS `pubDate` |
 | `_updatedAt`                                          | post, autora                  | `article:modified_time`, `dateModified`, `lastmod` do sitemap       |
