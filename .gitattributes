@@ -1,0 +1,14 @@
+# Normaliza o fim de linha para LF no repositório e na cópia de trabalho,
+# inclusive no Windows (independente do core.autocrlf de cada máquina).
+* text=auto eol=lf
+
+# binários
+*.ico binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.woff binary
+*.woff2 binary
