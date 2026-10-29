@@ -125,7 +125,7 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 | `SANITY_DATASET`        | pública | em produção     | opcional            | `production`                      | `development`                | não usada (fixtures)     | `area:cms`   |
 | `SANITY_API_VERSION`    | pública | não (padrão)    | opcional            | não definida                      | não definida                 | não usada                | `area:cms`   |
 | `SANITY_FIXTURES`       | pública | não (`false`)   | opcional            | proibida (`true` derruba o build) | não definida                 | não usada                | `area:cms`   |
-| `SANITY_API_READ_TOKEN` | segredo | não             | opcional            | pendente (Secret)                 | pendente (Secret)            | Secret, já cadastrado    | `area:cms`   |
+| `SANITY_API_READ_TOKEN` | segredo | não             | opcional            | Secret                            | Secret                       | Secret, já cadastrado    | `area:cms`   |
 | `KV_REST_API_URL`       | segredo | não (até a #56) | opcional            | injetada pelo Marketplace (#56)   | injetada pelo Marketplace    | não usada                | `area:dados` |
 | `KV_REST_API_TOKEN`     | segredo | não (até a #56) | opcional            | injetada pelo Marketplace (#56)   | injetada pelo Marketplace    | não usada                | `area:dados` |
 | `VERCEL_GIT_COMMIT_SHA` | pública | não             | não definida        | sistema da Vercel                 | sistema da Vercel            | não usada                | `area:infra` |
@@ -134,7 +134,7 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 
 **Dona** é a área (label) que decide o nome, o formato e o valor da variável. Quem cadastra segredos na Vercel e no GitHub é sempre o dono do repositório, porque o valor não deve passar por outras mãos.
 
-- **`SANITY_API_READ_TOKEN`** é o token `viewer` do Sanity, só para o preview de rascunhos (#43). Sem ele, o site lê só o conteúdo publicado. Cadastre na Vercel como **Secret**.
+- **`SANITY_API_READ_TOKEN`** é o token `viewer` do Sanity, só para o preview de rascunhos (#43). Sem ele, o site lê só o conteúdo publicado. Cadastrado na Vercel como **Secret** em Production e Preview (29/10/2026).
 - **`KV_REST_API_URL` e `KV_REST_API_TOKEN`** são os nomes que o `Redis.fromEnv()` do `@upstash/redis` lê. A #56 confere, ao instalar o Upstash Redis pelo Marketplace, se a integração injeta exatamente esses nomes; se não, renomeia no schema, no `.env.example` e aqui.
 - **`VERCEL_GIT_COMMIT_SHA`** é variável de sistema da Vercel, sem cadastro. Entra no schema só para o `/api/health` ler o commit pelo `astro:env`.
 - **Os tokens do Studio** (`SANITY_AUTH_TOKEN`) e as variáveis `SANITY_STUDIO_*` não são do site: veja [`studio/README.md`](../studio/README.md).
@@ -160,7 +160,3 @@ vercel env pull .env.local
 ```
 
 O `link` é feito uma vez e cria `web/.vercel/` (não versionado). O `env pull` traz as variáveis do ambiente **Development** para `web/.env.local`, que o Astro lê sozinho; para outro ambiente, use `--environment=preview` ou `--environment=production`. Segredos podem chegar vazios no pull; nesse caso o site segue sem o recurso opcional (o preview de rascunhos, por exemplo). Para sobrescrever algo só na sua máquina, use `web/.env`, que tem prioridade menor que o `.env.local`, ou edite o próprio `.env.local`.
-
-## Pendências
-
-- **`SANITY_API_READ_TOKEN` na Vercel:** o dono do projeto cadastra como Secret.
