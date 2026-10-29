@@ -41,7 +41,7 @@ O token precisa do papel **Deploy Studio** (ou Administrator). Com Editor, o dep
 
 ## Schemas
 
-Ficam em [`schemaTypes/`](schemaTypes); campos repetidos (nome, slug, descrição, ordem, tags, texto alternativo) em [`schemaTypes/campos.ts`](schemaTypes/campos.ts).
+Ficam em [`schemaTypes/`](schemaTypes); campos repetidos (nome, slug, descrição, ordem, tags, texto alternativo, legenda) em [`schemaTypes/campos.ts`](schemaTypes/campos.ts).
 
 | Tipo        | Campos                                              | Observação                                                     |
 | ----------- | --------------------------------------------------- | -------------------------------------------------------------- |
@@ -68,7 +68,7 @@ Um único tipo `post`, com o campo `tipo` (`review` ou `pensamento`), para que s
 | `slug`             | Gerado do título, obrigatório e único entre os posts                                                                     |
 | `dataDePublicacao` | Obrigatória, começa com a hora da criação e não aceita data no futuro (não há agendamento)                               |
 | `capa`             | Imagem com hotspot, obrigatória; `alt` obrigatório e `legenda` (legenda ou crédito) opcional                             |
-| `corpo`            | Portable Text; por enquanto só parágrafos (a #22 configura estilos, links, imagens e citações)                           |
+| `corpo`            | Portable Text com estilos, listas, links, imagem e citação em destaque; veja "Texto do post" abaixo                      |
 | `tags`             | Referências a `tag`, sem repetir                                                                                         |
 | `destaque`         | Destaque na home (boolean, padrão falso)                                                                                 |
 | `seo`              | `titulo` (aviso acima de 60), `descricao` (aviso acima de 160), `imagem` (`alt` obrigatório se houver imagem), `noindex` |
@@ -90,6 +90,19 @@ A lista de posts mostra a capa, o título e um subtítulo como "Review · Filmes
 | todos    |                               | `valeAPena` (frase curta opcional)                                                                                                            |
 
 Os campos de todos os modelos ficam num objeto só e sem prefixo; os que têm o mesmo sentido em mais de um modelo (`ano`, `ondeVi`) têm o mesmo nome e continuam valendo ao trocar de categoria. Os obrigatórios são conferidos por uma validação que também busca o modelo da categoria. Ao trocar para uma categoria de outro modelo, nada é apagado em silêncio: o input lista os campos preenchidos que deixaram de valer e oferece o botão "Apagar esses campos". Eles ficam guardados, mas o site não os lê: as consultas usam o `FICHA_NO_GROQ` de `lib/ficha.ts` (`"ficha": ${FICHA_NO_GROQ}`), que devolve só os campos do modelo da categoria e `null` em pensamento ou sem ficha. A lista de campos foi aprovada na #1 e pode mudar depois do onboarding da autora (#31).
+
+**Texto do post.** O `corpo` fica em [`schemaTypes/corpo.ts`](schemaTypes/corpo.ts) e oferece só o que o layout "Caderno" do site sabe mostrar (WEB-09), com rótulos e ícones em pt-BR:
+
+| Na barra          | Opções                                                                                                                                  |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Estilos           | Parágrafo, Subtítulo (`h2`), Subtítulo menor (`h3`) e Citação (`blockquote`); sem `h1`, porque o título do post já é o `h1`             |
+| Formatação        | Negrito e itálico; sublinhado e código ficam desligados                                                                                 |
+| Listas            | Com marcadores e numerada                                                                                                               |
+| Links             | `link` (externo, `href` obrigatório em `http`, `https` ou `mailto`) e `linkInterno` (referência a outro post, sem criar post pelo link) |
+| `imagem`          | Imagem com hotspot; `alt` obrigatório, `legenda` opcional e `largura` (`normal` ou `larga`); sem a imagem, o bloco não deixa publicar   |
+| `citacaoDestaque` | `texto` obrigatório e `fonte` (autor ou fonte) opcional, mostrada no editor em letra grande e vinho, parecida com o site                |
+
+O `linkInterno` guarda o `_id` do post, não o endereço: o link continua certo depois que o destino muda de slug, categoria ou formato. Como a referência é forte, o Sanity não deixa apagar um post que outro post linka (ele mostra quais). As consultas do site usam o `CORPO_NO_GROQ` de [`lib/corpo.ts`](lib/corpo.ts) (`"corpo": ${CORPO_NO_GROQ}`), que troca cada referência pelo post de destino com os slugs já resolvidos para o `urlDoPost`; destino ainda não publicado vem como `post: null`, e o site mostra só o texto. A projeção tem testes com o `groq-js`.
 
 **Endereço antigo.** O botão "Publicar" do post é envolvido por [`acoes/publicarPost.ts`](acoes/publicarPost.ts): ao publicar um post que já estava no ar com outro slug, categoria ou formato, ele guarda o caminho publicado (`/reviews/filmes/slug-antigo`) em `slugsAnteriores`, para a #53 gerar o redirect. Se a consulta ao Sanity falhar, o post não é publicado e a autora vê um aviso para tentar de novo. Mudar o slug, a categoria ou o formato de um post publicado mostra um aviso amarelo no campo, sem impedir a publicação.
 

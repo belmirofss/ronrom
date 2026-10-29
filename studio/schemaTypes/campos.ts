@@ -2,7 +2,8 @@ import { defineArrayMember, defineField, type SlugRule, type SlugValue } from 's
 
 import { problemaNoSlug, slugify, TAMANHO_MAXIMO_DO_SLUG } from '../lib/slug';
 
-// Campos repetidos entre os schemas. O post reaproveita o slug, as tags e o texto alternativo.
+// Campos repetidos entre os schemas. O post reaproveita o slug, as tags, o texto alternativo e a
+// legenda.
 
 // Slug gerado a partir de outro campo (o nome ou o título). A unicidade fica com a checagem
 // padrão do Sanity, que compara só com documentos do mesmo tipo: uma tag pode ter o mesmo
@@ -117,4 +118,12 @@ export const campoAlt = defineField({
       if (imagem?.asset && !alt?.trim()) return 'Descreva a imagem no texto alternativo.';
       return true;
     }),
+});
+
+// Legenda opcional de uma imagem, na capa e no texto do post.
+export const campoLegenda = defineField({
+  name: 'legenda',
+  title: 'Legenda ou crédito',
+  type: 'string',
+  description: 'Opcional. Por exemplo: "Foto: divulgação".',
 });
