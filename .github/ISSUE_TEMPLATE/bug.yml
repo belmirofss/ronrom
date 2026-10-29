@@ -35,7 +35,7 @@ body:
     attributes:
       label: URL
       description: Página onde o problema aparece (produção, preview ou local).
-      placeholder: https://ronrom.vercel.app/...
+      placeholder: https://ronrom-chi.vercel.app/...
   - type: dropdown
     id: onde
     attributes:
