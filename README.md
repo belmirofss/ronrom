@@ -1,5 +1,7 @@
 # ronrom
 
+[![ci](https://github.com/belmirofss/ronrom/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/belmirofss/ronrom/actions/workflows/ci.yml)
+
 Ronrom — blog de reviews e pensamentos (Astro + Sanity + Vercel)
 
 Antes de abrir uma branch ou um PR, leia o [guia de contribuição](CONTRIBUTING.md) (convenções de commits, branches, PRs, labels e milestones).
