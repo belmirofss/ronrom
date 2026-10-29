@@ -6,7 +6,9 @@ import {
   type ValidationContext,
 } from 'sanity';
 
+import { InputDeNota } from '../componentes/InputDeNota';
 import { API_VERSION } from '../env';
+import { problemaNaNota } from '../lib/nota';
 import { dataNoFuturo, subtituloDoPost, TIPOS_DE_POST } from '../lib/post';
 import { campoAlt, campoSlug, campoTags, TAMANHO_IDEAL_DA_DESCRICAO } from './campos';
 
@@ -121,6 +123,24 @@ export const post = defineType({
           )
           .warning(),
       ],
+    }),
+    // Fica nas duas abas, como a categoria, para a autora não esquecer a nota.
+    defineField({
+      name: 'nota',
+      title: 'Nota',
+      type: 'number',
+      group: ['conteudo', 'review'],
+      description:
+        'De meio a 5 corações. Clique num coração para dar a nota inteira, ou na metade esquerda dele para dar meio a menos.',
+      components: { input: InputDeNota },
+      // Só aparece em pensamento se uma nota sobrou ali (vinda da API, por exemplo), para a
+      // autora conseguir limpar o erro.
+      hidden: ({ document, value }) => !ehReview(document?.tipo) && value === undefined,
+      validation: (rule) =>
+        rule.custom(
+          (valor: number | undefined, contexto) =>
+            problemaNaNota(contexto.document?.tipo, valor) ?? true,
+        ),
     }),
     defineField({
       name: 'titulo',

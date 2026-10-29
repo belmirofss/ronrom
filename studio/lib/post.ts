@@ -2,6 +2,8 @@
 // subtítulo da lista. Usadas pelo schema (schemaTypes/post.ts) e pela ação de publicar
 // (acoes/publicarPost.ts).
 
+import { notaValida } from './nota';
+
 export const TIPOS_DE_POST = [
   { value: 'review', title: 'Review' },
   { value: 'pensamento', title: 'Pensamento' },
@@ -52,8 +54,9 @@ export function dataNoFuturo(iso: string, agora = new Date()) {
 }
 
 // 4 → "♥♥♥♥", 3.5 → "♥♥♥½". Nota fora de 0,5 a 5 em meios fica em branco, sem quebrar a lista.
+// A lista de documentos do Sanity só aceita texto no subtítulo, por isso não usa o <Coracao>.
 export function notaEmCoracoes(nota: number | undefined) {
-  if (nota === undefined || !Number.isInteger(nota * 2) || nota < 0.5 || nota > 5) return '';
+  if (!notaValida(nota)) return '';
   return '♥'.repeat(Math.floor(nota)) + (Number.isInteger(nota) ? '' : '½');
 }
 

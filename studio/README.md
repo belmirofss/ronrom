@@ -61,6 +61,7 @@ Um único tipo `post`, com o campo `tipo` (`review` ou `pensamento`), para que s
 | `tipo`             | Obrigatório; fica só leitura assim que é escolhido, porque faz parte do endereço                                         |
 | `categoria`        | Referência, obrigatória e visível só em review                                                                           |
 | `formato`          | Referência, obrigatória e visível só em pensamento                                                                       |
+| `nota`             | De meio a 5 corações, em passos de meio; obrigatória e visível só em review, recusada em pensamento                      |
 | `titulo`           | Obrigatório; aviso acima de 70 caracteres                                                                                |
 | `subtitulo`        | Opcional                                                                                                                 |
 | `slug`             | Gerado do título, obrigatório e único entre os posts                                                                     |
@@ -72,7 +73,9 @@ Um único tipo `post`, com o campo `tipo` (`review` ou `pensamento`), para que s
 | `seo`              | `titulo` (aviso acima de 60), `descricao` (aviso acima de 160), `imagem` (`alt` obrigatório se houver imagem), `noindex` |
 | `slugsAnteriores`  | Caminhos antigos do post, só leitura, dentro de "Avançado" na aba SEO                                                    |
 
-A nota em corações (#20) e a ficha (#21) entram na aba Review. A lista de posts mostra a capa, o título e um subtítulo como "Review · Filmes · ♥♥♥♥" ou "Pensamento · Frases soltas"; as funções puras por trás disso (caminho, slugs anteriores, data, corações) ficam em [`lib/post.ts`](lib/post.ts), com testes.
+A ficha (#21) entra na aba Review. A lista de posts mostra a capa, o título e um subtítulo como "Review · Filmes · ♥♥♥½" ou "Pensamento · Frases soltas"; as funções puras por trás disso (caminho, slugs anteriores, data, corações) ficam em [`lib/post.ts`](lib/post.ts), com testes.
+
+**Nota em corações.** A `nota` aparece nas abas Conteúdo e Review e usa o input de [`componentes/InputDeNota.tsx`](componentes/InputDeNota.tsx): 5 corações (vinho quando preenchido, contorno rosa quando vazio), em que clicar no coração grava a nota inteira e clicar na metade esquerda grava meio a menos (4º coração: `4`; metade esquerda dele: `3.5`). Passar o mouse pré-visualiza a nota, e o botão "Limpar" apaga. Por baixo são 10 radios nativos, de "meio coração" a "5 corações": as setas do teclado andam de meio em meio. As regras (valores aceitos, rótulos, validação) ficam em [`lib/nota.ts`](lib/nota.ts), com testes. A lista de posts mostra a nota em texto (♥ e ½), porque o Sanity só aceita texto no subtítulo da lista de documentos.
 
 **Endereço antigo.** O botão "Publicar" do post é envolvido por [`acoes/publicarPost.ts`](acoes/publicarPost.ts): ao publicar um post que já estava no ar com outro slug, categoria ou formato, ele guarda o caminho publicado (`/reviews/filmes/slug-antigo`) em `slugsAnteriores`, para a #53 gerar o redirect. Se a consulta ao Sanity falhar, o post não é publicado e a autora vê um aviso para tentar de novo. Mudar o slug, a categoria ou o formato de um post publicado mostra um aviso amarelo no campo, sem impedir a publicação.
 
