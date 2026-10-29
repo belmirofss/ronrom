@@ -71,12 +71,12 @@ Imports dentro de `web/src` usam o alias `@/*` (ex.: `import { NOME_DO_SITE } fr
 
 ## Deploy
 
-O site é publicado na Vercel: a `main` vai para produção em https://ronrom-chi.vercel.app e cada PR ganha um preview, com o link comentado no PR. Configuração, limites do plano Hobby e o que pula build estão em [`docs/ambientes.md`](docs/ambientes.md).
+O site é publicado na Vercel: a `main` vai para produção em https://ronrom-blog.vercel.app e cada PR ganha um preview, com o link comentado no PR. Configuração, limites do plano Hobby e o que pula build estão em [`docs/ambientes.md`](docs/ambientes.md).
 
 ## Variáveis de ambiente
 
-| Variável   | Padrão                          | Uso                                |
-| ---------- | ------------------------------- | ---------------------------------- |
-| `SITE_URL` | `https://ronrom-chi.vercel.app` | URL base do site (`site` do Astro) |
+| Variável   | Padrão                           | Uso                                |
+| ---------- | -------------------------------- | ---------------------------------- |
+| `SITE_URL` | `https://ronrom-blog.vercel.app` | URL base do site (`site` do Astro) |
 
 O schema completo das variáveis fica na #8. As do Studio (`SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET`) e os tokens do Sanity estão documentados em [`studio/README.md`](studio/README.md) e em `studio/.env.example`.

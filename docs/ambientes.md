@@ -12,11 +12,11 @@ O site (`web/`) é publicado na Vercel, plano **Hobby** (grátis), no projeto `r
 | Install Command       | `pnpm install --frozen-lockfile`                          |
 | Build Command         | `pnpm build`                                              |
 | Ignored Build Step    | `bash ../scripts/vercel-ignorar-build.sh`                 |
-| Production Branch     | `main` → https://ronrom-chi.vercel.app                    |
+| Production Branch     | `main` → https://ronrom-blog.vercel.app                   |
 | Preview               | todo push em outra branch e todo PR, com comentário no PR |
 | Deployment Protection | Vercel Authentication (padrão) nos previews               |
 
-O subdomínio `ronrom.vercel.app` já pertence a outro projeto da Vercel, então a Vercel atribuiu `ronrom-chi.vercel.app`. Ele fica como endereço de produção até o domínio próprio da #63.
+O subdomínio `ronrom.vercel.app` já pertence a outro projeto da Vercel, então a produção usa `ronrom-blog.vercel.app`, configurado em Settings → Domains. Ele fica como endereço de produção até o domínio próprio da #63.
 
 Install, build e Ignored Build Step ficam versionados em [`web/vercel.json`](../web/vercel.json), que tem prioridade sobre o painel. Mudar esses comandos é um PR comum.
 
@@ -53,5 +53,5 @@ Pontos que a issue #10 pediu para conferir:
 
 ## Pendências
 
-- **Variáveis por ambiente:** entram com a #8 (INF-05). Hoje só existe `SITE_URL`, cujo padrão no `astro.config.mjs` já é `https://ronrom-chi.vercel.app`.
+- **Variáveis por ambiente:** entram com a #8 (INF-05). Hoje só existe `SITE_URL`, cujo padrão no `astro.config.mjs` já é `https://ronrom-blog.vercel.app`.
 - **`/api/health`:** depende do adapter da Vercel e da rota sob demanda da #9.
