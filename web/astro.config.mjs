@@ -1,6 +1,6 @@
 // @ts-check
 import vercel from '@astrojs/vercel';
-import { defineConfig, envField } from 'astro/config';
+import { defineConfig, envField, fontProviders } from 'astro/config';
 import { loadEnv } from 'vite';
 
 // O astro.config roda antes do astro:env, então o que decide a configuração é lido direto do
@@ -34,6 +34,39 @@ export default defineConfig({
     // pelo trailingSlash: false do vercel.json. É o formato que o @astrojs/vercel impõe (#9).
     format: 'directory',
   },
+  // DM Sans servida pelo próprio site (#14): os woff2 vêm do @fontsource/dm-sans instalado (só o
+  // subset latin), sem buscar nada na rede no build e sem requisição a terceiros no navegador.
+  // O Astro gera o @font-face com font-display: swap e uma fonte de fallback com métricas
+  // ajustadas (size-adjust, ascent-override etc.), para a troca de fonte não gerar CLS.
+  fonts: [
+    {
+      provider: fontProviders.local(),
+      name: 'DM Sans',
+      cssVariable: '--fonte-dm-sans',
+      // A partir da família genérica, o Astro escolhe uma fonte local (Arial) e ajusta as métricas.
+      fallbacks: ['sans-serif'],
+      display: 'swap',
+      options: {
+        variants: [
+          {
+            weight: 400,
+            style: 'normal',
+            src: ['@fontsource/dm-sans/files/dm-sans-latin-400-normal.woff2'],
+          },
+          {
+            weight: 500,
+            style: 'normal',
+            src: ['@fontsource/dm-sans/files/dm-sans-latin-500-normal.woff2'],
+          },
+          {
+            weight: 700,
+            style: 'normal',
+            src: ['@fontsource/dm-sans/files/dm-sans-latin-700-normal.woff2'],
+          },
+        ],
+      },
+    },
+  ],
   // Saída estática (o padrão do Astro): só as rotas com `export const prerender = false` viram
   // Vercel Function. Decisão no docs/adr/0001; como criar uma rota sob demanda: docs/ambientes.md.
   adapter: vercel({

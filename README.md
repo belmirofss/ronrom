@@ -68,6 +68,8 @@ Monorepo com workspaces do pnpm (`pnpm-workspace.yaml`):
 
 Imports dentro de `web/src` usam o alias `@/*` (ex.: `import { NOME_DO_SITE } from '@/lib/utils/site'`).
 
+Os tokens de design (cores, tipografia, espaçamento), a regra de contraste e o carregamento da fonte estão no [README do site](web/README.md#design-tokens-e-css-base).
+
 ## Deploy
 
 O site é publicado na Vercel: a `main` vai para produção em https://ronrom-blog.vercel.app e cada PR ganha um preview, com o link comentado no PR. As páginas são estáticas; só as rotas com `export const prerender = false` (hoje, `/api/health`) rodam numa Vercel Function. Não há `pnpm preview`, porque o adapter da Vercel não suporta o comando: teste as rotas sob demanda com o `pnpm dev` e o resto no preview do PR. Configuração, limites do plano Hobby e o que pula build estão em [`docs/ambientes.md`](docs/ambientes.md). Rotas, slugs, barra no final e os helpers de URL estão em [`docs/seo-urls.md`](docs/seo-urls.md).
