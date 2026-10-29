@@ -17,6 +17,7 @@ Closes #
 - [ ] `pnpm build` passa localmente (e `pnpm lint` / `pnpm check`)
 - [ ] Acessibilidade revisada (teclado, foco visível, contraste, textos alternativos)
 - [ ] Prints em mobile e desktop anexados (se mudou algo visual)
+- [ ] Documentação atualizada (README, `docs/`, ADR), se mexeu em infra, scripts, variáveis ou dependências de build
 - [ ] Link do preview da Vercel: <!-- cole aqui -->
 
 ## Prints
