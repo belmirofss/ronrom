@@ -13,18 +13,21 @@ Antes de abrir uma branch ou um PR, leia o [guia de contribuição](CONTRIBUTING
 
 Rode na raiz do repositório:
 
-| Comando             | O que faz                                         |
-| ------------------- | ------------------------------------------------- |
-| `pnpm install`      | Instala as dependências de todos os workspaces    |
-| `pnpm dev`          | Sobe o site em `http://localhost:4321`            |
-| `pnpm build`        | Gera o site em `web/dist`                         |
-| `pnpm preview`      | Serve o build localmente                          |
-| `pnpm check`        | Roda o `astro check` (diagnóstico de .astro e TS) |
-| `pnpm typecheck`    | Gera os tipos do Astro e roda o `tsc --noEmit`    |
-| `pnpm lint`         | Roda o ESLint (TS, .astro e acessibilidade)       |
-| `pnpm lint:fix`     | Roda o ESLint corrigindo o que for automático     |
-| `pnpm format`       | Formata tudo com o Prettier                       |
-| `pnpm format:check` | Confere a formatação sem alterar arquivos         |
+| Comando              | O que faz                                         |
+| -------------------- | ------------------------------------------------- |
+| `pnpm install`       | Instala as dependências de todos os workspaces    |
+| `pnpm dev`           | Sobe o site em `http://localhost:4321`            |
+| `pnpm build`         | Gera o site em `web/dist`                         |
+| `pnpm preview`       | Serve o build localmente                          |
+| `pnpm check`         | Roda o `astro check` (diagnóstico de .astro e TS) |
+| `pnpm typecheck`     | Roda o `tsc --noEmit` no site e no Studio         |
+| `pnpm studio:dev`    | Sobe o Sanity Studio em `http://localhost:3333`   |
+| `pnpm studio:build`  | Gera o Studio em `studio/dist`                    |
+| `pnpm studio:deploy` | Publica o Studio em `ronrom.sanity.studio`        |
+| `pnpm lint`          | Roda o ESLint (TS, .astro e acessibilidade)       |
+| `pnpm lint:fix`      | Roda o ESLint corrigindo o que for automático     |
+| `pnpm format`        | Formata tudo com o Prettier                       |
+| `pnpm format:check`  | Confere a formatação sem alterar arquivos         |
 
 ## Lint, formatação e hooks
 
@@ -56,7 +59,8 @@ Monorepo com workspaces do pnpm (`pnpm-workspace.yaml`):
 │       │   └── views/      # contador de visualizações e ranking
 │       ├── pages/          # rotas do site
 │       └── styles/         # CSS global e tokens
-└── studio/                 # Sanity Studio (criado na #7)
+└── studio/                 # Sanity Studio (veja studio/README.md)
+    └── schemaTypes/        # schemas de conteúdo
 ```
 
 Imports dentro de `web/src` usam o alias `@/*` (ex.: `import { NOME_DO_SITE } from '@/lib/utils/site'`).
@@ -67,4 +71,4 @@ Imports dentro de `web/src` usam o alias `@/*` (ex.: `import { NOME_DO_SITE } fr
 | ---------- | --------------------------- | ---------------------------------- |
 | `SITE_URL` | `https://ronrom.vercel.app` | URL base do site (`site` do Astro) |
 
-O schema completo das variáveis fica na #8.
+O schema completo das variáveis fica na #8. As do Studio (`SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET`) e os tokens do Sanity estão documentados em [`studio/README.md`](studio/README.md) e em `studio/.env.example`.

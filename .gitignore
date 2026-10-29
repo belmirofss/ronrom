@@ -8,6 +8,9 @@ dist/
 # tipos gerados pelo Astro
 .astro/
 
+# runtime temporário do Sanity Studio (recriado a cada `sanity dev`)
+.sanity/
+
 # variáveis de ambiente (só o exemplo é versionado)
 .env*
 !.env.example
