@@ -37,6 +37,34 @@ O workflow precisa de dois valores em Settings → Secrets and variables → Act
 | `SANITY_AUTH_TOKEN`        | Secret   | Token `editor-deploy` (veja Tokens, abaixo)  |
 | `SANITY_STUDIO_PROJECT_ID` | Variable | O mesmo ID do projeto usado no `studio/.env` |
 
+## Schemas
+
+Ficam em [`schemaTypes/`](schemaTypes); campos repetidos (nome, slug, descrição, ordem, tags) em [`schemaTypes/campos.ts`](schemaTypes/campos.ts).
+
+| Tipo        | Campos                                              | Observação                                                     |
+| ----------- | --------------------------------------------------- | -------------------------------------------------------------- |
+| `categoria` | `nome`, `slug`, `descricao`, `ordem`, `modeloFicha` | Categorias das reviews; `modeloFicha` define a ficha da review |
+| `formato`   | `nome`, `slug`, `descricao`, `ordem`                | Formatos dos pensamentos                                       |
+| `tag`       | `nome`, `slug`                                      | Criada direto do post, pelo "Criar novo" do campo de tags      |
+
+Slugs seguem a [política de URLs](../docs/seo-urls.md#slugs): o botão "Gerar" usa o `slugify` de [`lib/slug.ts`](lib/slug.ts), que tira acentos e cedilha ("Séries" vira `series`), e a validação recusa slug fora do formato e o reservado `pagina`. A unicidade é a padrão do Sanity, dentro do mesmo tipo: duas tags não podem ter o mesmo slug, mas uma tag e uma categoria podem. O post (#19) usa o mesmo `campoSlug` e o `campoTags`.
+
+### Taxonomia inicial
+
+As 6 categorias e os 4 formatos de [`lib/taxonomia.ts`](lib/taxonomia.ts) (nomes, slugs, descrições e `_id` fixos, como `categoria-filmes`) são gravados por [`scripts/criar-taxonomia.ts`](scripts/criar-taxonomia.ts). Ele usa `createOrReplace`, então rodar de novo não duplica nada, mas **desfaz edições** feitas no Studio nesses dez documentos (nome, descrição, ordem). Depois que a autora começar a editar, mude o arquivo antes de rodar de novo.
+
+Com `studio/.env` preenchido e `sanity login` feito (ou `SANITY_AUTH_TOKEN` com o token `editor-deploy`), na raiz:
+
+```bash
+pnpm --filter studio taxonomia --dataset development
+```
+
+```bash
+pnpm --filter studio taxonomia --dataset production
+```
+
+O dataset é sempre explícito: sem `--dataset`, o script não grava nada.
+
 ## Idioma, marca e ferramentas
 
 - **pt-BR:** a interface usa o [`@sanity/locale-pt-br`](https://github.com/sanity-io/locales), ativado em `sanity.config.ts`.

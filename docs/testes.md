@@ -43,11 +43,11 @@ pnpm test
 pnpm test:watch
 ```
 
-O `pnpm test` roda o `test` de todo workspace que tiver o script (hoje, só o `web`) e precisa passar em menos de 1 minuto, localmente e no CI. O `pnpm test:watch` roda os testes do site de novo a cada arquivo salvo. Para rodar um arquivo só, de dentro de `web/`: `pnpm exec vitest run src/lib/rotas.test.ts`.
+O `pnpm test` roda o `test` de todo workspace que tiver o script (hoje, `web` e `studio`) e precisa passar em menos de 1 minuto, localmente e no CI. O `pnpm test:watch` roda os testes do site de novo a cada arquivo salvo. Para rodar um arquivo só, de dentro de `web/` ou `studio/`: `pnpm exec vitest run src/lib/rotas.test.ts`.
 
 ## Como escrever um teste
 
-- **Onde:** em `web/src/**/*.test.ts`, ao lado do arquivo testado (`rotas.ts` e `rotas.test.ts`). Arquivos fora desse padrão não rodam.
+- **Onde:** em `web/src/**/*.test.ts` (site) ou `studio/lib/**/*.test.ts` (funções puras do Studio, como o `slugify`), ao lado do arquivo testado (`rotas.ts` e `rotas.test.ts`). Arquivos fora desse padrão não rodam.
 - **Imports explícitos** de `vitest` (`describe`, `it`, `expect`), sem globais.
 - **Nomes em português**, descrevendo o comportamento: `it('não vira o dia seguinte às 23h30 de Brasília')`.
 - **Alias e módulos virtuais funcionam:** a config ([`web/vitest.config.ts`](../web/vitest.config.ts)) usa o `getViteConfig` do Astro, então `@/…`, `astro:env/client` e `astro:assets` resolvem como no build.

@@ -96,7 +96,7 @@ Os nomes de arquivo são a sugestão para as issues de cada página; o que não 
 ### Formato
 
 - Expressão: `^[a-z0-9]+(?:-[a-z0-9]+)*$` (minúsculas, números e hífens simples, sem hífen no começo ou no fim).
-- Gerado do nome/título pelo slugify compartilhado do Studio (#18): normaliza para NFD, remove os acentos e a cedilha, passa para minúsculas, troca tudo o que não é letra ou número por hífen e junta hífens repetidos. Não remove palavras como "e" ou "de".
+- Gerado do nome/título pelo `slugify` compartilhado do Studio ([`studio/lib/slug.ts`](../studio/lib/slug.ts), #18): normaliza para NFD, remove os acentos e a cedilha, passa para minúsculas, troca tudo o que não é letra ou número por hífen e junta hífens repetidos. Não remove palavras como "e" ou "de".
 - Até 96 caracteres (limite padrão do campo slug do Sanity); o ideal é ficar em torno de 60.
 
 | Título                   | Slug                     |
@@ -110,7 +110,7 @@ Os nomes de arquivo são a sugestão para as issues de cada página; o que não 
 
 ### Categorias (reviews)
 
-Fixas: o script da #18 cria estes documentos com `_id` fixo, em `development` e `production`.
+Fixas: o script da #18 ([`studio/scripts/criar-taxonomia.ts`](../studio/scripts/criar-taxonomia.ts), dados em [`studio/lib/taxonomia.ts`](../studio/lib/taxonomia.ts)) cria estes documentos com `_id` fixo, em `development` e `production`.
 
 | Nome                 | Slug                   | `_id`                            | `modeloFicha` | URL                             |
 | -------------------- | ---------------------- | -------------------------------- | ------------- | ------------------------------- |

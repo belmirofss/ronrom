@@ -77,7 +77,7 @@ Rode na raiz do repositório:
 | `pnpm build`         | Gera o site em `web/.vercel/output`               |
 | `pnpm check`         | Roda o `astro check` (diagnóstico de .astro e TS) |
 | `pnpm typecheck`     | Roda o `tsc --noEmit` no site e no Studio         |
-| `pnpm test`          | Roda os testes do site (Vitest) uma vez           |
+| `pnpm test`          | Roda os testes do site e do Studio (Vitest)       |
 | `pnpm test:watch`    | Roda os testes do site a cada arquivo salvo       |
 | `pnpm studio:dev`    | Sobe o Sanity Studio em `http://localhost:3333`   |
 | `pnpm studio:build`  | Gera o Studio em `studio/dist`                    |
