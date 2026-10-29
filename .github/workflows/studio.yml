@@ -1,0 +1,43 @@
+# Publica o Studio em https://ronrom.sanity.studio (#12). Só roda quando um push na main muda
+# algo em studio/: mudanças no site, na documentação ou nos workflows não redeployam.
+# O dataset do Studio publicado (production) vem de studio/.env.production.
+name: studio
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/**'
+  # Redeploy manual (Actions → studio → Run workflow), sem precisar de commit.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Merges seguidos publicam em ordem: um deploy nunca é cancelado no meio.
+concurrency:
+  group: studio-deploy
+  cancel-in-progress: false
+
+env:
+  SKIP_INSTALL_SIMPLE_GIT_HOOKS: 1
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # --yes: sem terminal no CI, aceita os padrões em vez de esperar resposta.
+      - run: pnpm studio:deploy --yes
+        env:
+          # Settings → Secrets and variables → Actions. Veja studio/README.md.
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+          SANITY_STUDIO_PROJECT_ID: ${{ vars.SANITY_STUDIO_PROJECT_ID }}

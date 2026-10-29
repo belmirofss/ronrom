@@ -57,6 +57,8 @@ Todo PR e todo push na `main` rodam o [`ci.yml`](.github/workflows/ci.yml), com 
 
 Para reproduzir localmente antes de abrir o PR, rode os mesmos comandos na raiz. Um push novo no PR cancela a execução anterior, para economizar a cota de minutos do Actions.
 
+O [`studio.yml`](.github/workflows/studio.yml) publica o Studio em `ronrom.sanity.studio` a cada push na `main` que muda `studio/` (veja o [README do Studio](studio/README.md#deploy)).
+
 ## Pull requests
 
 - Um PR por issue, com `Closes #<numero>` na descrição para fechar a issue no merge.

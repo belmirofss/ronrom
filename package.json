@@ -14,7 +14,7 @@
     "typecheck": "pnpm -r typecheck",
     "studio:dev": "pnpm --filter studio dev",
     "studio:build": "pnpm --filter studio build",
-    "studio:deploy": "pnpm --filter studio deploy",
+    "studio:deploy": "pnpm --filter studio run deploy",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
