@@ -34,8 +34,10 @@ O workflow precisa de dois valores em Settings → Secrets and variables → Act
 
 | Nome                       | Tipo     | Valor                                        |
 | -------------------------- | -------- | -------------------------------------------- |
-| `SANITY_AUTH_TOKEN`        | Secret   | Token `editor-deploy` (veja Tokens, abaixo)  |
+| `SANITY_AUTH_TOKEN`        | Secret   | Token `studio-deploy-ci-5` (veja Tokens)     |
 | `SANITY_STUDIO_PROJECT_ID` | Variable | O mesmo ID do projeto usado no `studio/.env` |
+
+O token precisa do papel **Deploy Studio** (ou Administrator). Com Editor, o deploy falha com `missing required grant sanity.project.deployStudio`.
 
 ## Schemas
 
@@ -53,7 +55,7 @@ Slugs seguem a [política de URLs](../docs/seo-urls.md#slugs): o botão "Gerar" 
 
 As 6 categorias e os 4 formatos de [`lib/taxonomia.ts`](lib/taxonomia.ts) (nomes, slugs, descrições e `_id` fixos, como `categoria-filmes`) são gravados por [`scripts/criar-taxonomia.ts`](scripts/criar-taxonomia.ts). Ele usa `createOrReplace`, então rodar de novo não duplica nada, mas **desfaz edições** feitas no Studio nesses dez documentos (nome, descrição, ordem). Depois que a autora começar a editar, mude o arquivo antes de rodar de novo.
 
-Com `studio/.env` preenchido e `sanity login` feito (ou `SANITY_AUTH_TOKEN` com o token `editor-deploy`), na raiz:
+Com `studio/.env` preenchido e `sanity login` feito, na raiz (o token do CI só publica o Studio e não grava conteúdo):
 
 ```bash
 pnpm --filter studio taxonomia --dataset development
@@ -86,12 +88,14 @@ Sem elas o Studio não abre e mostra qual variável falta.
 
 Tokens **nunca** entram no código nem em `.env` versionado. São criados em sanity.io/manage → projeto → API → Tokens e guardados nos Secrets do GitHub (Settings → Secrets and variables → Actions) e nas variáveis de ambiente da Vercel.
 
-| Nome do token   | Permissão | Variável                | Onde fica       | Uso                                      |
-| --------------- | --------- | ----------------------- | --------------- | ---------------------------------------- |
-| `viewer`        | Viewer    | `SANITY_API_READ_TOKEN` | GitHub e Vercel | Ler rascunhos no preview e fazer backup  |
-| `editor-deploy` | Editor    | `SANITY_AUTH_TOKEN`     | GitHub          | Seed de conteúdo e `sanity deploy` no CI |
+| Nome do token        | Permissão     | Variável                | Onde fica       | Uso                                     |
+| -------------------- | ------------- | ----------------------- | --------------- | --------------------------------------- |
+| `viewer`             | Viewer        | `SANITY_API_READ_TOKEN` | GitHub e Vercel | Ler rascunhos no preview e fazer backup |
+| `studio-deploy-ci-5` | Deploy Studio | `SANITY_AUTH_TOKEN`     | GitHub          | `sanity deploy` no CI                   |
 
-`SANITY_AUTH_TOKEN` é o nome que a CLI do Sanity lê para autenticar sem `sanity login`.
+`SANITY_AUTH_TOKEN` é o nome que a CLI do Sanity lê para autenticar sem `sanity login`. Nenhum token grava conteúdo: seed e scripts como o da taxonomia rodam da máquina de quem mantém o projeto, com `sanity login`.
+
+Crie o token de deploy pelo site (API → Tokens → Add API token, permissão Deploy Studio), não pela CLI: o `sanity tokens add --grant deploy-studios` cria o token mas não mostra o valor. O token aparece uma vez só; para salvar no GitHub sem colar no terminal, copie e rode no PowerShell `gh secret set SANITY_AUTH_TOKEN --body (Get-Clipboard)`.
 
 ## Projeto no Sanity (plano Free)
 
@@ -109,8 +113,9 @@ pnpm --filter studio sanity datasets create development --visibility public
 pnpm --filter studio sanity cors add http://localhost:3333 --credentials
 pnpm --filter studio sanity cors add http://localhost:4321 --no-credentials
 pnpm --filter studio sanity tokens add viewer --role viewer
-pnpm --filter studio sanity tokens add editor-deploy --role editor
 ```
+
+O token de deploy é criado pelo site (veja [Tokens](#tokens)). O primeiro deploy, que registra `ronrom.sanity.studio`, foi feito com `pnpm studio:deploy` da máquina do dono, logado como administrador.
 
 ### Rascunhos em dataset público
 
