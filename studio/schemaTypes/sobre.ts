@@ -1,6 +1,7 @@
 import { defineArrayMember, defineField, defineType } from 'sanity';
 
 import { campoAlt, campoDescricaoSeo, campoImagemDeCompartilhamento } from './campos';
+import { anotacaoLink } from './corpo';
 
 // A bio aparece inteira na barra lateral, sem "leia mais": acima disso ela empurra a navegação.
 const TAMANHO_MAXIMO_DA_BIO = 200;
@@ -54,7 +55,8 @@ export const sobre = defineType({
           .error(`A bio curta precisa ter até ${TAMANHO_MAXIMO_DA_BIO} caracteres.`),
       ],
     }),
-    // Texto simples: parágrafos, subtítulos, listas, negrito, itálico e links.
+    // Texto simples, um pedaço do corpo do post (schemaTypes/corpo.ts): parágrafos, subtítulos, lista,
+    // negrito, itálico e link externo, para o /sobre reaproveitar o CorpoDoPost (#47).
     defineField({
       name: 'texto',
       title: 'Texto da página Sobre',
@@ -74,27 +76,7 @@ export const sobre = defineType({
               { title: 'Negrito', value: 'strong' },
               { title: 'Itálico', value: 'em' },
             ],
-            annotations: [
-              defineArrayMember({
-                name: 'link',
-                title: 'Link',
-                type: 'object',
-                fields: [
-                  defineField({
-                    name: 'href',
-                    title: 'Endereço',
-                    type: 'url',
-                    validation: (rule) =>
-                      rule
-                        .required()
-                        .uri({ scheme: ['http', 'https', 'mailto'], allowRelative: true })
-                        .error(
-                          'Cole um link completo (https://...), um e-mail ou um caminho do site.',
-                        ),
-                  }),
-                ],
-              }),
-            ],
+            annotations: [anotacaoLink],
           },
         }),
       ],

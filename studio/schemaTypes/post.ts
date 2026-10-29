@@ -14,9 +14,11 @@ import {
   campoAlt,
   campoDescricaoSeo,
   campoImagemDeCompartilhamento,
+  campoLegenda,
   campoSlug,
   campoTags,
 } from './campos';
+import { campoCorpo } from './corpo';
 import { campoFicha } from './ficha';
 
 // Acima disso o Google corta o título no resultado da busca.
@@ -215,15 +217,7 @@ export const post = defineType({
       description:
         'Aparece no topo do post, nos cards e quando o link é compartilhado. Depois de enviar, clique no lápis e marque a parte mais importante da imagem: os recortes do site mantêm essa parte à vista.',
       options: { hotspot: true },
-      fields: [
-        campoAlt,
-        defineField({
-          name: 'legenda',
-          title: 'Legenda ou crédito',
-          type: 'string',
-          description: 'Opcional. Por exemplo: "Foto: divulgação".',
-        }),
-      ],
+      fields: [campoAlt, campoLegenda],
       // Só o texto alternativo, sem a imagem, já conta como preenchido para o `required`.
       validation: (rule) =>
         rule
@@ -231,14 +225,7 @@ export const post = defineType({
           .custom((valor) => (valor?.asset ? true : 'Escolha a imagem de capa.'))
           .error('Escolha a imagem de capa.'),
     }),
-    // Só parágrafos por enquanto: estilos, links, imagens e citações saem na #22.
-    defineField({
-      name: 'corpo',
-      title: 'Texto',
-      type: 'array',
-      group: 'conteudo',
-      of: [defineArrayMember({ type: 'block' })],
-    }),
+    { ...campoCorpo, group: 'conteudo' },
     // O destaque da home não fica no post: é um só, escolhido em Configurações do site.
     { ...campoTags, group: 'conteudo' },
     defineField({
