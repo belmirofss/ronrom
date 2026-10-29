@@ -48,6 +48,15 @@ Escopos sugeridos (não obrigatórios, sempre em minúsculas): `infra`, `cms`, `
 
 Como o merge é sempre squash, **o título do PR vira a mensagem do commit na `main`**. Por isso ele é validado no CI pelo check `pr / titulo` ([`.github/workflows/pr-titulo.yml`](.github/workflows/pr-titulo.yml)): título fora do padrão deixa o check vermelho. Para corrigir, basta editar o título do PR; o check roda de novo sozinho. As mensagens dos commits dentro da branch seguem o mesmo padrão, mas não são validadas.
 
+## CI
+
+Todo PR e todo push na `main` rodam o [`ci.yml`](.github/workflows/ci.yml), com dois checks em paralelo:
+
+- `ci / quality`: `pnpm format:check`, `pnpm lint` e `pnpm check`.
+- `ci / build`: `pnpm build`, publicando `web/dist` como artifact `web-dist` por 3 dias.
+
+Para reproduzir localmente antes de abrir o PR, rode os mesmos comandos na raiz. Um push novo no PR cancela a execução anterior, para economizar a cota de minutos do Actions.
+
 ## Pull requests
 
 - Um PR por issue, com `Closes #<numero>` na descrição para fechar a issue no merge.
