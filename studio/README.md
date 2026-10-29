@@ -62,6 +62,7 @@ Um único tipo `post`, com o campo `tipo` (`review` ou `pensamento`), para que s
 | `categoria`        | Referência, obrigatória e visível só em review                                                                           |
 | `formato`          | Referência, obrigatória e visível só em pensamento                                                                       |
 | `nota`             | De meio a 5 corações, em passos de meio; obrigatória e visível só em review, recusada em pensamento                      |
+| `ficha`            | Dados técnicos da review, que mudam conforme o modelo de ficha da categoria; veja "Ficha da review" abaixo               |
 | `titulo`           | Obrigatório; aviso acima de 70 caracteres                                                                                |
 | `subtitulo`        | Opcional                                                                                                                 |
 | `slug`             | Gerado do título, obrigatório e único entre os posts                                                                     |
@@ -73,9 +74,22 @@ Um único tipo `post`, com o campo `tipo` (`review` ou `pensamento`), para que s
 | `seo`              | `titulo` (aviso acima de 60), `descricao` (aviso acima de 160), `imagem` (`alt` obrigatório se houver imagem), `noindex` |
 | `slugsAnteriores`  | Caminhos antigos do post, só leitura, dentro de "Avançado" na aba SEO                                                    |
 
-A ficha (#21) entra na aba Review. A lista de posts mostra a capa, o título e um subtítulo como "Review · Filmes · ♥♥♥½" ou "Pensamento · Frases soltas"; as funções puras por trás disso (caminho, slugs anteriores, data, corações) ficam em [`lib/post.ts`](lib/post.ts), com testes.
+A lista de posts mostra a capa, o título e um subtítulo como "Review · Filmes · ♥♥♥½" ou "Pensamento · Frases soltas"; as funções puras por trás disso (caminho, slugs anteriores, data, corações) ficam em [`lib/post.ts`](lib/post.ts), com testes.
 
 **Nota em corações.** A `nota` aparece nas abas Conteúdo e Review e usa o input de [`componentes/InputDeNota.tsx`](componentes/InputDeNota.tsx): 5 corações (vinho quando preenchido, contorno rosa quando vazio), em que clicar no coração grava a nota inteira e clicar na metade esquerda grava meio a menos (4º coração: `4`; metade esquerda dele: `3.5`). Passar o mouse pré-visualiza a nota, e o botão "Limpar" apaga. Por baixo são 10 radios nativos, de "meio coração" a "5 corações": as setas do teclado andam de meio em meio. As regras (valores aceitos, rótulos, validação) ficam em [`lib/nota.ts`](lib/nota.ts), com testes. A lista de posts mostra a nota em texto (♥ e ½), porque o Sanity só aceita texto no subtítulo da lista de documentos.
+
+**Ficha da review.** A `ficha` fica na aba Review e usa o input de [`componentes/FichaInput.tsx`](componentes/FichaInput.tsx). Como o `hidden` do Sanity não enxerga campos da categoria referenciada, o input lê `categoria._ref`, busca o `modeloFicha` dela (e escuta mudanças) e mostra só os campos daquele modelo. Sem categoria, mostra "Escolha a categoria para preencher a ficha." Os campos e as regras ficam em [`lib/ficha.ts`](lib/ficha.ts), com testes (a projeção GROQ é conferida com o `groq-js`):
+
+| Modelo   | Categorias                    | Campos (obrigatório em **negrito**)                                                                                                           |
+| -------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filme`  | Filmes                        | **`direcao`**, `ano`, `duracao` (minutos), `ondeVi` (`meio`: cinema ou streaming, `qual`)                                                     |
+| `serie`  | Séries                        | **`criacao`**, `anoDeEstreia`, `anoDeFim` (vazio se ainda está no ar), `temporadasVistas`, `ondeVi`                                           |
+| `livro`  | Livros                        | **`autoria`**, `editora`, `ano`, `paginas`, `formatoDoLivro` (`fisico`, `ebook` ou `audiobook`)                                               |
+| `lugar`  | Restaurantes e cafés, Lugares | `endereco` (**`rua`**, `bairro`, **`cidade`**, **`uf`**), `linkDoMapa`, `faixaDePreco` (R$ a R$$$$), `tipoDeCozinha`, `oQuePedi`, `instagram` |
+| `comida` | Comidas                       | `marca` (marca ou onde comprar), `preco` (reais), **`oQueProvei`**                                                                            |
+| todos    |                               | `valeAPena` (frase curta opcional)                                                                                                            |
+
+Os campos de todos os modelos ficam num objeto só e sem prefixo; os que têm o mesmo sentido em mais de um modelo (`ano`, `ondeVi`) têm o mesmo nome e continuam valendo ao trocar de categoria. Os obrigatórios são conferidos por uma validação que também busca o modelo da categoria. Ao trocar para uma categoria de outro modelo, nada é apagado em silêncio: o input lista os campos preenchidos que deixaram de valer e oferece o botão "Apagar esses campos". Eles ficam guardados, mas o site não os lê: as consultas usam o `FICHA_NO_GROQ` de `lib/ficha.ts` (`"ficha": ${FICHA_NO_GROQ}`), que devolve só os campos do modelo da categoria e `null` em pensamento ou sem ficha. A lista de campos foi aprovada na #1 e pode mudar depois do onboarding da autora (#31).
 
 **Endereço antigo.** O botão "Publicar" do post é envolvido por [`acoes/publicarPost.ts`](acoes/publicarPost.ts): ao publicar um post que já estava no ar com outro slug, categoria ou formato, ele guarda o caminho publicado (`/reviews/filmes/slug-antigo`) em `slugsAnteriores`, para a #53 gerar o redirect. Se a consulta ao Sanity falhar, o post não é publicado e a autora vê um aviso para tentar de novo. Mudar o slug, a categoria ou o formato de um post publicado mostra um aviso amarelo no campo, sem impedir a publicação.
 

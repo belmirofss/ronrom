@@ -11,6 +11,7 @@ import { API_VERSION } from '../env';
 import { problemaNaNota } from '../lib/nota';
 import { dataNoFuturo, subtituloDoPost, TIPOS_DE_POST } from '../lib/post';
 import { campoAlt, campoSlug, campoTags, TAMANHO_IDEAL_DA_DESCRICAO } from './campos';
+import { campoFicha } from './ficha';
 
 // Acima disso o Google corta o título no resultado da busca.
 const TAMANHO_IDEAL_DO_TITULO = 70;
@@ -142,6 +143,7 @@ export const post = defineType({
             problemaNaNota(contexto.document?.tipo, valor) ?? true,
         ),
     }),
+    { ...campoFicha, group: 'review' },
     defineField({
       name: 'titulo',
       title: 'Título',

@@ -3,7 +3,7 @@
 // documentos; os schemas usam a lista de modelos de ficha.
 
 // Qual "ficha" (bloco de dados técnicos) a review de cada categoria usa. Os campos de cada
-// modelo saem na #21.
+// modelo ficam em lib/ficha.ts.
 export const MODELOS_DE_FICHA = [
   { value: 'filme', title: 'Filme' },
   { value: 'serie', title: 'Série' },

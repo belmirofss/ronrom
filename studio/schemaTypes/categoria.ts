@@ -22,7 +22,7 @@ export const categoria = defineType({
       title: 'Modelo de ficha',
       type: 'string',
       description:
-        'Quais dados técnicos as reviews desta categoria mostram (diretor e elenco para filme, endereço para lugar...).',
+        'Quais dados técnicos as reviews desta categoria mostram (direção e ano para filme, endereço para lugar...).',
       options: { list: [...MODELOS_DE_FICHA], layout: 'radio' },
       validation: (rule) => rule.required().error('Escolha o modelo de ficha.'),
     }),
