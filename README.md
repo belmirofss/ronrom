@@ -63,7 +63,7 @@ Monorepo com workspaces do pnpm (`pnpm-workspace.yaml`):
 │       └── styles/         # CSS global e tokens
 ├── studio/                 # Sanity Studio (veja studio/README.md)
 │   └── schemaTypes/        # schemas de conteúdo
-├── docs/                   # documentação (ambientes e limites da Vercel)
+├── docs/                   # documentação (ambientes, limites da Vercel e política de URLs)
 └── scripts/                # scripts de infraestrutura (Ignored Build Step da Vercel)
 ```
 
@@ -71,7 +71,7 @@ Imports dentro de `web/src` usam o alias `@/*` (ex.: `import { NOME_DO_SITE } fr
 
 ## Deploy
 
-O site é publicado na Vercel: a `main` vai para produção em https://ronrom-blog.vercel.app e cada PR ganha um preview, com o link comentado no PR. Configuração, limites do plano Hobby e o que pula build estão em [`docs/ambientes.md`](docs/ambientes.md).
+O site é publicado na Vercel: a `main` vai para produção em https://ronrom-blog.vercel.app e cada PR ganha um preview, com o link comentado no PR. Configuração, limites do plano Hobby e o que pula build estão em [`docs/ambientes.md`](docs/ambientes.md). Rotas, slugs, barra no final e os helpers de URL estão em [`docs/seo-urls.md`](docs/seo-urls.md).
 
 ## Variáveis de ambiente
 
