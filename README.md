@@ -2,16 +2,71 @@
 
 [![ci](https://github.com/belmirofss/ronrom/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/belmirofss/ronrom/actions/workflows/ci.yml)
 
-Ronrom — blog de reviews e pensamentos (Astro + Sanity + Vercel)
+O **Ronrom** é um blog de reviews (filmes, séries, livros, restaurantes, lugares e comidas) e de pensamentos (artigos, textos, frases e opiniões). A autora escreve no Sanity Studio; o site é gerado pelo Astro e publicado na Vercel. Quem mantém o código é o dono do repositório; a autora só usa o Studio.
 
-Antes de abrir uma branch ou um PR, leia o [guia de contribuição](CONTRIBUTING.md) (convenções de commits, branches, PRs, labels e milestones).
+| O quê        | Onde                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------ |
+| Site         | https://ronrom-blog.vercel.app                                                       |
+| Studio       | https://ronrom.sanity.studio (publicado pela #12)                                    |
+| Vercel       | projeto `ronrom` no [painel da Vercel](https://vercel.com/dashboard), conta do dono  |
+| Sanity       | projeto "Ronrom" (`fq2685cq`) em [sanity.io/manage](https://www.sanity.io/manage)    |
+| CI           | [GitHub Actions](https://github.com/belmirofss/ronrom/actions)                       |
+| Planejamento | [issues](https://github.com/belmirofss/ronrom/issues) e milestones M1 a M5 no GitHub |
 
-## Requisitos
+## Stack
 
-- Node 22, a partir do 22.23.4 (versão em `.nvmrc`; a mesma linha 22 roda as funções na Vercel)
-- pnpm (versão fixada em `packageManager` no `package.json`; com o Corepack ou o próprio pnpm, a versão certa é usada automaticamente)
+- **Site** (`web/`): [Astro](https://astro.build) 7 com TypeScript no modo `strictest`, saída estática e só algumas rotas sob demanda numa Vercel Function ([ADR 0001](docs/adr/0001-site-estatico-com-rotas-sob-demanda.md)).
+- **CMS** (`studio/`): [Sanity Studio](https://www.sanity.io/docs/studio) 6, hospedado pelo Sanity. Conteúdo novo entra no site por rebuild ([ADR 0005](docs/adr/0005-rebuild-por-deploy-hook.md)).
+- **Hospedagem:** Vercel, plano Hobby, com preview em todo PR e produção na `main`.
+- **Ferramentas:** pnpm com workspaces ([ADR 0003](docs/adr/0003-pnpm-e-monorepo-web-studio.md)), ESLint e Prettier ([ADR 0002](docs/adr/0002-eslint-e-prettier-em-vez-de-biome.md)), GitHub Actions e Dependabot ([ADR 0004](docs/adr/0004-dependabot-para-atualizar-dependencias.md)).
 
-## Comandos
+## Pré-requisitos
+
+- **Node 22**, a partir do 22.23.4. A versão exata está no `.nvmrc`: com o [fnm](https://github.com/Schniz/fnm) ou o nvm, `fnm use` ou `nvm use` lê o arquivo (no nvm-windows, rode `nvm install 22.23.4` e `nvm use 22.23.4`).
+- **pnpm**, na versão fixada em `packageManager` no `package.json`. O jeito mais simples é o Corepack, que já vem com o Node 22: rode `corepack enable` uma vez e o `pnpm` certo é baixado sozinho.
+- **Git** com o `user.email` igual a um e-mail verificado na sua conta do GitHub. Sem isso, a Vercel bloqueia o deploy (veja o [guia de desenvolvimento](docs/desenvolvimento.md#deploy-bloqueado-pelo-autor-do-commit)).
+
+## Rodar localmente
+
+1. Clone o repositório e entre na pasta:
+
+   ```bash
+   git clone https://github.com/belmirofss/ronrom.git
+   ```
+
+   ```bash
+   cd ronrom
+   ```
+
+2. Instale as dependências na raiz. O `pnpm install` também instala o hook de pré-commit.
+
+   ```bash
+   pnpm install
+   ```
+
+3. (Opcional) Puxe as variáveis de ambiente da Vercel para `web/.env.local`. Só funciona com acesso ao projeto na Vercel; sem nenhuma variável, o site roda com as fixtures locais, sem Sanity e sem segredo. Dentro de `web/`, com a [Vercel CLI](https://vercel.com/docs/cli) logada na conta do dono:
+
+   ```bash
+   pnpm dlx vercel link --project ronrom
+   ```
+
+   ```bash
+   pnpm dlx vercel env pull .env.local
+   ```
+
+   Sem acesso à Vercel, copie `web/.env.example` para `web/.env` e preencha só o que precisar. Detalhes em [`docs/ambientes.md`](docs/ambientes.md#variáveis-de-ambiente).
+
+4. Na raiz, suba o site em http://localhost:4321:
+
+   ```bash
+   pnpm dev
+   ```
+
+Para o Studio, copie `studio/.env.example` para `studio/.env`, preencha o ID do projeto e rode `pnpm studio:dev` (http://localhost:3333). O passo a passo está em [`studio/README.md`](studio/README.md).
+
+Antes de abrir uma branch ou um PR, leia o [guia de contribuição](CONTRIBUTING.md) e o [guia de desenvolvimento](docs/desenvolvimento.md).
+
+## Scripts
 
 Rode na raiz do repositório:
 
@@ -30,13 +85,7 @@ Rode na raiz do repositório:
 | `pnpm format`        | Formata tudo com o Prettier                       |
 | `pnpm format:check`  | Confere a formatação sem alterar arquivos         |
 
-## Lint, formatação e hooks
-
-- **ESLint** (flat config em `eslint.config.js`) com `typescript-eslint`, `eslint-plugin-astro` e as regras de acessibilidade do `jsx-a11y` para `.astro`.
-- **Prettier** com `prettier-plugin-astro` formata `.astro`, `.ts`, `.mjs`, `.json`, `.md` e `.yaml` (config em `.prettierrc`).
-- **Pré-commit:** o `pnpm install` instala um hook (`simple-git-hooks`) que roda o `lint-staged`: `eslint --fix` e `prettier --write` só nos arquivos staged. Para pular numa emergência: `SKIP_SIMPLE_GIT_HOOKS=1 git commit ...`.
-- **Fim de linha:** `.gitattributes` e `.editorconfig` forçam LF, utf-8 e 2 espaços, inclusive no Windows.
-- **VS Code:** abra a pasta e instale as extensões recomendadas (Astro, ESLint, Prettier, EditorConfig); o arquivo é formatado ao salvar.
+Não há `pnpm preview`: o adapter da Vercel não suporta o comando. Teste as rotas sob demanda com o `pnpm dev` e o resto no preview do PR.
 
 ## Estrutura
 
@@ -46,6 +95,7 @@ Monorepo com workspaces do pnpm (`pnpm-workspace.yaml`):
 .
 ├── web/                    # site em Astro 7
 │   ├── public/             # arquivos servidos como estão (favicon etc.)
+│   ├── vercel.json         # install, build, Ignored Build Step e região na Vercel
 │   └── src/
 │       ├── assets/         # imagens e arquivos processados pelo build
 │       ├── components/
@@ -58,22 +108,25 @@ Monorepo com workspaces do pnpm (`pnpm-workspace.yaml`):
 │       │   ├── sanity/     # cliente e consultas do Sanity
 │       │   ├── utils/      # utilitários gerais
 │       │   └── views/      # contador de visualizações e ranking
-│       ├── pages/          # rotas do site
+│       ├── pages/          # rotas do site (api/ para as rotas sob demanda)
 │       └── styles/         # CSS global e tokens
 ├── studio/                 # Sanity Studio (veja studio/README.md)
 │   └── schemaTypes/        # schemas de conteúdo
-├── docs/                   # documentação (ambientes, limites da Vercel, política de URLs e ADRs)
-└── scripts/                # scripts de infraestrutura (Ignored Build Step da Vercel)
+├── docs/                   # documentação e ADRs (veja a tabela abaixo)
+├── scripts/                # scripts de infraestrutura (Ignored Build Step da Vercel)
+└── .github/                # CI, Dependabot e templates de issue e PR
 ```
 
 Imports dentro de `web/src` usam o alias `@/*` (ex.: `import { NOME_DO_SITE } from '@/lib/utils/site'`).
 
-## Deploy
+## Documentação
 
-O site é publicado na Vercel: a `main` vai para produção em https://ronrom-blog.vercel.app e cada PR ganha um preview, com o link comentado no PR. As páginas são estáticas; só as rotas com `export const prerender = false` (hoje, `/api/health`) rodam numa Vercel Function. Não há `pnpm preview`, porque o adapter da Vercel não suporta o comando: teste as rotas sob demanda com o `pnpm dev` e o resto no preview do PR. Configuração, limites do plano Hobby e o que pula build estão em [`docs/ambientes.md`](docs/ambientes.md). Rotas, slugs, barra no final e os helpers de URL estão em [`docs/seo-urls.md`](docs/seo-urls.md).
-
-## Variáveis de ambiente
-
-Nenhuma é necessária para rodar o site: sem o Sanity configurado, o build usa as fixtures locais. Para usar dados reais, copie `web/.env.example` para `web/.env` e preencha, ou puxe as da Vercel com `vercel env pull .env.local` dentro de `web/`.
-
-O schema tipado (`astro:env`) fica em `web/astro.config.mjs`. A lista completa, onde cada variável vive (local, Vercel por ambiente, GitHub) e quem é dona estão em [`docs/ambientes.md`](docs/ambientes.md#variáveis-de-ambiente). As do Studio (`SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET`) e os tokens do Sanity estão em [`studio/README.md`](studio/README.md) e em `studio/.env.example`.
+| Documento                                            | Conteúdo                                                                    |
+| ---------------------------------------------------- | --------------------------------------------------------------------------- |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md)                 | Convenções de branch, commit, PR, CI, Dependabot, labels e milestones       |
+| [`docs/desenvolvimento.md`](docs/desenvolvimento.md) | Dia a dia: checks locais, dependências, lint e hooks, solução de problemas  |
+| [`docs/ambientes.md`](docs/ambientes.md)             | Projeto na Vercel, saída estática, limites do Hobby e variáveis de ambiente |
+| [`docs/deploy.md`](docs/deploy.md)                   | Como uma mudança vai ao ar, como conferir, redeploy, rollback e rebuild     |
+| [`docs/seo-urls.md`](docs/seo-urls.md)               | Rotas, slugs, barra no final, URL base e helpers de URL                     |
+| [`docs/adr/`](docs/adr/README.md)                    | Decisões de arquitetura e infraestrutura, com contexto e consequências      |
+| [`studio/README.md`](studio/README.md)               | Studio: rodar, variáveis, tokens e configuração do projeto no Sanity        |
