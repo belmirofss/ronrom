@@ -1,0 +1,21 @@
+# dependências
+node_modules/
+
+# saída de build
+dist/
+.vercel/
+
+# tipos gerados pelo Astro
+.astro/
+
+# variáveis de ambiente (só o exemplo é versionado)
+.env*
+!.env.example
+
+# logs
+npm-debug.log*
+pnpm-debug.log*
+
+# sistema e editores
+.DS_Store
+.idea/
