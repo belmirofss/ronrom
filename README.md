@@ -77,6 +77,8 @@ Rode na raiz do repositório:
 | `pnpm build`         | Gera o site em `web/.vercel/output`               |
 | `pnpm check`         | Roda o `astro check` (diagnóstico de .astro e TS) |
 | `pnpm typecheck`     | Roda o `tsc --noEmit` no site e no Studio         |
+| `pnpm test`          | Roda os testes do site (Vitest) uma vez           |
+| `pnpm test:watch`    | Roda os testes do site a cada arquivo salvo       |
 | `pnpm studio:dev`    | Sobe o Sanity Studio em `http://localhost:3333`   |
 | `pnpm studio:build`  | Gera o Studio em `studio/dist`                    |
 | `pnpm studio:deploy` | Publica o Studio em `ronrom.sanity.studio`        |
@@ -96,6 +98,7 @@ Monorepo com workspaces do pnpm (`pnpm-workspace.yaml`):
 ├── web/                    # site em Astro 7
 │   ├── public/             # arquivos servidos como estão (favicon etc.)
 │   ├── vercel.json         # install, build, Ignored Build Step e região na Vercel
+│   ├── vitest.config.ts    # testes do site (veja docs/testes.md)
 │   └── src/
 │       ├── assets/         # imagens e arquivos processados pelo build
 │       ├── components/
@@ -128,6 +131,7 @@ Imports dentro de `web/src` usam o alias `@/*` (ex.: `import { NOME_DO_SITE } fr
 | [`docs/ambientes.md`](docs/ambientes.md)                  | Projeto na Vercel, saída estática, limites do Hobby e variáveis de ambiente |
 | [`docs/deploy.md`](docs/deploy.md)                        | Como uma mudança vai ao ar, como conferir, redeploy, rollback e rebuild     |
 | [`docs/seo-urls.md`](docs/seo-urls.md)                    | Rotas, slugs, barra no final, URL base e helpers de URL                     |
+| [`docs/testes.md`](docs/testes.md)                        | O que é testado no CI e o que é conferido à mão, e como escrever testes     |
 | [`docs/adr/`](docs/adr/README.md)                         | Decisões de arquitetura e infraestrutura, com contexto e consequências      |
 | [`web/README.md`](web/README.md#design-tokens-e-css-base) | Site: tokens de design, regra de contraste e carregamento da DM Sans        |
 | [`studio/README.md`](studio/README.md)                    | Studio: rodar, variáveis, tokens e configuração do projeto no Sanity        |

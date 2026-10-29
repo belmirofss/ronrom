@@ -23,16 +23,17 @@ Sem branch protection no plano Free do GitHub, nada impede um merge com check ve
 O CI roda estes comandos na raiz; rode os mesmos antes de abrir o PR:
 
 ```bash
-pnpm format:check && pnpm lint && pnpm check && pnpm build
+pnpm format:check && pnpm lint && pnpm check && pnpm test && pnpm build
 ```
 
-| Comando             | Check do CI    | O que pega                                                     |
-| ------------------- | -------------- | -------------------------------------------------------------- |
-| `pnpm format:check` | `ci / quality` | Arquivo fora do padrão do Prettier (corrija com `pnpm format`) |
-| `pnpm lint`         | `ci / quality` | Erros do ESLint, inclusive de acessibilidade em `.astro`       |
-| `pnpm check`        | `ci / quality` | Erros de tipo e diagnósticos do `astro check` no site          |
-| `pnpm build`        | `ci / build`   | Falha de build, variável de ambiente inválida, rota quebrada   |
-| `pnpm typecheck`    | nenhum         | Erros de tipo no Studio (o `astro check` só cobre o site)      |
+| Comando             | Check do CI    | O que pega                                                          |
+| ------------------- | -------------- | ------------------------------------------------------------------- |
+| `pnpm format:check` | `ci / quality` | Arquivo fora do padrão do Prettier (corrija com `pnpm format`)      |
+| `pnpm lint`         | `ci / quality` | Erros do ESLint, inclusive de acessibilidade em `.astro`            |
+| `pnpm check`        | `ci / quality` | Erros de tipo e diagnósticos do `astro check` no site               |
+| `pnpm test`         | `ci / unit`    | Teste unitário ou de componente quebrado ([`testes.md`](testes.md)) |
+| `pnpm build`        | `ci / build`   | Falha de build, variável de ambiente inválida, rota quebrada        |
+| `pnpm typecheck`    | nenhum         | Erros de tipo no Studio (o `astro check` só cobre o site)           |
 
 Mexeu no Studio? Rode também `pnpm typecheck` e `pnpm studio:build`, que o CI não roda.
 
