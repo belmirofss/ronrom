@@ -63,6 +63,27 @@ Para reproduzir localmente antes de abrir o PR, rode os mesmos comandos na raiz.
 - Preencha o checklist do template: build ok, acessibilidade revisada, prints mobile/desktop quando muda algo visual e o link do preview da Vercel.
 - Só **squash merge** está habilitado nas configurações do repositório (merge commit e rebase merge ficam desligados), e a branch é apagada depois do merge.
 
+## Dependências (Dependabot)
+
+O [Dependabot](.github/dependabot.yml) abre PRs uma vez por mês (fuso de São Paulo), no máximo 5 abertos por ecossistema (`npm`, que cobre o pnpm, e `github-actions`). Minor e patch vêm agrupados (`astro`, `sanity`, `lint`, `minor-e-patch` e `actions`); cada major vem num PR separado. Os PRs já saem com título `chore(deps): ...` e o label `tipo:chore`. Correções de segurança chegam fora do calendário, assim que um alerta aparece na aba Security.
+
+Não há auto-merge: revise e faça o squash merge à mão, só com o CI verde. Num major, leia o changelog antes. Para pedir algo ao bot, comente no PR (`@dependabot rebase`, `@dependabot recreate`). Se você der push na branch do bot, ele para de atualizar aquele PR.
+
+**Preview da Vercel bloqueado num PR do bot.** No Hobby, em repo privado, a Vercel só implanta commits cujo autor é o dono do time, então o preview de um PR do `dependabot[bot]` pode sair bloqueado. É esperado e não impede o merge:
+
+1. Confie no CI: typecheck, lint e build verdes bastam para patch e minor.
+2. Se precisar ver o site (um major do Astro, por exemplo), crie o preview você mesmo, com um commit seu na branch do bot:
+
+   ```bash
+   gh pr checkout <numero> && git commit --allow-empty -m "chore: dispara o preview" && git push
+   ```
+
+   O bot deixa de rebasear esse PR; se a `main` andar, use `@dependabot recreate` e repita.
+
+3. Depois do merge, confira se o deploy de produção saiu. Se foi bloqueado, use **Redeploy** no painel da Vercel.
+
+Os workflows disparados pelo Dependabot não recebem os secrets de Actions: um secret que o CI precise também deve ser cadastrado em **Settings → Secrets and variables → Dependabot**.
+
 ## Issues
 
 Use um dos templates (issues em branco estão desabilitadas):

@@ -1,0 +1,63 @@
+# Atualizações de dependências (#6). O merge é manual: sem branch protection no plano Free
+# não há auto-merge seguro, e o CI (#5) é quem valida os PRs do bot. Veja o CONTRIBUTING.md.
+version: 2
+
+updates:
+  # O ecossistema npm cobre o pnpm. O diretório é a raiz porque o pnpm-lock.yaml é único e o
+  # pnpm-workspace.yaml já traz web/ e studio/; a raiz ainda tem as dependências de lint.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 5
+    # O pnpm recusa versões publicadas há pouco (minimumReleaseAge); a espera evita PRs que
+    # quebram no install. Não vale para security updates.
+    cooldown:
+      default-days: 3
+    commit-message:
+      prefix: chore(deps)
+    labels:
+      - tipo:chore
+    # Só minor e patch entram nos grupos; cada major sai num PR separado. Um pacote cai no
+    # primeiro grupo que casar, então o "minor-e-patch" (o resto) fica por último.
+    groups:
+      astro:
+        patterns:
+          - astro
+          - '@astrojs/*'
+        update-types: [minor, patch]
+      sanity:
+        patterns:
+          - sanity
+          - '@sanity/*'
+          - groq
+        update-types: [minor, patch]
+      lint:
+        patterns:
+          - eslint*
+          - '@eslint/*'
+          - prettier*
+          - typescript-eslint
+        update-types: [minor, patch]
+      minor-e-patch:
+        patterns:
+          - '*'
+        update-types: [minor, patch]
+
+  # Atualiza o SHA fixado e o comentário de versão das actions nos workflows.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+    labels:
+      - tipo:chore
+    groups:
+      actions:
+        patterns:
+          - '*'
+        update-types: [minor, patch]
