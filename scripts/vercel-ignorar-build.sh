@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
 # "Ignored Build Step" da Vercel, chamado pelo web/vercel.json (roda dentro de web/).
 # Pela regra da Vercel, sair com 0 cancela o build e sair com 1 segue com ele.
-# Pula o deploy quando, desde o último deploy da branch, só mudaram docs/, studio/,
-# .github/ ou arquivos .md: nada disso entra no site, e cada build gasta cota do Hobby.
+# Pula o deploy de preview quando, desde o último deploy da branch, só mudaram docs/,
+# studio/, .github/ ou arquivos .md: nada disso entra no site, e cada build gasta cota do Hobby.
 set -u
+
+# Produção sempre builda. O deploy hook (#17) rebuilda o commit que já está no ar para
+# trazer conteúdo novo do Sanity, e a Vercel não diz ao script que o deploy veio do hook.
+# Comparar commits cancelaria esse build: sem commit novo, ou com só docs desde o último
+# deploy bom, o diff não acha nada que afete o site.
+if [ "${VERCEL_ENV:-}" = "production" ]; then
+  echo "Deploy de produção; segue com o build (pode ser conteúdo novo pelo deploy hook)."
+  exit 1
+fi
 
 base="${VERCEL_GIT_PREVIOUS_SHA:-}"
 

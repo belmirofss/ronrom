@@ -1,0 +1,38 @@
+# Rede de segurança do rebuild por conteúdo (#17, ADR 0005): uma vez por dia chama o Deploy
+# Hook da Vercel, que builda a main de novo com o conteúdo atual do Sanity. Cobre um webhook
+# do Sanity (#27) que tenha falhado. Não há agendamento de posts (#1), então uma vez basta.
+# A URL do hook é o secret VERCEL_DEPLOY_HOOK_URL; rotação em docs/deploy.md.
+name: rebuild-diario
+
+on:
+  schedule:
+    # 07:17 UTC = 04:17 em Brasília (sem horário de verão). Fora da hora cheia, quando o
+    # agendador do Actions atrasa mais.
+    - cron: '17 7 * * *'
+  # Rebuild manual (Actions → rebuild-diario → Run workflow), sem precisar de commit.
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  rebuild:
+    name: rebuild
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      # A Vercel responde na hora com o job PENDING; o build segue na Vercel, e um erro
+      # nele chega por e-mail ao dono, como em qualquer deploy.
+      - name: Dispara o deploy hook da Vercel
+        env:
+          HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK_URL" ]; then
+            echo "::error::Secret VERCEL_DEPLOY_HOOK_URL não cadastrado. Veja docs/deploy.md."
+            exit 1
+          fi
+          resposta=$(curl -fsS --retry 3 --retry-all-errors --max-time 30 -X POST "$HOOK_URL")
+          echo "$resposta" | jq -e '.job.id' > /dev/null || {
+            echo "::error::Resposta inesperada do deploy hook: $resposta"
+            exit 1
+          }
+          echo "$resposta" | jq -r '"Deploy pedido: job \(.job.id), estado \(.job.state)."'

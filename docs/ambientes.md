@@ -24,7 +24,7 @@ Install, build, Ignored Build Step e região das funções ficam versionados em 
 
 ### Ignored Build Step
 
-[`scripts/vercel-ignorar-build.sh`](../scripts/vercel-ignorar-build.sh) compara o commit com o último deploy da branch (`VERCEL_GIT_PREVIOUS_SHA`) e cancela o build quando só mudaram `docs/`, `studio/`, `.github/` ou arquivos `.md`. Na dúvida (primeiro deploy da branch ou commit anterior fora do clone raso), builda. O deploy cancelado aparece como `CANCELED` na Vercel e **ainda conta na cota diária**, mas não gasta minutos de build.
+[`scripts/vercel-ignorar-build.sh`](../scripts/vercel-ignorar-build.sh) só age nos previews: compara o commit com o último deploy da branch (`VERCEL_GIT_PREVIOUS_SHA`) e cancela o build quando só mudaram `docs/`, `studio/`, `.github/` ou arquivos `.md`. Produção (`VERCEL_ENV=production`) sempre builda, para não cancelar o rebuild de conteúdo pelo deploy hook ([por quê](deploy.md#por-que-a-produção-não-pula-o-build)). Na dúvida (primeiro deploy da branch ou commit anterior fora do clone raso), builda. O deploy cancelado aparece como `CANCELED` na Vercel e **ainda conta na cota diária**, mas não gasta minutos de build.
 
 ## Saída estática e rotas sob demanda
 

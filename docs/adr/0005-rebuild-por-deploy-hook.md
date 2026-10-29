@@ -25,5 +25,5 @@ Cada publicação, edição ou exclusão de conteúdo publicado no dataset `prod
 - Entre publicar e ver no ar passa o tempo de um build. A #17 mede e registra esse tempo em [`deploy.md`](../deploy.md).
 - Cada disparo é um deploy e conta na cota do Hobby (100 por dia e, no hook, até 60 disparos por hora). Disparos seguidos para o mesmo commit cancelam os anteriores daquele hook, então uma rajada de edições vira um build só.
 - A URL do hook é um segredo: quem a tiver dispara deploys de produção. Ela fica só no Sanity e nos secrets do GitHub, e a rotação está descrita em [`deploy.md`](../deploy.md#rotacionar-a-url-do-hook).
-- O hook rebuilda o commit que já está no ar, então o Ignored Build Step pode não achar mudança e cancelar o build. A #17 precisa testar e, se for o caso, ajustar o script.
+- O hook rebuilda o commit que já está no ar, e a Vercel não diz ao Ignored Build Step que o deploy veio do hook. Comparando commits, o script cancelaria o build. Por isso, desde a #17, a produção nunca pula o build: só os previews comparam commits ([`deploy.md`](../deploy.md#por-que-a-produção-não-pula-o-build)). O custo é um build de produção a cada merge só de docs.
 - O build fica mais longo à medida que o número de posts cresce. Se ele passar de alguns minutos, ou se a autora precisar ver mudanças na hora, vale reavaliar com ISR nas páginas de post.
