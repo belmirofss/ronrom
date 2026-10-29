@@ -213,7 +213,7 @@ Com `SITE_URL=https://ronrom-blog.vercel.app`:
 
 ## Campos do Sanity usados pela área de SEO
 
-Os nomes finais dos campos saem dos schemas (#18, #19, #21, #24); os do post já são os do [`studio/schemaTypes/post.ts`](../studio/schemaTypes/post.ts), os da ficha estão no [README do Studio](../studio/README.md#post), e os da autora ainda são os sugeridos nas issues. Toda consulta que alimenta uma página de post, listagem, sitemap, RSS ou JSON-LD traz o que estiver marcado para ela.
+Os nomes finais dos campos saem dos schemas (#18, #19, #21, #24); os do post já são os do [`studio/schemaTypes/post.ts`](../studio/schemaTypes/post.ts), os da ficha estão no [README do Studio](../studio/README.md#post), e os da autora e do site são os dos singletons [`sobre`](../studio/schemaTypes/sobre.ts) e [`configuracoes`](../studio/schemaTypes/configuracoes.ts). Toda consulta que alimenta uma página de post, listagem, sitemap, RSS ou JSON-LD traz o que estiver marcado para ela.
 
 | Campo                                                 | Documento                     | Usado em                                                            |
 | ----------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------- |
@@ -229,10 +229,15 @@ Os nomes finais dos campos saem dos schemas (#18, #19, #21, #24); os do post já
 | `capa{asset, alt, legenda, hotspot, crop}`            | post                          | `og:image` (1200×630 no hotspot), imagens do JSON-LD, RSS, cards    |
 | `seo{titulo, descricao, imagem{asset, alt}, noindex}` | post                          | Sobrescreve título, description e imagem; `noindex` tira do sitemap |
 | `dataDePublicacao`                                    | post                          | `article:published_time`, `datePublished`, ordenação, RSS `pubDate` |
-| `_updatedAt`                                          | post, autora                  | `article:modified_time`, `dateModified`, `lastmod` do sitemap       |
+| `_updatedAt`                                          | post, sobre                   | `article:modified_time`, `dateModified`, `lastmod` do sitemap       |
 | `nota` (0,5 a 5, em meios)                            | post (review)                 | `reviewRating` (#51), metadado e filtro da busca                    |
 | `ficha` (só os campos do `modeloFicha`)               | post (review)                 | `itemReviewed` tipado (#51), texto indexado pela busca              |
-| `corpo` (Portable Text)                               | post, sobre                   | Fallback da description (~155 caracteres), `wordCount`, busca       |
-| `autora{nome, bio, foto{asset, alt}, redes[]}`        | singleton da autora (#24)     | `Person` e `ProfilePage` (#50), com `redes[]` como `sameAs`         |
+| `corpo` (Portable Text)                               | post                          | Fallback da description (~155 caracteres), `wordCount`, busca       |
+| `texto` (Portable Text)                               | sobre                         | Conteúdo de `/sobre` (#47)                                          |
+| `nome`, `bio`, `foto{asset, alt, hotspot, crop}`      | sobre                         | `Person` e `ProfilePage` (#50), barra lateral (#38)                 |
+| `seo{descricao, imagem{asset, alt}}`                  | sobre, configuracoes          | Description e `og:image` de `/sobre` e o padrão do site             |
+| `redes[]{rede, url}`                                  | configuracoes                 | `sameAs` do `Person` (#50)                                          |
+| `fraseDaSemana{texto, autoria, data}`                 | configuracoes                 | Barra lateral (#38)                                                 |
+| `postEmDestaque->`                                    | configuracoes                 | Destaque da home (#44); vazio usa o post mais recente               |
 
 A nota vai de meio a 5 corações, em passos de meio (decidido na #1); o critério original da issue falava em 1–5.
