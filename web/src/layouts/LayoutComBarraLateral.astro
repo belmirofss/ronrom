@@ -1,0 +1,43 @@
+---
+import type { ComponentProps } from 'astro/types';
+import Container from '@/components/layout/Container.astro';
+import LayoutBase from '@/layouts/LayoutBase.astro';
+
+type Props = ComponentProps<typeof LayoutBase>;
+
+const temBarraLateral = Astro.slots.has('barra-lateral');
+---
+
+<LayoutBase {...Astro.props}>
+  <slot name="head" slot="head" />
+  <Container class:list={['com-barra-lateral', { 'com-barra-lateral--ativa': temBarraLateral }]}>
+    <div class="com-barra-lateral__conteudo">
+      <slot />
+    </div>
+    {temBarraLateral && (
+      <aside class="com-barra-lateral__aside">
+        <slot name="barra-lateral" />
+      </aside>
+    )}
+  </Container>
+</LayoutBase>
+
+<style>
+  /* Abaixo de ~960px a barra lateral (WEB-08, #38) cai para baixo do conteúdo. */
+  :global(.com-barra-lateral) {
+    display: grid;
+    gap: var(--espaco-7);
+    padding-block: var(--espaco-7);
+  }
+
+  @media (min-width: 60em) {
+    :global(.com-barra-lateral--ativa) {
+      grid-template-columns: minmax(0, 1fr) 20rem;
+    }
+  }
+
+  /* minmax(0, ...) e min-width: 0 impedem que conteúdo largo (tabela, código) estoure a grade. */
+  .com-barra-lateral__conteudo {
+    min-width: 0;
+  }
+</style>

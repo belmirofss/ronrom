@@ -1,0 +1,121 @@
+---
+import { STUDIO_URL } from 'astro:env/server';
+import Container from '@/components/layout/Container.astro';
+import { CATEGORIAS_PRINCIPAIS, SECOES } from '@/lib/navegacao';
+import { NOME_DO_SITE } from '@/lib/utils/site';
+
+// Ano do build no fuso de São Paulo (o site é estático e é rebuildado a cada publicação).
+const ano = new Intl.DateTimeFormat('pt-BR', {
+  year: 'numeric',
+  timeZone: 'America/Sao_Paulo',
+}).format(new Date());
+
+// Os grupos de links não ficam num <nav>: o único landmark de navegação é o do cabeçalho.
+const grupos = [
+  { titulo: 'Navegação', links: SECOES },
+  { titulo: 'Reviews', links: CATEGORIAS_PRINCIPAIS },
+];
+---
+
+<footer class="rodape">
+  <Container class="rodape__conteudo">
+    <a class="rodape__marca" href="/">
+      {NOME_DO_SITE}
+    </a>
+    {grupos.map(({ titulo, links }) => (
+      <div class="rodape__grupo">
+        <h2 class="rodape__titulo">{titulo}</h2>
+        <ul class="rodape__links">
+          {links.map(({ rotulo, href }) => (
+            <li>
+              <a href={href}>{rotulo}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+    <div class="rodape__fim">
+      <p>
+        © {ano} {NOME_DO_SITE}
+      </p>
+      {/* O Studio pede login: nofollow evita que buscadores sigam o link. */}
+      <a href={STUDIO_URL} rel="nofollow">
+        Área da autora
+      </a>
+    </div>
+  </Container>
+</footer>
+
+<style>
+  .rodape {
+    margin-block-start: var(--espaco-9);
+    background-color: var(--cor-creme);
+    color: var(--cor-texto);
+    font-size: var(--texto-sm);
+  }
+
+  .rodape :global(.rodape__conteudo) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: var(--espaco-6);
+    padding-block: var(--espaco-8) var(--espaco-6);
+  }
+
+  .rodape__marca {
+    display: inline-flex;
+    align-items: center;
+    align-self: start;
+    justify-self: start;
+    min-height: 44px;
+    color: var(--cor-texto);
+    font-size: var(--texto-2xl);
+    font-weight: var(--peso-negrito);
+    letter-spacing: var(--espacamento-titulo);
+    line-height: var(--altura-linha-titulo);
+    text-decoration: none;
+  }
+
+  .rodape__marca:hover {
+    color: var(--cor-vinho);
+  }
+
+  .rodape__titulo {
+    margin-block-end: var(--espaco-2);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-xs);
+    font-weight: var(--peso-medio);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .rodape__links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Cada link ocupa 44px de altura, o alvo de toque mínimo. */
+  .rodape__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .rodape__fim {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espaco-2) var(--espaco-5);
+    grid-column: 1 / -1;
+    padding-block-start: var(--espaco-5);
+    border-block-start: 1px solid color-mix(in srgb, var(--cor-texto-2) 25%, transparent);
+    color: var(--cor-texto-2);
+  }
+
+  .rodape__fim a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+</style>
