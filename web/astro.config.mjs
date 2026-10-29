@@ -8,7 +8,7 @@ const { SITE_URL } = loadEnv(process.env['NODE_ENV'] ?? 'production', process.cw
 
 // https://astro.build/config
 export default defineConfig({
-  site: SITE_URL || 'https://ronrom.vercel.app',
+  site: SITE_URL || 'https://ronrom-chi.vercel.app',
   // Decidido na #1: URLs sem barra no final.
   trailingSlash: 'never',
 });
