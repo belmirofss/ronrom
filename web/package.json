@@ -4,17 +4,17 @@
   "type": "module",
   "version": "0.0.1",
   "engines": {
-    "node": ">=22.23.4"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
     "check": "astro check",
     "typecheck": "astro sync && tsc --noEmit",
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/vercel": "^11.0.17",
     "astro": "^7.4.4"
   },
   "devDependencies": {
