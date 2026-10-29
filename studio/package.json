@@ -11,6 +11,8 @@
     "build": "sanity build",
     "deploy": "sanity deploy --url ronrom",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "taxonomia": "sanity exec scripts/criar-taxonomia.ts --with-user-token --",
     "sanity": "sanity"
   },
   "dependencies": {
@@ -24,6 +26,7 @@
   },
   "devDependencies": {
     "@types/react": "^19.3.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.5"
   }
 }

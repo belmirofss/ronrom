@@ -1,4 +1,7 @@
 import type { SchemaTypeDefinition } from 'sanity';
 
-// Os schemas de conteúdo entram nas próximas issues de CMS.
-export const schemaTypes: SchemaTypeDefinition[] = [];
+import { categoria } from './categoria';
+import { formato } from './formato';
+import { tag } from './tag';
+
+export const schemaTypes: SchemaTypeDefinition[] = [categoria, formato, tag];
