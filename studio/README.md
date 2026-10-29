@@ -17,9 +17,31 @@ Painel de edição do Ronrom, feito com o [Sanity Studio](https://www.sanity.io/
 
 Para outros comandos da CLI: `pnpm --filter studio sanity <comando>` (ex.: `pnpm --filter studio sanity login`).
 
-**Primeiro deploy:** o `pnpm studio:deploy` pergunta o hostname (use `ronrom`) e mostra o `appId` do Studio publicado. Coloque esse valor em `deployment.appId` no `sanity.cli.ts` e commite (o `appId` não é segredo). Assim os próximos deploys, inclusive no CI, não perguntam nada.
-
 `deployment.autoUpdates` fica desligado: o Studio publicado roda a versão do `pnpm-lock.yaml`, e atualizar o Sanity é um PR de dependência como outro qualquer.
+
+## Deploy
+
+O Studio publicado fica em `https://ronrom.sanity.studio` e edita o dataset `production`.
+
+- **Automático:** o workflow [`studio.yml`](../.github/workflows/studio.yml) roda `pnpm studio:deploy` a cada push na `main` que muda algo em `studio/`. Push que só mexe no site, na documentação ou nos workflows não redeploya. Para publicar sem commit, use Actions → studio → Run workflow.
+- **Manual:** na raiz, `pnpm studio:deploy`, com `sanity login` feito antes.
+
+O hostname vem do `--url ronrom` no script `deploy` do `studio/package.json`: o primeiro deploy registra o endereço e os seguintes reaproveitam, sem pergunta. Se um dia o nome mudar, troque ali.
+
+O dataset vem do [`studio/.env.production`](.env.production), versionado, que o `sanity build` e o `sanity deploy` leem por cima do `studio/.env`. Assim um deploy feito da sua máquina não publica um Studio apontando para `development`.
+
+O workflow precisa de dois valores em Settings → Secrets and variables → Actions:
+
+| Nome                       | Tipo     | Valor                                        |
+| -------------------------- | -------- | -------------------------------------------- |
+| `SANITY_AUTH_TOKEN`        | Secret   | Token `editor-deploy` (veja Tokens, abaixo)  |
+| `SANITY_STUDIO_PROJECT_ID` | Variable | O mesmo ID do projeto usado no `studio/.env` |
+
+## Idioma, marca e ferramentas
+
+- **pt-BR:** a interface usa o [`@sanity/locale-pt-br`](https://github.com/sanity-io/locales), ativado em `sanity.config.ts`.
+- **Marca:** o ícone do workspace (o gato do mosaico, simplificado) e o tema ficam em [`marca/`](marca). O tema usa vinho como cor primária e na barra de navegação, malva no lugar do cinza e a fonte DM Sans, carregada pelo pacote `@fontsource-variable/dm-sans` (sem depender do Google Fonts). Ele é montado com `buildLegacyTheme`, a única API de tema pública do Sanity 6, marcada como deprecated: ao atualizar o Sanity de major, confira se ela ainda existe.
+- **Vision** (playground de GROQ): só aparece no `pnpm studio:dev`. O Studio publicado não tem, porque a autora não precisa dele.
 
 ## Variáveis de ambiente
 

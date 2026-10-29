@@ -11,9 +11,9 @@ export default defineCliConfig({
     ...(dataset && { dataset }),
   },
   deployment: {
-    // O primeiro `sanity deploy` pergunta o hostname (ronrom → ronrom.sanity.studio) e mostra o
-    // appId do Studio publicado; ele entra aqui como `appId` para os deploys seguintes e o CI.
-    // Desligado para o Studio publicado rodar a mesma versão do pnpm-lock.yaml, que passou
+    // O hostname (ronrom.sanity.studio) vai no `--url` do script `deploy` do package.json:
+    // o primeiro deploy registra o endereço e os seguintes o reaproveitam, sem pergunta.
+    // autoUpdates desligado para o Studio publicado rodar a mesma versão do pnpm-lock.yaml, que passou
     // pelo CI. Atualizar o Sanity é um PR comum de dependência.
     autoUpdates: false,
   },

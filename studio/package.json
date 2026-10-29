@@ -9,11 +9,13 @@
   "scripts": {
     "dev": "sanity dev",
     "build": "sanity build",
-    "deploy": "sanity deploy",
+    "deploy": "sanity deploy --url ronrom",
     "typecheck": "tsc --noEmit",
     "sanity": "sanity"
   },
   "dependencies": {
+    "@fontsource-variable/dm-sans": "^5.3.0",
+    "@sanity/locale-pt-br": "1.1.37",
     "@sanity/vision": "^6.20.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
