@@ -11,6 +11,8 @@
     "build": "pnpm --filter web build",
     "check": "pnpm --filter web check",
     "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:watch": "pnpm --filter web test:watch",
     "studio:dev": "pnpm --filter studio dev",
     "studio:build": "pnpm --filter studio build",
     "studio:deploy": "pnpm --filter studio run deploy",

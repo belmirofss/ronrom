@@ -50,9 +50,10 @@ Como o merge é sempre squash, **o título do PR vira a mensagem do commit na `m
 
 ## CI
 
-Todo PR e todo push na `main` rodam o [`ci.yml`](.github/workflows/ci.yml), com dois checks em paralelo:
+Todo PR e todo push na `main` rodam o [`ci.yml`](.github/workflows/ci.yml), com três checks em paralelo:
 
 - `ci / quality`: `pnpm format:check`, `pnpm lint` e `pnpm check`.
+- `ci / unit`: `pnpm test` (Vitest; o que é testado em [`docs/testes.md`](docs/testes.md)).
 - `ci / build`: `pnpm build`, publicando as páginas estáticas (`web/dist/client`) como artifact `web-dist` por 3 dias.
 
 Para reproduzir localmente antes de abrir o PR, rode os mesmos comandos na raiz. Um push novo no PR cancela a execução anterior, para economizar a cota de minutos do Actions.

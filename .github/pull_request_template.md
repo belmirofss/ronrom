@@ -14,7 +14,7 @@ Closes #
 
 ## Checklist
 
-- [ ] `pnpm build` passa localmente (e `pnpm lint` / `pnpm check`)
+- [ ] `pnpm build` passa localmente (e `pnpm lint` / `pnpm check` / `pnpm test`)
 - [ ] Acessibilidade revisada (teclado, foco visível, contraste, textos alternativos)
 - [ ] Prints em mobile e desktop anexados (se mudou algo visual)
 - [ ] Documentação atualizada (README, `docs/`, ADR), se mexeu em infra, scripts, variáveis ou dependências de build
