@@ -1,0 +1,87 @@
+/*
+ * Tokens de design do layout "Caderno". É o único arquivo do site com cores em hexadecimal:
+ * componentes e páginas usam sempre as custom properties abaixo.
+ * Contrastes (WCAG 2.1) e regras de uso: web/README.md.
+ */
+
+:root {
+  /* Cores */
+  --cor-fundo: #fbf5f1;
+  --cor-texto: #2e1220;
+  --cor-texto-2: #6b4655;
+  --cor-vinho: #7c0e44;
+  --cor-vinho-hover: #4f0729;
+  /* Só decorativo (formas, ícones grandes, detalhes). Proibido em texto: 4,23:1 no fundo. */
+  --cor-malva: #aa5e7a;
+  /* Só decorativo ou em texto grande sobre vinho (4,44:1). Nunca em texto sobre fundo claro. */
+  --cor-rosa: #d49a9a;
+  --cor-creme: #f2dace;
+  --cor-borda: #ebd3c8;
+
+  /* Fontes. --fonte-dm-sans é gerada pelo componente <Font> (astro.config.mjs) e já inclui a
+     fonte de fallback com métricas ajustadas. */
+  --fonte-texto: var(--fonte-dm-sans, Arial, sans-serif);
+
+  --peso-regular: 400;
+  --peso-medio: 500;
+  --peso-negrito: 700;
+
+  /* Escala tipográfica fluida: do valor mínimo (viewport de 360px) ao máximo (1280px). */
+  --texto-xs: clamp(0.8125rem, 0.788rem + 0.1087vw, 0.875rem); /* 13 → 14px */
+  --texto-sm: clamp(0.875rem, 0.8505rem + 0.1087vw, 0.9375rem); /* 14 → 15px */
+  --texto-base: clamp(1rem, 0.9755rem + 0.1087vw, 1.0625rem); /* 16 → 17px */
+  --texto-lg: clamp(1.125rem, 1.0761rem + 0.2174vw, 1.25rem); /* 18 → 20px */
+  --texto-xl: clamp(1.25rem, 1.1522rem + 0.4348vw, 1.5rem); /* 20 → 24px */
+  --texto-2xl: clamp(1.5rem, 1.3043rem + 0.8696vw, 2rem); /* 24 → 32px */
+  --texto-3xl: clamp(1.875rem, 1.5326rem + 1.5217vw, 2.75rem); /* 30 → 44px */
+  --texto-4xl: clamp(2.25rem, 1.663rem + 2.6087vw, 3.75rem); /* 36 → 60px */
+  /* O título gigante "Ronrom" da home. */
+  --texto-ronrom: clamp(4rem, 1.2609rem + 12.1739vw, 11rem); /* 64 → 176px */
+  /* Corpo do post: fixo em 18px, para a leitura longa não variar com a largura. */
+  --texto-post: 1.125rem;
+
+  --altura-linha-ronrom: 0.9;
+  --altura-linha-titulo: 1.15;
+  --altura-linha-base: 1.5;
+  --altura-linha-post: 1.75;
+
+  --espacamento-ronrom: -0.04em;
+  --espacamento-titulo: -0.015em;
+
+  /* Layout */
+  --container-max: 1120px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --coluna-leitura: 720px;
+
+  /* Espaçamento (múltiplos de 4px) */
+  --espaco-1: 0.25rem; /* 4px */
+  --espaco-2: 0.5rem; /* 8px */
+  --espaco-3: 0.75rem; /* 12px */
+  --espaco-4: 1rem; /* 16px */
+  --espaco-5: 1.5rem; /* 24px */
+  --espaco-6: 2rem; /* 32px */
+  --espaco-7: 3rem; /* 48px */
+  --espaco-8: 4rem; /* 64px */
+  --espaco-9: 6rem; /* 96px */
+  --espaco-10: 8rem; /* 128px */
+
+  /* Raio */
+  --raio-sm: 4px;
+  --raio-md: 8px;
+  --raio-lg: 16px;
+  --raio-pilula: 999px;
+
+  /* Sombra: tons do próprio --cor-texto, para não acinzentar o fundo creme. */
+  --sombra-sm: 0 1px 2px color-mix(in srgb, var(--cor-texto) 8%, transparent);
+  --sombra-md:
+    0 2px 4px color-mix(in srgb, var(--cor-texto) 6%, transparent),
+    0 4px 12px color-mix(in srgb, var(--cor-texto) 8%, transparent);
+  --sombra-lg:
+    0 4px 8px color-mix(in srgb, var(--cor-texto) 6%, transparent),
+    0 12px 32px color-mix(in srgb, var(--cor-texto) 12%, transparent);
+
+  /* Foco. Sobre fundos vinho, a classe .superficie-vinho troca a cor para creme. */
+  --foco-cor: var(--cor-vinho);
+  --foco-largura: 3px;
+  --foco-offset: 2px;
+}

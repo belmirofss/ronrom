@@ -1,6 +1,8 @@
 ---
+import { Font } from 'astro:assets';
 import { IDIOMA } from '@/lib/utils/site';
 import { tituloDaPagina } from '@/lib/utils/titulo';
+import '@/styles/global.css';
 
 interface Props {
   titulo?: string;
@@ -17,6 +19,8 @@ const { titulo } = Astro.props;
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>{tituloDaPagina(titulo)}</title>
+    {/* Preload só do peso 400 (o do texto corrido); 500 e 700 carregam sob demanda. */}
+    <Font cssVariable="--fonte-dm-sans" preload={[{ weight: 400, style: 'normal' }]} />
   </head>
   <body>
     <slot />

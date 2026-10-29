@@ -121,12 +121,13 @@ Imports dentro de `web/src` usam o alias `@/*` (ex.: `import { NOME_DO_SITE } fr
 
 ## Documentação
 
-| Documento                                            | Conteúdo                                                                    |
-| ---------------------------------------------------- | --------------------------------------------------------------------------- |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md)                 | Convenções de branch, commit, PR, CI, Dependabot, labels e milestones       |
-| [`docs/desenvolvimento.md`](docs/desenvolvimento.md) | Dia a dia: checks locais, dependências, lint e hooks, solução de problemas  |
-| [`docs/ambientes.md`](docs/ambientes.md)             | Projeto na Vercel, saída estática, limites do Hobby e variáveis de ambiente |
-| [`docs/deploy.md`](docs/deploy.md)                   | Como uma mudança vai ao ar, como conferir, redeploy, rollback e rebuild     |
-| [`docs/seo-urls.md`](docs/seo-urls.md)               | Rotas, slugs, barra no final, URL base e helpers de URL                     |
-| [`docs/adr/`](docs/adr/README.md)                    | Decisões de arquitetura e infraestrutura, com contexto e consequências      |
-| [`studio/README.md`](studio/README.md)               | Studio: rodar, variáveis, tokens e configuração do projeto no Sanity        |
+| Documento                                                 | Conteúdo                                                                    |
+| --------------------------------------------------------- | --------------------------------------------------------------------------- |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md)                      | Convenções de branch, commit, PR, CI, Dependabot, labels e milestones       |
+| [`docs/desenvolvimento.md`](docs/desenvolvimento.md)      | Dia a dia: checks locais, dependências, lint e hooks, solução de problemas  |
+| [`docs/ambientes.md`](docs/ambientes.md)                  | Projeto na Vercel, saída estática, limites do Hobby e variáveis de ambiente |
+| [`docs/deploy.md`](docs/deploy.md)                        | Como uma mudança vai ao ar, como conferir, redeploy, rollback e rebuild     |
+| [`docs/seo-urls.md`](docs/seo-urls.md)                    | Rotas, slugs, barra no final, URL base e helpers de URL                     |
+| [`docs/adr/`](docs/adr/README.md)                         | Decisões de arquitetura e infraestrutura, com contexto e consequências      |
+| [`web/README.md`](web/README.md#design-tokens-e-css-base) | Site: tokens de design, regra de contraste e carregamento da DM Sans        |
+| [`studio/README.md`](studio/README.md)                    | Studio: rodar, variáveis, tokens e configuração do projeto no Sanity        |
