@@ -77,6 +77,10 @@ Deve responder `200`, `cache-control: no-store` e o hash do commit que está no 
 curl -sI https://ronrom-blog.vercel.app/
 ```
 
+### Conferir no preview
+
+O link do preview está no comentário da Vercel no PR. Por causa da Vercel Authentication, um `curl` sem login recebe `302` para o SSO da Vercel (já com `x-robots-tag: noindex`). Abra `<url-do-preview>/api/health` no navegador logado na conta da Vercel: deve mostrar `{ "ok": true, "commit": "<sha>" }` com o hash do último commit do PR. Para conferir por script (os testes E2E da #49), use o cabeçalho `x-vercel-protection-bypass` com o segredo da Protection Bypass for Automation.
+
 ## Limites do Hobby
 
 Conferidos em **29/10/2026** em [vercel.com/docs/limits](https://vercel.com/docs/limits), [vercel.com/docs/plans/hobby](https://vercel.com/docs/plans/hobby), [vercel.com/docs/deployment-retention](https://vercel.com/docs/deployment-retention) e [fair use](https://vercel.com/docs/limits/fair-use-guidelines). Reconfira antes de decisões que dependam deles.
