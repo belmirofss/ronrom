@@ -1,0 +1,87 @@
+---
+import Container from '@/components/layout/Container.astro';
+import { estadoDaSecao, SECOES } from '@/lib/navegacao';
+import { NOME_DO_SITE } from '@/lib/utils/site';
+
+const { pathname } = Astro.url;
+---
+
+<header class="cabecalho">
+  <Container class="cabecalho__conteudo">
+    <a class="cabecalho__marca" href="/">
+      {NOME_DO_SITE}
+    </a>
+    <nav aria-label="Principal">
+      <ul class="cabecalho__secoes">
+        {SECOES.map(({ rotulo, href }) => (
+          <li>
+            <a class="cabecalho__link" href={href} aria-current={estadoDaSecao(href, pathname)}>
+              {rotulo}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </Container>
+</header>
+
+<style>
+  .cabecalho {
+    border-block-end: 1px solid var(--cor-borda);
+  }
+
+  .cabecalho :global(.cabecalho__conteudo) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    column-gap: var(--espaco-6);
+    padding-block: var(--espaco-3);
+  }
+
+  .cabecalho__marca {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--cor-texto);
+    font-size: var(--texto-xl);
+    font-weight: var(--peso-negrito);
+    letter-spacing: var(--espacamento-titulo);
+    text-decoration: none;
+  }
+
+  .cabecalho__marca:hover {
+    color: var(--cor-vinho);
+  }
+
+  /* No celular os 4 links ficam sempre visíveis (sem menu hambúrguer): a lista quebra linha
+     se não couber. O recuo negativo alinha o texto do primeiro link com a marca. */
+  .cabecalho__secoes {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 calc(-1 * var(--espaco-3));
+    padding: 0;
+    list-style: none;
+  }
+
+  .cabecalho__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--espaco-3);
+    color: var(--cor-texto);
+    font-weight: var(--peso-medio);
+    text-decoration: none;
+  }
+
+  .cabecalho__link:hover {
+    color: var(--cor-vinho-hover);
+    text-decoration-line: underline;
+  }
+
+  .cabecalho__link[aria-current] {
+    color: var(--cor-vinho);
+    text-decoration-line: underline;
+    text-decoration-thickness: 0.12em;
+  }
+</style>

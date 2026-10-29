@@ -90,6 +90,14 @@ export default defineConfig({
         url: true,
         ...(ehProducao ? {} : { optional: true, default: urlDoSite }),
       }),
+      // Link "Área da autora" do rodapé (#15): o Studio publicado pelo Sanity (#12).
+      STUDIO_URL: envField.string({
+        context: 'server',
+        access: 'public',
+        url: true,
+        optional: true,
+        default: 'https://ronrom.sanity.studio',
+      }),
 
       // Obrigatórias em produção. Fora dela, sem as duas, o site usa as fixtures.
       SANITY_PROJECT_ID: envField.string({

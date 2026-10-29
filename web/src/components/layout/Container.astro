@@ -1,0 +1,30 @@
+---
+import type { HTMLTag } from 'astro/types';
+
+interface Props {
+  /** Elemento HTML do container. Padrão: div. */
+  as?: HTMLTag;
+  /** "padrao" usa --container-max; "leitura", a coluna de texto do post (--coluna-leitura). */
+  largura?: 'padrao' | 'leitura';
+  class?: string;
+}
+
+const { as: Elemento = 'div', largura = 'padrao', class: classe } = Astro.props;
+---
+
+<Elemento class:list={['container', { 'container--leitura': largura === 'leitura' }, classe]}>
+  <slot />
+</Elemento>
+
+<style>
+  .container {
+    width: 100%;
+    max-width: calc(var(--container-max) + 2 * var(--gutter));
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .container--leitura {
+    max-width: calc(var(--coluna-leitura) + 2 * var(--gutter));
+  }
+</style>

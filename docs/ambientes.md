@@ -121,6 +121,7 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 | Variável                | Tipo    | Obrigatória     | Local (`web/.env*`) | Vercel Production                 | Vercel Preview e Development | GitHub Actions           | Dona         |
 | ----------------------- | ------- | --------------- | ------------------- | --------------------------------- | ---------------------------- | ------------------------ | ------------ |
 | `SITE_URL`              | pública | em produção     | opcional            | `https://ronrom-blog.vercel.app`  | não definida (\*)            | variável, não cadastrada | `area:infra` |
+| `STUDIO_URL`            | pública | não (padrão)    | opcional            | não definida                      | não definida                 | não usada                | `area:cms`   |
 | `SANITY_PROJECT_ID`     | pública | em produção     | opcional            | `fq2685cq`                        | `fq2685cq`                   | não usada (fixtures)     | `area:cms`   |
 | `SANITY_DATASET`        | pública | em produção     | opcional            | `production`                      | `development`                | não usada (fixtures)     | `area:cms`   |
 | `SANITY_API_VERSION`    | pública | não (padrão)    | opcional            | não definida                      | não definida                 | não usada                | `area:cms`   |
@@ -134,6 +135,7 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 
 **Dona** é a área (label) que decide o nome, o formato e o valor da variável. Quem cadastra segredos na Vercel e no GitHub é sempre o dono do repositório, porque o valor não deve passar por outras mãos.
 
+- **`STUDIO_URL`** é o link "Área da autora" do rodapé (#15). O padrão (`https://ronrom.sanity.studio`) é o Studio publicado; só precisa ser cadastrada se o Studio mudar de endereço.
 - **`SANITY_API_READ_TOKEN`** é o token `viewer` do Sanity, só para o preview de rascunhos (#43). Sem ele, o site lê só o conteúdo publicado. Cadastrado na Vercel como **Secret** em Production e Preview (29/10/2026).
 - **`KV_REST_API_URL` e `KV_REST_API_TOKEN`** são os nomes que o `Redis.fromEnv()` do `@upstash/redis` lê. A #56 confere, ao instalar o Upstash Redis pelo Marketplace, se a integração injeta exatamente esses nomes; se não, renomeia no schema, no `.env.example` e aqui.
 - **`VERCEL_GIT_COMMIT_SHA`** é variável de sistema da Vercel, sem cadastro. Entra no schema só para o `/api/health` ler o commit pelo `astro:env`.

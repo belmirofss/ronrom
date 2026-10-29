@@ -1,5 +1,7 @@
 ---
 import { Font } from 'astro:assets';
+import Cabecalho from '@/components/layout/Cabecalho.astro';
+import Rodape from '@/components/layout/Rodape.astro';
 import { IDIOMA } from '@/lib/utils/site';
 import { tituloDaPagina } from '@/lib/utils/titulo';
 import '@/styles/global.css';
@@ -21,8 +23,47 @@ const { titulo } = Astro.props;
     <title>{tituloDaPagina(titulo)}</title>
     {/* Preload só do peso 400 (o do texto corrido); 500 e 700 carregam sob demanda. */}
     <Font cssVariable="--fonte-dm-sans" preload={[{ weight: 400, style: 'normal' }]} />
+    {/* Metadados da página (o componente <Seo> da #32 entra aqui). */}
+    <slot name="head" />
   </head>
   <body>
-    <slot />
+    {/* Primeiro elemento focável: aparece só com o foco e leva o foco para o <main>. */}
+    <a class="pular-para-conteudo superficie-vinho visualmente-oculto" href="#conteudo">
+      Pular para o conteúdo
+    </a>
+    <Cabecalho />
+    {/* tabindex="-1" deixa o <main> receber o foco pelo link acima. */}
+    <main id="conteudo" tabindex="-1">
+      <slot />
+    </main>
+    <Rodape />
   </body>
 </html>
+
+<style>
+  /* O rodapé fica no fim da tela mesmo em páginas curtas. */
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  main {
+    flex: 1;
+  }
+
+  /* O <main> só recebe foco pelo link de pular, não é interativo: sem anel de foco. */
+  main:focus {
+    outline: none;
+  }
+
+  .pular-para-conteudo:focus {
+    position: absolute;
+    z-index: 100;
+    inset-block-start: var(--espaco-2);
+    inset-inline-start: var(--espaco-2);
+    padding: var(--espaco-3) var(--espaco-4);
+    border-radius: var(--raio-md);
+    box-shadow: var(--sombra-md);
+    font-weight: var(--peso-medio);
+  }
+</style>
