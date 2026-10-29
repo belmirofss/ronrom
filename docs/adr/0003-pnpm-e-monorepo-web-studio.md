@@ -23,7 +23,7 @@ Um monorepo com workspaces do pnpm: o site em `web/` e o Studio em `studio/`, li
 ## Consequências
 
 - Uma mudança de schema e a consulta que a usa entram no mesmo PR, e o typegen lê as consultas direto de `web/`.
-- A Vercel builda só `web/` (Root Directory). O Ignored Build Step pula deploys quando só `studio/` mudou, e o Studio é publicado à parte (#12).
+- A Vercel builda só `web/` (Root Directory). O Ignored Build Step pula deploys de preview quando só `studio/` mudou (a produção sempre builda, desde a #17), e o Studio é publicado à parte (#12).
 - Um lockfile só: o Dependabot olha a raiz, e uma atualização do Sanity que afete os dois lados chega num PR só.
 - Todo comando de dependência precisa de `--filter` (`pnpm --filter web add ...`); um `pnpm add` sem filtro na raiz falha ou instala no lugar errado.
 - O lockfile depende da versão exata do pnpm. Gerá-lo com outra versão já quebrou o `--frozen-lockfile` do CI (#79); usar o Corepack evita isso.

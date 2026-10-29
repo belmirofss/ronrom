@@ -60,6 +60,8 @@ Para reproduzir localmente antes de abrir o PR, rode os mesmos comandos na raiz.
 
 O [`studio.yml`](.github/workflows/studio.yml) publica o Studio em `ronrom.sanity.studio` a cada push na `main` que muda `studio/` (veja o [README do Studio](studio/README.md#deploy)).
 
+O [`rebuild-diario.yml`](.github/workflows/rebuild-diario.yml) chama o deploy hook da Vercel todo dia às 04:17 (Brasília) e pode ser rodado à mão em Actions → rebuild-diario → Run workflow. Ele precisa do secret `VERCEL_DEPLOY_HOOK_URL` (veja o [deploy](docs/deploy.md#conteúdo-rebuild-ao-publicar)).
+
 ## Pull requests
 
 - Um PR por issue, com `Closes #<numero>` na descrição para fechar a issue no merge.
