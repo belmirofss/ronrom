@@ -18,6 +18,27 @@ const LARGURAS = [
   { value: 'larga', title: 'Larga' },
 ];
 
+// Link externo. Também usado no texto da página Sobre (schemaTypes/sobre.ts).
+export const anotacaoLink = defineArrayMember({
+  name: 'link',
+  title: 'Link externo',
+  type: 'object',
+  icon: LinkIcon,
+  fields: [
+    defineField({
+      name: 'href',
+      title: 'Endereço',
+      type: 'url',
+      description: 'O link completo, como https://www.imdb.com, ou mailto:nome@email.com.',
+      validation: (rule) =>
+        rule
+          .required()
+          .uri({ scheme: ESQUEMAS_DO_LINK_EXTERNO })
+          .error('Cole o link completo, começando com https://, ou um e-mail com mailto:.'),
+    }),
+  ],
+});
+
 // Texto corrido. Só o que o layout "Caderno" do site sabe mostrar (WEB-09): sem h1, porque o
 // título do post já é o h1, e sem sublinhado nem código, que o editor traz ligados por padrão.
 const bloco = defineArrayMember({
@@ -38,25 +59,7 @@ const bloco = defineArrayMember({
       { value: 'em', title: 'Itálico', icon: ItalicIcon },
     ],
     annotations: [
-      defineArrayMember({
-        name: 'link',
-        title: 'Link externo',
-        type: 'object',
-        icon: LinkIcon,
-        fields: [
-          defineField({
-            name: 'href',
-            title: 'Endereço',
-            type: 'url',
-            description: 'O link completo, como https://www.imdb.com, ou mailto:nome@email.com.',
-            validation: (rule) =>
-              rule
-                .required()
-                .uri({ scheme: ESQUEMAS_DO_LINK_EXTERNO })
-                .error('Cole o link completo, começando com https://, ou um e-mail com mailto:.'),
-          }),
-        ],
-      }),
+      anotacaoLink,
       // Guarda a referência, não o endereço: o link continua certo se o post de destino mudar de
       // slug, categoria ou formato. O caminho é montado no build, pelo CORPO_NO_GROQ.
       defineArrayMember({

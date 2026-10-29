@@ -120,6 +120,40 @@ export const campoAlt = defineField({
     }),
 });
 
+// Description de uma página no Google e ao compartilhar (aba SEO do post, Sobre e configurações).
+// `obrigatoria` avisa, sem impedir a publicação, quando fica vazia.
+export function campoDescricaoSeo(description: string, obrigatoria = false) {
+  return defineField({
+    name: 'descricao',
+    title: 'Descrição',
+    type: 'text',
+    rows: 3,
+    description,
+    validation: (rule) => [
+      ...(obrigatoria
+        ? [rule.required().warning('Sem descrição, o Google escolhe sozinho um trecho da página.')]
+        : []),
+      rule
+        .max(TAMANHO_IDEAL_DA_DESCRICAO)
+        .warning(
+          `Acima de ${TAMANHO_IDEAL_DA_DESCRICAO} caracteres, o Google corta o fim da descrição.`,
+        ),
+    ],
+  });
+}
+
+// Imagem do link compartilhado no WhatsApp, Instagram e outras redes.
+export function campoImagemDeCompartilhamento(description: string) {
+  return defineField({
+    name: 'imagem',
+    title: 'Imagem de compartilhamento',
+    type: 'image',
+    description,
+    options: { hotspot: true },
+    fields: [campoAlt],
+  });
+}
+
 // Legenda opcional de uma imagem, na capa e no texto do post.
 export const campoLegenda = defineField({
   name: 'legenda',

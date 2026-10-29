@@ -41,14 +41,16 @@ O token precisa do papel **Deploy Studio** (ou Administrator). Com Editor, o dep
 
 ## Schemas
 
-Ficam em [`schemaTypes/`](schemaTypes); campos repetidos (nome, slug, descrição, ordem, tags, texto alternativo, legenda) em [`schemaTypes/campos.ts`](schemaTypes/campos.ts).
+Ficam em [`schemaTypes/`](schemaTypes); campos repetidos (nome, slug, descrição, ordem, tags, texto alternativo, legenda, descrição e imagem de SEO) em [`schemaTypes/campos.ts`](schemaTypes/campos.ts).
 
-| Tipo        | Campos                                              | Observação                                                     |
-| ----------- | --------------------------------------------------- | -------------------------------------------------------------- |
-| `post`      | veja [Post](#post)                                  | Review e pensamento num tipo só, separados pelo campo `tipo`   |
-| `categoria` | `nome`, `slug`, `descricao`, `ordem`, `modeloFicha` | Categorias das reviews; `modeloFicha` define a ficha da review |
-| `formato`   | `nome`, `slug`, `descricao`, `ordem`                | Formatos dos pensamentos                                       |
-| `tag`       | `nome`, `slug`                                      | Criada direto do post, pelo "Criar novo" do campo de tags      |
+| Tipo            | Campos                                              | Observação                                                     |
+| --------------- | --------------------------------------------------- | -------------------------------------------------------------- |
+| `post`          | veja [Post](#post)                                  | Review e pensamento num tipo só, separados pelo campo `tipo`   |
+| `categoria`     | `nome`, `slug`, `descricao`, `ordem`, `modeloFicha` | Categorias das reviews; `modeloFicha` define a ficha da review |
+| `formato`       | `nome`, `slug`, `descricao`, `ordem`                | Formatos dos pensamentos                                       |
+| `tag`           | `nome`, `slug`                                      | Criada direto do post, pelo "Criar novo" do campo de tags      |
+| `configuracoes` | veja [Singletons](#singletons)                      | Singleton com `_id` `configuracoes`                            |
+| `sobre`         | veja [Singletons](#singletons)                      | Singleton com `_id` `sobre`                                    |
 
 Slugs seguem a [política de URLs](../docs/seo-urls.md#slugs): o botão "Gerar" usa o `slugify` de [`lib/slug.ts`](lib/slug.ts), que tira acentos e cedilha ("Séries" vira `series`), e a validação recusa slug fora do formato e o reservado `pagina`. A unicidade é a padrão do Sanity, dentro do mesmo tipo: duas tags não podem ter o mesmo slug, mas uma tag e uma categoria podem. O post usa o mesmo `campoSlug` e o `campoTags`.
 
@@ -70,7 +72,6 @@ Um único tipo `post`, com o campo `tipo` (`review` ou `pensamento`), para que s
 | `capa`             | Imagem com hotspot, obrigatória; `alt` obrigatório e `legenda` (legenda ou crédito) opcional                             |
 | `corpo`            | Portable Text com estilos, listas, links, imagem e citação em destaque; veja "Texto do post" abaixo                      |
 | `tags`             | Referências a `tag`, sem repetir                                                                                         |
-| `destaque`         | Destaque na home (boolean, padrão falso)                                                                                 |
 | `seo`              | `titulo` (aviso acima de 60), `descricao` (aviso acima de 160), `imagem` (`alt` obrigatório se houver imagem), `noindex` |
 | `slugsAnteriores`  | Caminhos antigos do post, só leitura, dentro de "Avançado" na aba SEO                                                    |
 
@@ -105,6 +106,45 @@ Os campos de todos os modelos ficam num objeto só e sem prefixo; os que têm o 
 O `linkInterno` guarda o `_id` do post, não o endereço: o link continua certo depois que o destino muda de slug, categoria ou formato. Como a referência é forte, o Sanity não deixa apagar um post que outro post linka (ele mostra quais). As consultas do site usam o `CORPO_NO_GROQ` de [`lib/corpo.ts`](lib/corpo.ts) (`"corpo": ${CORPO_NO_GROQ}`), que troca cada referência pelo post de destino com os slugs já resolvidos para o `urlDoPost`; destino ainda não publicado vem como `post: null`, e o site mostra só o texto. A projeção tem testes com o `groq-js`.
 
 **Endereço antigo.** O botão "Publicar" do post é envolvido por [`acoes/publicarPost.ts`](acoes/publicarPost.ts): ao publicar um post que já estava no ar com outro slug, categoria ou formato, ele guarda o caminho publicado (`/reviews/filmes/slug-antigo`) em `slugsAnteriores`, para a #53 gerar o redirect. Se a consulta ao Sanity falhar, o post não é publicado e a autora vê um aviso para tentar de novo. Mudar o slug, a categoria ou o formato de um post publicado mostra um aviso amarelo no campo, sem impedir a publicação.
+
+### Singletons
+
+Dois documentos únicos, registrados em `document.singletons` no [`sanity.config.ts`](sanity.config.ts) (API nativa do Sanity 6, ainda beta), com `_id` igual ao nome do tipo. O site lê os dois por esse `_id`. O Sanity tira os dois do menu "Criar" e tira o "Duplicar"; a configuração tira também "Excluir" e "Despublicar" ([`lib/estrutura.ts`](lib/estrutura.ts)), para o site nunca ficar sem eles. O documento passa a existir na primeira vez que a autora publica.
+
+**Configurações do site** ([`schemaTypes/configuracoes.ts`](schemaTypes/configuracoes.ts)), abas Home e SEO e redes:
+
+| Campo            | Regras                                                                                                    |
+| ---------------- | --------------------------------------------------------------------------------------------------------- |
+| `fraseDaSemana`  | `texto` (aviso acima de 280), `autoria` e `data` opcionais; autor ou data sem texto é erro                |
+| `postEmDestaque` | Referência a post, só publicado (a validação confere); vazio, a home usa o post mais recente              |
+| `seo`            | SEO padrão do site: `descricao` (aviso se vazia ou acima de 160) e `imagem` (`alt` obrigatório se houver) |
+| `redes[]`        | `rede` (Instagram, TikTok, YouTube, Letterboxd, Goodreads, Skoob, Pinterest ou Outra) e `url` (https)     |
+
+O destaque da home saiu do post (era o boolean `destaque`): com um só post escolhido aqui, não existe o caso de dois posts ligados ao mesmo tempo.
+
+**Sobre mim** ([`schemaTypes/sobre.ts`](schemaTypes/sobre.ts)), abas Conteúdo e SEO:
+
+| Campo   | Regras                                                                                                                     |
+| ------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `nome`  | Obrigatório                                                                                                                |
+| `foto`  | Imagem com hotspot, obrigatória, com `alt` obrigatório                                                                     |
+| `bio`   | Bio curta da barra lateral, obrigatória, até 200 caracteres (erro)                                                         |
+| `texto` | Portable Text simples, um pedaço do `corpo`: parágrafo, subtítulo (`h2`), lista, negrito, itálico e o mesmo `link` externo |
+| `seo`   | `descricao` e `imagem`, opcionais; vazios, o site usa a bio e a foto                                                       |
+
+### Navegação
+
+A lista da esquerda é montada em [`estrutura.ts`](estrutura.ts), com os filtros e valores iniciais em [`lib/estrutura.ts`](lib/estrutura.ts) (com testes, os filtros conferidos com o `groq-js`):
+
+- **Reviews**: "Todas as reviews" e uma subpasta por categoria publicada, na `ordem` do menu do site.
+- **Pensamentos**: "Todos os pensamentos" e uma subpasta por formato.
+- **Rascunhos**: todo post com mudança não publicada (`_id in path("drafts.**")`), o que nunca foi ao ar e o que foi editado depois, do mais recente para o mais antigo (`_updatedAt`).
+- Configurações do site e Sobre mim.
+- Categorias, Formatos e Tags.
+
+As listas de posts começam ordenadas pela data de publicação, mais recente primeiro. O "+" de cada lista cria o post certo: "Nova review" e "Novo pensamento" já vêm com o `tipo`; dentro de uma subpasta, também com a categoria ou o formato (modelos `review-da-categoria` e `pensamento-do-formato`, com o `_id` como parâmetro). No menu "Criar" do topo aparecem só "Nova review" e "Novo pensamento", além de categoria, formato e tag: o modelo padrão do post, sem tipo, foi tirado.
+
+As subpastas são lidas ao abrir Reviews ou Pensamentos: uma categoria ou um formato novo aparece depois de recarregar o Studio.
 
 ### Taxonomia inicial
 

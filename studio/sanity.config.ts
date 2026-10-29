@@ -5,6 +5,8 @@ import { structureTool } from 'sanity/structure';
 
 import { publicarPost } from './acoes/publicarPost';
 import { dataset, projectId } from './env';
+import { estrutura, modelosDePost } from './estrutura';
+import { ACOES_FORA_DOS_SINGLETONS, SINGLETONS } from './lib/estrutura';
 import { IconeRonrom } from './marca/IconeRonrom';
 import { temaRonrom } from './marca/tema';
 import { schemaTypes } from './schemaTypes';
@@ -19,7 +21,7 @@ export default defineConfig({
   dataset,
 
   plugins: [
-    structureTool(),
+    structureTool({ structure: estrutura }),
     ptBRLocale(),
     // O Vision (playground de GROQ) só serve para quem programa: fica fora do Studio publicado.
     ...(isDev ? [visionTool()] : []),
@@ -27,12 +29,26 @@ export default defineConfig({
 
   schema: {
     types: schemaTypes,
+    // O modelo padrão do post (sem tipo) sai do menu "Criar": no lugar dele, "Nova review" e
+    // "Novo pensamento".
+    templates: (anteriores) => [
+      ...anteriores.filter((modelo) => modelo.id !== 'post'),
+      ...modelosDePost,
+    ],
   },
 
   document: {
-    actions: (anteriores, { schemaType }) =>
-      schemaType === 'post'
+    // Com `_id` fixo, fora do menu "Criar" e sem "Duplicar" (o Sanity cuida disso).
+    singletons: [...SINGLETONS],
+    actions: (anteriores, { schemaType, singleton }) => {
+      if (singleton) {
+        return anteriores.filter(
+          (acao) => !acao.action || !ACOES_FORA_DOS_SINGLETONS.includes(acao.action),
+        );
+      }
+      return schemaType === 'post'
         ? anteriores.map((acao) => (acao.action === 'publish' ? publicarPost(acao) : acao))
-        : anteriores,
+        : anteriores;
+    },
   },
 });

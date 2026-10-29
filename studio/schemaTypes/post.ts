@@ -10,7 +10,14 @@ import { InputDeNota } from '../componentes/InputDeNota';
 import { API_VERSION } from '../env';
 import { problemaNaNota } from '../lib/nota';
 import { dataNoFuturo, subtituloDoPost, TIPOS_DE_POST } from '../lib/post';
-import { campoAlt, campoLegenda, campoSlug, campoTags, TAMANHO_IDEAL_DA_DESCRICAO } from './campos';
+import {
+  campoAlt,
+  campoDescricaoSeo,
+  campoImagemDeCompartilhamento,
+  campoLegenda,
+  campoSlug,
+  campoTags,
+} from './campos';
 import { campoCorpo } from './corpo';
 import { campoFicha } from './ficha';
 
@@ -219,16 +226,8 @@ export const post = defineType({
           .error('Escolha a imagem de capa.'),
     }),
     { ...campoCorpo, group: 'conteudo' },
+    // O destaque da home não fica no post: é um só, escolhido em Configurações do site.
     { ...campoTags, group: 'conteudo' },
-    defineField({
-      name: 'destaque',
-      title: 'Destaque na home',
-      type: 'boolean',
-      group: 'conteudo',
-      description:
-        'Ligue para mostrar este post em destaque na página inicial. Sem nenhum ligado, o destaque é o post mais recente.',
-      initialValue: false,
-    }),
     defineField({
       name: 'seo',
       title: 'SEO',
@@ -249,29 +248,12 @@ export const post = defineType({
                 `Acima de ${TAMANHO_IDEAL_DO_TITULO_SEO} caracteres, o Google corta o fim do título.`,
               ),
         }),
-        defineField({
-          name: 'descricao',
-          title: 'Descrição',
-          type: 'text',
-          rows: 3,
-          description:
-            'Uma ou duas frases que aparecem embaixo do título no Google e ao compartilhar. Se ficar vazia, usamos o subtítulo ou o começo do texto.',
-          validation: (rule) =>
-            rule
-              .max(TAMANHO_IDEAL_DA_DESCRICAO)
-              .warning(
-                `Acima de ${TAMANHO_IDEAL_DA_DESCRICAO} caracteres, o Google corta o fim da descrição.`,
-              ),
-        }),
-        defineField({
-          name: 'imagem',
-          title: 'Imagem de compartilhamento',
-          type: 'image',
-          description:
-            'Aparece quando o link é compartilhado no WhatsApp, Instagram e outras redes. Se ficar vazia, usamos a capa.',
-          options: { hotspot: true },
-          fields: [campoAlt],
-        }),
+        campoDescricaoSeo(
+          'Uma ou duas frases que aparecem embaixo do título no Google e ao compartilhar. Se ficar vazia, usamos o subtítulo ou o começo do texto.',
+        ),
+        campoImagemDeCompartilhamento(
+          'Aparece quando o link é compartilhado no WhatsApp, Instagram e outras redes. Se ficar vazia, usamos a capa.',
+        ),
         defineField({
           name: 'noindex',
           title: 'Esconder do Google',
