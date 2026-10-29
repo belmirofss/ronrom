@@ -2,7 +2,7 @@
 
 O repositório é privado numa conta GitHub Free, onde [rulesets e branch protection não ficam disponíveis](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets). Nada no GitHub impede um push direto na `main` ou um PR fora do padrão: as regras abaixo valem por convenção, e os checks do CI são a barreira. **Não faça merge com check vermelho.**
 
-Para instalar, rodar e entender a estrutura do projeto, veja o [README](README.md).
+Para instalar, rodar e entender a estrutura do projeto, veja o [README](README.md). Checks locais, dependências novas e solução de problemas estão no [guia de desenvolvimento](docs/desenvolvimento.md).
 
 ## Fluxo
 

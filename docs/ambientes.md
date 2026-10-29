@@ -1,6 +1,6 @@
 # Ambientes e hospedagem
 
-O site (`web/`) é publicado na Vercel, plano **Hobby** (grátis), no projeto `ronrom` do time pessoal do dono do repositório. O Studio (`studio/`) não passa pela Vercel: é hospedado pelo Sanity (veja [`studio/README.md`](../studio/README.md)).
+O site (`web/`) é publicado na Vercel, plano **Hobby** (grátis), no projeto `ronrom` do time pessoal do dono do repositório. O Studio (`studio/`) não passa pela Vercel: é hospedado pelo Sanity (veja [`studio/README.md`](../studio/README.md)). Como uma mudança vai ao ar, redeploy e rollback estão em [`deploy.md`](deploy.md).
 
 ## Projeto na Vercel
 
