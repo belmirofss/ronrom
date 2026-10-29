@@ -1,0 +1,5 @@
+# gerados ou gerenciados por ferramentas
+pnpm-lock.yaml
+**/dist/
+**/.astro/
+**/.vercel/

@@ -3,9 +3,11 @@ packages:
   - studio
 
 # Pacotes que podem rodar scripts de instalação (o pnpm bloqueia os demais).
+# simple-git-hooks fica de fora: o hook é instalado pelo script `prepare` da raiz.
 allowBuilds:
   esbuild: true
   sharp: true
+  simple-git-hooks: false
 
 minimumReleaseAgeExclude:
   - '@astrojs/markdown-satteri@0.4.6'
