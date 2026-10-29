@@ -1,0 +1,46 @@
+# Valida o título do PR (Conventional Commits), porque ele vira a mensagem do commit na main
+# no squash merge. Sem branch protection no plano Free, este check vermelho é a barreira.
+# Fica separado do ci.yml (#5) por depender só do evento do PR, não do código.
+name: pr
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  pull-requests: read
+
+concurrency:
+  group: pr-titulo-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  titulo:
+    name: titulo
+    runs-on: ubuntu-slim
+    timeout-minutes: 2
+    steps:
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Mesma lista do CONTRIBUTING.md.
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+          # Os escopos sugeridos não são obrigatórios; só não pode letra maiúscula.
+          disallowScopes: |
+            .*[A-Z].*
+          subjectPattern: ^(?![A-Z]).+[^.]$
+          subjectPatternError: |
+            A descrição "{subject}" do título "{title}" precisa começar com letra minúscula
+            e não terminar com ponto. Exemplo: "feat(home): adiciona mosaico 3×3".

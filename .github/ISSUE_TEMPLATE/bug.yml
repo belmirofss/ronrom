@@ -1,0 +1,61 @@
+name: Bug
+description: Algo não funciona como deveria no site ou no Studio.
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Depois de abrir, aplique os labels `area:*` e `prioridade:*` e o milestone (veja o CONTRIBUTING.md).
+  - type: textarea
+    id: o-que-acontece
+    attributes:
+      label: O que acontece
+      description: Descreva o problema.
+    validations:
+      required: true
+  - type: textarea
+    id: como-reproduzir
+    attributes:
+      label: Como reproduzir
+      description: Passo a passo até o problema aparecer.
+      placeholder: |
+        1. Abrir a página ...
+        2. Clicar em ...
+        3. Ver o erro
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: O que era esperado
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: URL
+      description: Página onde o problema aparece (produção, preview ou local).
+      placeholder: https://ronrom.vercel.app/...
+  - type: dropdown
+    id: onde
+    attributes:
+      label: Onde acontece
+      multiple: true
+      options:
+        - Site
+        - Studio (Sanity)
+        - Build / CI
+        - Outro
+    validations:
+      required: true
+  - type: input
+    id: ambiente
+    attributes:
+      label: Navegador e dispositivo
+      placeholder: 'ex.: Safari 18 no iPhone 13, Chrome 130 no Windows'
+  - type: textarea
+    id: evidencias
+    attributes:
+      label: Prints, vídeos ou logs
+      description: Arraste arquivos para cá. Logs são formatados como código automaticamente.
+      render: shell

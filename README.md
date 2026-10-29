@@ -2,6 +2,8 @@
 
 Ronrom — blog de reviews e pensamentos (Astro + Sanity + Vercel)
 
+Antes de abrir uma branch ou um PR, leia o [guia de contribuição](CONTRIBUTING.md) (convenções de commits, branches, PRs, labels e milestones).
+
 ## Requisitos
 
 - Node 22.23.4 ou mais novo (versão em `.nvmrc`)
