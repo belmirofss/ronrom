@@ -56,7 +56,8 @@ jobs:
         env:
           # Variáveis do GitHub (Settings > Secrets and variables > Actions). Sem valor
           # cadastrado, chegam vazias e o site usa o padrão do astro.config.mjs.
-          # A #8 (INF-05) acrescenta aqui as do Sanity; sem elas, o build usa as fixtures.
+          # Sem as variáveis do Sanity, o build usa as fixtures: sem rede e sem segredo.
+          # Veja docs/ambientes.md.
           SITE_URL: ${{ vars.SITE_URL }}
       # Usado pela checagem de links (#45) para não buildar de novo.
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

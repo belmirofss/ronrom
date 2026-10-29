@@ -75,8 +75,6 @@ O site é publicado na Vercel: a `main` vai para produção em https://ronrom-bl
 
 ## Variáveis de ambiente
 
-| Variável   | Padrão                           | Uso                                |
-| ---------- | -------------------------------- | ---------------------------------- |
-| `SITE_URL` | `https://ronrom-blog.vercel.app` | URL base do site (`site` do Astro) |
+Nenhuma é necessária para rodar o site: sem o Sanity configurado, o build usa as fixtures locais. Para usar dados reais, copie `web/.env.example` para `web/.env` e preencha, ou puxe as da Vercel com `vercel env pull .env.local` dentro de `web/`.
 
-O schema completo das variáveis fica na #8. As do Studio (`SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET`) e os tokens do Sanity estão documentados em [`studio/README.md`](studio/README.md) e em `studio/.env.example`.
+O schema tipado (`astro:env`) fica em `web/astro.config.mjs`. A lista completa, onde cada variável vive (local, Vercel por ambiente, GitHub) e quem é dona estão em [`docs/ambientes.md`](docs/ambientes.md#variáveis-de-ambiente). As do Studio (`SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET`) e os tokens do Sanity estão em [`studio/README.md`](studio/README.md) e em `studio/.env.example`.

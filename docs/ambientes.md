@@ -53,20 +53,56 @@ Pontos que a issue #10 pediu para conferir:
 
 ## Variáveis de ambiente
 
-Cadastradas em Settings → Environment Variables do projeto `ronrom` na Vercel. Os nomes seguem a lista da #8. Hoje o site só lê `SITE_URL`; o schema tipado (`astro:env`) e a leitura das variáveis do Sanity entram com a #8.
+O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`, do [`astro:env`](https://docs.astro.build/en/guides/environment-variables/#type-safe-environment-variables)), que valida e tipa cada variável no build. O código do site lê sempre de `astro:env/client` ou `astro:env/server`, nunca de `process.env` ou `import.meta.env`. Toda variável nova entra no schema, em [`web/.env.example`](../web/.env.example) e na tabela abaixo.
 
-| Variável                | Tipo na Vercel | Production                       | Preview e Development |
-| ----------------------- | -------------- | -------------------------------- | --------------------- |
-| `SITE_URL`              | Config         | `https://ronrom-blog.vercel.app` | não definida (\*)     |
-| `SANITY_PROJECT_ID`     | Config         | `fq2685cq`                       | `fq2685cq`            |
-| `SANITY_DATASET`        | Config         | `production`                     | `development`         |
-| `SANITY_API_READ_TOKEN` | Secret         | pendente                         | pendente              |
+- **Públicas** (`access: 'public'`): entram como valor fixo no build. Só `SITE_URL` é de contexto `client` e pode chegar ao navegador; as outras públicas ficam no servidor.
+- **Segredos** (`access: 'secret'`, contexto `server`): lidos no servidor, durante o build das páginas estáticas ou na Vercel Function. O Astro recusa importar `astro:env/server` em código de cliente, então um segredo não chega ao bundle.
+- **Variável vazia conta como ausente.** Uma obrigatória ausente ou um valor inválido derruba o build com `EnvInvalidVariables`, listando cada variável e o problema.
 
-(\*) Nos previews, a #8 deve derivar a URL de `VERCEL_URL`. Até lá vale o padrão do `astro.config.mjs`.
+### Onde vive cada variável
 
-`SANITY_API_READ_TOKEN` é o token `viewer` do Sanity. Quem cadastra é o dono do projeto, como **Secret**, porque o valor não deve passar por outras mãos. Os tokens do CI ficam nos Secrets do GitHub Actions: `SANITY_API_READ_TOKEN` e `SANITY_AUTH_TOKEN` (veja [`studio/README.md`](../studio/README.md)).
+| Variável                | Tipo    | Obrigatória     | Local (`web/.env*`) | Vercel Production                 | Vercel Preview e Development | GitHub Actions           | Dona         |
+| ----------------------- | ------- | --------------- | ------------------- | --------------------------------- | ---------------------------- | ------------------------ | ------------ |
+| `SITE_URL`              | pública | em produção     | opcional            | `https://ronrom-blog.vercel.app`  | não definida (\*)            | variável, não cadastrada | `area:infra` |
+| `SANITY_PROJECT_ID`     | pública | em produção     | opcional            | `fq2685cq`                        | `fq2685cq`                   | não usada (fixtures)     | `area:cms`   |
+| `SANITY_DATASET`        | pública | em produção     | opcional            | `production`                      | `development`                | não usada (fixtures)     | `area:cms`   |
+| `SANITY_API_VERSION`    | pública | não (padrão)    | opcional            | não definida                      | não definida                 | não usada                | `area:cms`   |
+| `SANITY_FIXTURES`       | pública | não (`false`)   | opcional            | proibida (`true` derruba o build) | não definida                 | não usada                | `area:cms`   |
+| `SANITY_API_READ_TOKEN` | segredo | não             | opcional            | pendente (Secret)                 | pendente (Secret)            | Secret, já cadastrado    | `area:cms`   |
+| `KV_REST_API_URL`       | segredo | não (até a #56) | opcional            | injetada pelo Marketplace (#56)   | injetada pelo Marketplace    | não usada                | `area:dados` |
+| `KV_REST_API_TOKEN`     | segredo | não (até a #56) | opcional            | injetada pelo Marketplace (#56)   | injetada pelo Marketplace    | não usada                | `area:dados` |
+
+(\*) Sem `SITE_URL`, o `astro.config.mjs` usa `https://` + `VERCEL_URL` nos previews (a URL do próprio deploy) e `https://ronrom-blog.vercel.app` no resto (local e CI). `VERCEL_ENV` e `VERCEL_URL` são variáveis de sistema da Vercel, expostas no build sem cadastro.
+
+**Dona** é a área (label) que decide o nome, o formato e o valor da variável. Quem cadastra segredos na Vercel e no GitHub é sempre o dono do repositório, porque o valor não deve passar por outras mãos.
+
+- **`SANITY_API_READ_TOKEN`** é o token `viewer` do Sanity, só para o preview de rascunhos (#43). Sem ele, o site lê só o conteúdo publicado. Cadastre na Vercel como **Secret**.
+- **`KV_REST_API_URL` e `KV_REST_API_TOKEN`** são os nomes que o `Redis.fromEnv()` do `@upstash/redis` lê. A #56 confere, ao instalar o Upstash Redis pelo Marketplace, se a integração injeta exatamente esses nomes; se não, renomeia no schema, no `.env.example` e aqui.
+- **Os tokens do Studio** (`SANITY_AUTH_TOKEN`) e as variáveis `SANITY_STUDIO_*` não são do site: veja [`studio/README.md`](../studio/README.md).
+
+### Sem o Sanity configurado: fixtures
+
+Fora de produção, sem `SANITY_PROJECT_ID` e `SANITY_DATASET` (ou com `SANITY_FIXTURES=true`), o build usa as fixtures locais em vez de quebrar. Quem decide é [`web/src/lib/sanity/config.ts`](../web/src/lib/sanity/config.ts) (`fonteDoConteudo`), que o cliente e as fixtures da #33 vão ler. Em produção (`VERCEL_ENV=production`), as duas variáveis são obrigatórias e `SANITY_FIXTURES=true` derruba o build, para o site nunca sair com conteúdo de exemplo.
+
+### GitHub Actions
+
+O build do CI roda com as fixtures, sem rede e sem segredo, então não precisa de nenhuma variável do Sanity. Ele repassa só `vars.SITE_URL` (não cadastrada; vale o padrão). Os Secrets `SANITY_API_READ_TOKEN` e `SANITY_AUTH_TOKEN` já existem em Settings → Secrets and variables → Actions, para o backup (#28) e o deploy do Studio. Se um workflow passar a precisar de um segredo, ele também deve ser cadastrado em Settings → Secrets and variables → Dependabot (veja o [CONTRIBUTING](../CONTRIBUTING.md#dependências-dependabot)).
+
+### Puxar as variáveis da Vercel para o local
+
+Com a [Vercel CLI](https://vercel.com/docs/cli) logada na conta do dono do projeto, dentro de `web/`:
+
+```bash
+vercel link --project ronrom
+```
+
+```bash
+vercel env pull .env.local
+```
+
+O `link` é feito uma vez e cria `web/.vercel/` (não versionado). O `env pull` traz as variáveis do ambiente **Development** para `web/.env.local`, que o Astro lê sozinho; para outro ambiente, use `--environment=preview` ou `--environment=production`. Segredos podem chegar vazios no pull; nesse caso o site segue sem o recurso opcional (o preview de rascunhos, por exemplo). Para sobrescrever algo só na sua máquina, use `web/.env`, que tem prioridade menor que o `.env.local`, ou edite o próprio `.env.local`.
 
 ## Pendências
 
 - **`/api/health`:** depende do adapter da Vercel e da rota sob demanda da #9.
-- **Schema das variáveis e `SITE_URL` dos previews:** #8.
+- **`SANITY_API_READ_TOKEN` na Vercel:** o dono do projeto cadastra como Secret.
