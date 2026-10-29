@@ -62,7 +62,7 @@ Monorepo com workspaces do pnpm (`pnpm-workspace.yaml`):
 │       └── styles/         # CSS global e tokens
 ├── studio/                 # Sanity Studio (veja studio/README.md)
 │   └── schemaTypes/        # schemas de conteúdo
-├── docs/                   # documentação (ambientes, limites da Vercel e ADRs)
+├── docs/                   # documentação (ambientes, limites da Vercel, política de URLs e ADRs)
 └── scripts/                # scripts de infraestrutura (Ignored Build Step da Vercel)
 ```
 
@@ -70,7 +70,7 @@ Imports dentro de `web/src` usam o alias `@/*` (ex.: `import { NOME_DO_SITE } fr
 
 ## Deploy
 
-O site é publicado na Vercel: a `main` vai para produção em https://ronrom-blog.vercel.app e cada PR ganha um preview, com o link comentado no PR. As páginas são estáticas; só as rotas com `export const prerender = false` (hoje, `/api/health`) rodam numa Vercel Function. Não há `pnpm preview`, porque o adapter da Vercel não suporta o comando: teste as rotas sob demanda com o `pnpm dev` e o resto no preview do PR. Configuração, limites do plano Hobby e o que pula build estão em [`docs/ambientes.md`](docs/ambientes.md).
+O site é publicado na Vercel: a `main` vai para produção em https://ronrom-blog.vercel.app e cada PR ganha um preview, com o link comentado no PR. As páginas são estáticas; só as rotas com `export const prerender = false` (hoje, `/api/health`) rodam numa Vercel Function. Não há `pnpm preview`, porque o adapter da Vercel não suporta o comando: teste as rotas sob demanda com o `pnpm dev` e o resto no preview do PR. Configuração, limites do plano Hobby e o que pula build estão em [`docs/ambientes.md`](docs/ambientes.md). Rotas, slugs, barra no final e os helpers de URL estão em [`docs/seo-urls.md`](docs/seo-urls.md).
 
 ## Variáveis de ambiente
 

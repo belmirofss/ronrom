@@ -27,8 +27,13 @@ if (ehProducao && env['SANITY_FIXTURES'] === 'true') {
 // https://astro.build/config
 export default defineConfig({
   site: urlDoSite,
-  // Decidido na #1: URLs sem barra no final.
+  // Decidido na #1: URLs sem barra no final. Política completa: docs/seo-urls.md.
   trailingSlash: 'never',
+  build: {
+    // /sobre vira sobre/index.html e a Vercel serve em /sobre; a variante com barra recebe 308
+    // pelo trailingSlash: false do vercel.json. É o formato que o @astrojs/vercel impõe (#9).
+    format: 'directory',
+  },
   // Saída estática (o padrão do Astro): só as rotas com `export const prerender = false` viram
   // Vercel Function. Decisão no docs/adr/0001; como criar uma rota sob demanda: docs/ambientes.md.
   adapter: vercel({
