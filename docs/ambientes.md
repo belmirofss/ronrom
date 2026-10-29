@@ -51,7 +51,22 @@ Pontos que a issue #10 pediu para conferir:
 - **Vercel Authentication:** disponível no Hobby para preview e produção. Proteção por senha é só no Pro.
 - **`X-Robots-Tag: noindex` nos previews:** a Vercel adiciona sozinha em todo Preview Deployment ([guia](https://vercel.com/kb/guide/are-vercel-preview-deployment-indexed-by-search-engines)). A exceção é um domínio próprio apontado para uma branch que não é a de produção. Informação para a área de SEO (#52).
 
+## Variáveis de ambiente
+
+Cadastradas em Settings → Environment Variables do projeto `ronrom` na Vercel. Os nomes seguem a lista da #8. Hoje o site só lê `SITE_URL`; o schema tipado (`astro:env`) e a leitura das variáveis do Sanity entram com a #8.
+
+| Variável                | Tipo na Vercel | Production                       | Preview e Development |
+| ----------------------- | -------------- | -------------------------------- | --------------------- |
+| `SITE_URL`              | Config         | `https://ronrom-blog.vercel.app` | não definida (\*)     |
+| `SANITY_PROJECT_ID`     | Config         | `fq2685cq`                       | `fq2685cq`            |
+| `SANITY_DATASET`        | Config         | `production`                     | `development`         |
+| `SANITY_API_READ_TOKEN` | Secret         | pendente                         | pendente              |
+
+(\*) Nos previews, a #8 deve derivar a URL de `VERCEL_URL`. Até lá vale o padrão do `astro.config.mjs`.
+
+`SANITY_API_READ_TOKEN` é o token `viewer` do Sanity. Quem cadastra é o dono do projeto, como **Secret**, porque o valor não deve passar por outras mãos. Os tokens do CI ficam nos Secrets do GitHub Actions: `SANITY_API_READ_TOKEN` e `SANITY_AUTH_TOKEN` (veja [`studio/README.md`](../studio/README.md)).
+
 ## Pendências
 
-- **Variáveis por ambiente:** entram com a #8 (INF-05). Hoje só existe `SITE_URL`, cujo padrão no `astro.config.mjs` já é `https://ronrom-blog.vercel.app`.
 - **`/api/health`:** depende do adapter da Vercel e da rota sob demanda da #9.
+- **Schema das variáveis e `SITE_URL` dos previews:** #8.
