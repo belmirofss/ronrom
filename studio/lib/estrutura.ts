@@ -15,8 +15,10 @@ export const ACOES_FORA_DOS_SINGLETONS = ['delete', 'duplicate', 'unpublish'];
 export const FILTRO_POR_TIPO = '_type == "post" && tipo == $tipo';
 export const FILTRO_POR_CATEGORIA = '_type == "post" && tipo == "review" && categoria._ref == $id';
 export const FILTRO_POR_FORMATO = '_type == "post" && tipo == "pensamento" && formato._ref == $id';
-// Todo post com mudança ainda não publicada: o que nunca foi ao ar e o que foi editado depois.
-export const FILTRO_DOS_RASCUNHOS = '_type == "post" && _id in path("drafts.**")';
+// Todo post com mudança ainda não publicada: o que nunca foi ao ar e o que foi editado depois. As
+// listas do Sanity consultam na perspectiva de rascunhos, em que o `_id` já vem sem o "drafts.":
+// o id real do documento fica em `_originalId`.
+export const FILTRO_DOS_RASCUNHOS = '_type == "post" && _originalId in path("drafts.**")';
 
 // Categorias e formatos que viram subpastas, na ordem do menu do site.
 export const CONSULTA_DA_TAXONOMIA = '*[_type == $tipo] | order(ordem asc){ _id, nome }';

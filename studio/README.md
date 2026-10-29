@@ -138,11 +138,11 @@ A lista da esquerda é montada em [`estrutura.ts`](estrutura.ts), com os filtros
 
 - **Reviews**: "Todas as reviews" e uma subpasta por categoria publicada, na `ordem` do menu do site.
 - **Pensamentos**: "Todos os pensamentos" e uma subpasta por formato.
-- **Rascunhos**: todo post com mudança não publicada (`_id in path("drafts.**")`), o que nunca foi ao ar e o que foi editado depois, do mais recente para o mais antigo (`_updatedAt`).
+- **Rascunhos**: todo post com mudança não publicada (`_originalId in path("drafts.**")`: as listas consultam na perspectiva de rascunhos, em que o `_id` já vem sem o `drafts.`), o que nunca foi ao ar e o que foi editado depois, do mais recente para o mais antigo (`_updatedAt`).
 - Configurações do site e Sobre mim.
 - Categorias, Formatos e Tags.
 
-As listas de posts começam ordenadas pela data de publicação, mais recente primeiro. O "+" de cada lista cria o post certo: "Nova review" e "Novo pensamento" já vêm com o `tipo`; dentro de uma subpasta, também com a categoria ou o formato (modelos `review-da-categoria` e `pensamento-do-formato`, com o `_id` como parâmetro). No menu "Criar" do topo aparecem só "Nova review" e "Novo pensamento", além de categoria, formato e tag: o modelo padrão do post, sem tipo, foi tirado.
+As listas de posts começam ordenadas pela data de publicação, mais recente primeiro. O "+" de cada lista cria o post certo: "Nova review" e "Novo pensamento" já vêm com o `tipo`; dentro de uma subpasta, também com a categoria ou o formato (modelos `review-da-categoria` e `pensamento-do-formato`, com o `_id` como parâmetro). Com o `keepPanesOnCreate` do `structureTool`, o post novo abre ao lado da lista, sem esconder as pastas. No menu "Criar" do topo aparecem só "Nova review" e "Novo pensamento", além de categoria, formato e tag: o modelo padrão do post, sem tipo, foi tirado.
 
 As subpastas são lidas ao abrir Reviews ou Pensamentos: uma categoria ou um formato novo aparece depois de recarregar o Studio.
 
