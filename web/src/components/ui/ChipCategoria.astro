@@ -1,0 +1,54 @@
+---
+interface Props {
+  /** O texto do chip: nome da categoria, do formato ou da tag. */
+  nome: string;
+  /**
+   * Com `href`, o chip é um link (ex.: `urlDaCategoria(slug)`). Sem ele, é texto: a versão para
+   * ficar por cima da miniatura de um card que já é link, onde um link dentro de outro não pode.
+   */
+  href?: string | undefined;
+  /** Fundo do chip. Padrão: "creme". */
+  tom?: 'creme' | 'rosa';
+  class?: string;
+}
+
+const { nome, href, tom = 'creme', class: classe } = Astro.props;
+const Elemento = href ? 'a' : 'span';
+---
+
+<Elemento class:list={['chip', `chip--${tom}`, classe]} href={href}>
+  {nome}
+</Elemento>
+
+<style>
+  .chip {
+    display: inline-block;
+    padding: var(--espaco-1) var(--espaco-3);
+    border-radius: var(--raio-pilula);
+    background-color: var(--fundo-do-chip);
+    color: var(--texto-do-chip);
+    font-size: var(--texto-xs);
+    font-weight: var(--peso-medio);
+    line-height: var(--altura-linha-titulo);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /* Vinho no creme: 7,83:1. */
+  .chip--creme {
+    --fundo-do-chip: var(--cor-creme);
+    --texto-do-chip: var(--cor-vinho);
+  }
+
+  /* Vinho no rosa não passa (4,44:1): o texto é o --cor-texto, com 7,26:1. */
+  .chip--rosa {
+    --fundo-do-chip: var(--cor-rosa);
+    --texto-do-chip: var(--cor-texto);
+  }
+
+  /* Hover em vinho-hover nos dois tons (11,25:1 no creme e 6,37:1 no rosa). */
+  a.chip:hover {
+    color: var(--cor-vinho-hover);
+    text-decoration-line: underline;
+  }
+</style>

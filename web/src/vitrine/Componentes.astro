@@ -1,0 +1,228 @@
+---
+// Vitrine dos componentes de interface: todos os estados numa página só, para revisar o visual e
+// testar com teclado e leitor de tela. Fica fora de src/pages porque só existe no `astro dev`: a
+// integração do astro.config.mjs injeta a rota /vitrine no dev, e o build nem a conhece.
+import Container from '@/components/layout/Container.astro';
+import Breadcrumb from '@/components/ui/Breadcrumb.astro';
+import ChipCategoria from '@/components/ui/ChipCategoria.astro';
+import Coracoes from '@/components/ui/Coracoes.astro';
+import Paginacao from '@/components/ui/Paginacao.astro';
+import LayoutBase from '@/layouts/LayoutBase.astro';
+import { NOTA_MAXIMA, NOTA_MINIMA } from '@/lib/nota';
+import { urlDaCategoria, urlDaTag, urlDoFormato } from '@/lib/rotas';
+import { trilhaDaCategoria, trilhaDoFormato, trilhaDoPost } from '@/lib/trilha';
+
+const NOTAS = Array.from(
+  { length: (NOTA_MAXIMA - NOTA_MINIMA) / NOTA_MINIMA + 1 },
+  (_, i) => NOTA_MINIMA * (i + 1),
+);
+
+const FILMES = { nome: 'Filmes', slug: 'filmes' };
+const FRASES = { nome: 'Frases soltas', slug: 'frases' };
+
+const PAGINAS: { titulo: string; atual: number; total: number }[] = [
+  { titulo: 'Primeira de 10', atual: 1, total: 10 },
+  { titulo: 'Segunda de 10', atual: 2, total: 10 },
+  { titulo: 'Meio (5 de 10)', atual: 5, total: 10 },
+  { titulo: 'Penúltima de 10', atual: 9, total: 10 },
+  { titulo: 'Última de 10', atual: 10, total: 10 },
+  { titulo: 'Meio de 50 (25)', atual: 25, total: 50 },
+  { titulo: 'Poucas páginas (2 de 3)', atual: 2, total: 3 },
+  { titulo: 'Sete páginas, sem reticências (4 de 7)', atual: 4, total: 7 },
+];
+---
+
+<LayoutBase
+  seo={{
+    title: 'Vitrine de componentes',
+    description:
+      'Todos os estados dos componentes de interface, só no ambiente de desenvolvimento.',
+    canonical: '/vitrine',
+    noindex: true,
+  }}
+>
+  <Container>
+    <div class="vitrine">
+      <h1>Vitrine de componentes</h1>
+      <p class="vitrine__nota">
+        Só no <code>astro dev</code>: esta página não entra no build.
+      </p>
+
+      <section aria-labelledby="titulo-coracoes">
+        <h2 id="titulo-coracoes">Coracoes</h2>
+        <h3>Todas as notas (médio)</h3>
+        <dl class="vitrine__grade">
+          {NOTAS.map((nota) => (
+            <div>
+              <dt>{nota}</dt>
+              <dd>
+                <Coracoes nota={nota} />
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <h3>Tamanhos (nota 3,5)</h3>
+        <dl class="vitrine__grade">
+          {(['pequeno', 'medio', 'grande'] as const).map((tamanho) => (
+            <div>
+              <dt>{tamanho}</dt>
+              <dd>
+                <Coracoes nota={3.5} tamanho={tamanho} />
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <h3>No meio do texto</h3>
+        <p>
+          Assisti numa tarde de domingo e dei <Coracoes nota={4.5} tamanho="pequeno" /> sem pensar.
+        </p>
+      </section>
+
+      <section aria-labelledby="titulo-chips">
+        <h2 id="titulo-chips">ChipCategoria</h2>
+        <h3>Link</h3>
+        <p class="vitrine__linha">
+          <ChipCategoria nome="Filmes" href={urlDaCategoria('filmes')} />
+          <ChipCategoria
+            nome="Restaurantes e cafés"
+            href={urlDaCategoria('restaurantes-e-cafes')}
+          />
+          <ChipCategoria nome="Frases soltas" href={urlDoFormato('frases')} tom="rosa" />
+          <ChipCategoria nome="#café" href={urlDaTag('cafe')} tom="rosa" />
+        </p>
+        <h3>Estático</h3>
+        <p class="vitrine__linha">
+          <ChipCategoria nome="Livros" />
+          <ChipCategoria nome="Opiniões" tom="rosa" />
+        </p>
+        <h3>Sobre a miniatura (card inteiro é o link)</h3>
+        <div class="vitrine__linha">
+          {(['creme', 'rosa'] as const).map((tom) => (
+            <a class="vitrine__card" href={urlDaCategoria('filmes')}>
+              <span class="vitrine__miniatura" data-tom={tom}>
+                <ChipCategoria class="vitrine__chip-sobreposto" nome="Filmes" tom={tom} />
+              </span>
+              <span>Dias Perfeitos</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="titulo-trilha">
+        <h2 id="titulo-trilha">Breadcrumb</h2>
+        <h3>Review</h3>
+        <Breadcrumb
+          itens={trilhaDoPost({
+            tipo: 'review',
+            titulo: 'Dias Perfeitos',
+            slug: 'dias-perfeitos',
+            categoria: FILMES,
+          })}
+        />
+        <h3>Pensamento com título longo</h3>
+        <Breadcrumb
+          itens={trilhaDoPost({
+            tipo: 'pensamento',
+            titulo:
+              'Uma frase bem comprida para ver como a trilha quebra a linha no celular sem estourar a largura',
+            slug: 'frase-comprida',
+            formato: FRASES,
+          })}
+        />
+        <h3>Categoria</h3>
+        <Breadcrumb itens={trilhaDaCategoria(FILMES)} />
+        <h3>Formato</h3>
+        <Breadcrumb itens={trilhaDoFormato(FRASES)} />
+      </section>
+
+      <section aria-labelledby="titulo-paginacao">
+        <h2 id="titulo-paginacao">Paginacao</h2>
+        {PAGINAS.map(({ titulo, atual, total }) => (
+          <>
+            <h3>{titulo}</h3>
+            <Paginacao base={urlDaCategoria('filmes')} atual={atual} total={total} />
+          </>
+        ))}
+        <h3>Uma página só</h3>
+        <p class="vitrine__nota">Não renderiza nada:</p>
+        <Paginacao base={urlDaCategoria('filmes')} atual={1} total={1} />
+      </section>
+    </div>
+  </Container>
+</LayoutBase>
+
+<style>
+  .vitrine section {
+    margin-block-start: var(--espaco-7);
+  }
+
+  .vitrine {
+    padding-block: var(--espaco-7);
+  }
+
+  .vitrine h1 {
+    font-size: var(--texto-3xl);
+  }
+
+  .vitrine h2 {
+    padding-block-end: var(--espaco-2);
+    border-block-end: 1px solid var(--cor-borda);
+    font-size: var(--texto-2xl);
+  }
+
+  .vitrine h3 {
+    margin-block: var(--espaco-5) var(--espaco-3);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+    font-weight: var(--peso-medio);
+    letter-spacing: 0;
+  }
+
+  .vitrine__nota {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+  }
+
+  .vitrine__grade {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    gap: var(--espaco-4);
+  }
+
+  .vitrine__grade dt {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-xs);
+  }
+
+  .vitrine__linha {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espaco-3);
+  }
+
+  .vitrine__card {
+    display: grid;
+    gap: var(--espaco-2);
+    width: 12rem;
+    color: var(--cor-texto);
+    font-weight: var(--peso-medio);
+  }
+
+  .vitrine__miniatura {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--raio-md);
+    background-color: var(--cor-vinho);
+  }
+
+  .vitrine__miniatura[data-tom='creme'] {
+    background-color: var(--cor-malva);
+  }
+
+  .vitrine :global(.vitrine__chip-sobreposto) {
+    position: absolute;
+    inset-block-start: var(--espaco-2);
+    inset-inline-start: var(--espaco-2);
+  }
+</style>
