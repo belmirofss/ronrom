@@ -7,7 +7,7 @@ O que é conferido automaticamente, o que é conferido à mão e como escrever o
 Poucos testes, nos lugares certos:
 
 - **Teste unitário só onde existe lógica pura que pode quebrar sem ninguém ver:** cálculos, formatação e mapeamentos. Uma data no dia errado ou uma URL canônica com barra sobrando passam despercebidas no preview e só aparecem no Google semanas depois.
-- **Componente só é testado quando tem lógica condicional relevante:** hoje, apenas o `<Seo>`, a nota em corações e a ficha da review. O resto é markup e já é coberto pelo E2E, pelo axe e pela revisão visual.
+- **Componente só é testado quando tem lógica condicional relevante:** hoje, apenas o `<Seo>`, a nota em corações, a ficha da review e o texto do post. O resto é markup e já é coberto pelo E2E, pelo axe e pela revisão visual.
 - **Sem teste de snapshot de HTML inteiro** e sem teste do que o próprio Astro ou o Sanity garantem.
 - **O teste nasce no PR do utilitário.** As issues que criam utilitários (#33, #34, #40, #51) escrevem os testes junto, cobrindo os [casos listados abaixo](#casos-por-utilitário).
 
@@ -200,10 +200,21 @@ As funções de [`web/src/lib/card.ts`](../web/src/lib/card.ts), usadas pelo Des
 - [ ] Aceita `www.` e `m.`, `http` e `https`, e ignora parâmetros extras (`&t=42s`, `?si=…`, `&list=…`) em qualquer posição.
 - [ ] URL que não é do YouTube, URL sem ID ou ID com tamanho errado devolve `null` (ou lança erro, conforme a #40 decidir), nunca um ID errado.
 
+### Texto do post: `prepararCorpo` e links (#39)
+
+As regras de [`web/src/lib/corpo.ts`](../web/src/lib/corpo.ts), aplicadas pelo `<CorpoDoPost>` antes de renderizar:
+
+- [ ] A âncora de cada subtítulo é o `slugify` do texto; repetidas ganham `-2`, `-3`..., sem repetir o `id="conteudo"` do `<main>`, e um subtítulo sem letra nem número vira `secao`.
+- [ ] O outline não pula nível: h1 do editor vira h2, e h3 antes de qualquer h2 também vira h2.
+- [ ] Blocos sem texto (parágrafo, subtítulo ou item de lista vazio, ou só uma quebra de linha) saem; item de lista com estilo de subtítulo vira texto normal.
+- [ ] Link externo só com `http`, `https` ou `mailto`; `javascript:`, `tel:`, caminho relativo e vazio viram texto.
+- [ ] Link interno monta o caminho com o `urlDoPost`; destino fora do ar (`post: null`) vira texto.
+
 ### Componentes
 
-Teste de componente (Container API) existe só para estes três:
+Teste de componente (Container API) existe só para estes quatro:
 
 - **`Seo.astro` (#32):** uma tag de cada (`<title>`, description, canonical, robots, `og:title`, `og:image`, `twitter:card`), canonical e `og:image` absolutos, a tagline na home, `noindex,follow` pela prop, as metas `article:*` só em `type="article"` e o aviso no build com título acima de 65 caracteres.
 - **`Coracoes.astro` (#35):** um único `role="img"` com o `aria-label` da nota, os SVGs internos com `aria-hidden="true"`, e o número de corações cheios, meios e vazios renderizados para `4.5` e `5`.
 - **`FichaDaReview.astro` (#42):** os rótulos certos para cada modelo de ficha (filme, série, livro, lugar, comida), campos vazios ocultos (sem `<dt>` sem `<dd>`), a nota em corações presente e nada renderizado para quem não é review.
+- **`CorpoDoPost.astro` (#39):** com o artigo das fixtures que tem todos os blocos, só elementos semânticos (nenhuma `<div>` além do invólucro), subtítulos h2/h3 com âncora e sem h1, a lista de subnível dentro do `<li>`, o `rel="noopener noreferrer"` no link externo, o link interno resolvido (e só texto fora do ar), toda imagem com `loading="lazy"` e `alt`, as aspas da citação em destaque com `aria-hidden` e um tipo de bloco desconhecido sem quebrar nem aparecer.

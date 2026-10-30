@@ -1,0 +1,61 @@
+---
+import type { TypedObjectProps } from 'astro-portabletext/types';
+import type { Corpo } from '@/lib/corpo';
+
+// Bloco "Citação em destaque": uma frase curta, centralizada, maior e em vinho. As aspas grandes
+// são só desenho (aria-hidden); o leitor de tela anuncia a citação pelo <blockquote>.
+type Props = TypedObjectProps;
+
+const { texto, fonte } = Astro.props.node as Extract<Corpo[number], { _type: 'citacaoDestaque' }>;
+---
+
+{texto?.trim() && (
+  <figure class="citacao-destaque">
+    <span class="citacao-destaque__aspas" aria-hidden="true">
+      “
+    </span>
+    <blockquote class="citacao-destaque__texto">
+      <p>{texto.trim()}</p>
+    </blockquote>
+    {fonte && <figcaption class="citacao-destaque__fonte">{fonte}</figcaption>}
+  </figure>
+)}
+
+<style>
+  .citacao-destaque {
+    text-align: center;
+  }
+
+  .citacao-destaque__aspas {
+    display: block;
+    height: 0.5em;
+    color: var(--cor-malva);
+    font-size: 4.5rem;
+    font-weight: var(--peso-negrito);
+    line-height: 1;
+  }
+
+  /* Texto grande em vinho: 9,70:1 no fundo. As quebras de linha do Studio são mantidas. */
+  .citacao-destaque__texto {
+    color: var(--cor-vinho);
+    font-size: var(--texto-2xl);
+    font-weight: var(--peso-medio);
+    line-height: var(--altura-linha-titulo);
+    letter-spacing: var(--espacamento-titulo);
+    white-space: pre-line;
+    text-wrap: balance;
+  }
+
+  .citacao-destaque__fonte {
+    margin-block-start: var(--espaco-4);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+  }
+
+  /* O travessão é só desenho: a segunda declaração, com texto alternativo vazio, não deixa o
+     leitor de tela anunciá-lo (a primeira fica para navegador sem essa sintaxe). */
+  .citacao-destaque__fonte::before {
+    content: '— ';
+    content: '— ' / '';
+  }
+</style>

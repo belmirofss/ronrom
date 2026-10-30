@@ -1,0 +1,12 @@
+---
+import type { TypedObjectProps } from 'astro-portabletext/types';
+import Figura from '@/components/post/Figura.astro';
+import type { Corpo } from '@/lib/corpo';
+
+// Bloco "Imagem" do texto.
+type Props = TypedObjectProps;
+
+const imagem = Astro.props.node as Extract<Corpo[number], { _type: 'imagem' }>;
+---
+
+<Figura imagem={imagem} largura={imagem.largura} />

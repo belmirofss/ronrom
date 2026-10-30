@@ -1,0 +1,56 @@
+---
+// Vitrine do texto do post: o <CorpoDoPost> com o artigo que tem todos os blocos do Portable Text
+// e a review com a imagem larga, na coluna de leitura. Como a vitrine dos componentes, só existe
+// no `astro dev` (integração do astro.config.mjs), até a página do post (#42) existir.
+import Container from '@/components/layout/Container.astro';
+import CorpoDoPost from '@/components/post/CorpoDoPost.astro';
+import LayoutBase from '@/layouts/LayoutBase.astro';
+import { buscarPost } from '@/lib/sanity/conteudo';
+
+// Os dois posts estão nas fixtures e no seed do dataset development (studio/seed).
+const posts = await Promise.all([
+  buscarPost({ tipo: 'pensamento', secao: 'artigos', slug: 'por-que-eu-anoto-tudo-num-caderno' }),
+  buscarPost({ tipo: 'review', secao: 'lugares', slug: 'mirante-do-morro-azul' }),
+]);
+const encontrados = posts.filter((post) => post !== null);
+---
+
+<LayoutBase
+  seo={{
+    title: 'Vitrine do texto do post',
+    description: 'O texto do post com todos os blocos, só no ambiente de desenvolvimento.',
+    canonical: '/vitrine/corpo',
+    noindex: true,
+  }}
+>
+  <Container largura="leitura">
+    {encontrados.length === 0 && (
+      <p class="vitrine__vazio">
+        Os posts de exemplo não estão neste dataset: ligue as fixtures com
+        <code>SANITY_FIXTURES=true</code> ou rode o <code>pnpm seed</code>.
+      </p>
+    )}
+    {encontrados.map((post) => (
+      <article class="vitrine__post">
+        <h1>{post.titulo}</h1>
+        <CorpoDoPost corpo={post.corpo} />
+      </article>
+    ))}
+  </Container>
+</LayoutBase>
+
+<style>
+  .vitrine__post,
+  .vitrine__vazio {
+    padding-block: var(--espaco-7);
+  }
+
+  .vitrine__post + .vitrine__post {
+    border-block-start: 1px solid var(--cor-borda);
+  }
+
+  .vitrine__post h1 {
+    margin-block-end: var(--espaco-6);
+    font-size: var(--texto-3xl);
+  }
+</style>

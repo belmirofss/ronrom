@@ -1,0 +1,31 @@
+---
+import type { BlockProps } from 'astro-portabletext/types';
+import type { BlocoPreparado } from '@/lib/corpo';
+
+// Estilo de um bloco de texto. O nível dos subtítulos e a âncora já vêm do `prepararCorpo`
+// (@/lib/corpo); um estilo que o schema não tem vira parágrafo.
+type Props = BlockProps;
+
+const { node } = Astro.props;
+const { style, ancora } = node as unknown as BlocoPreparado;
+---
+
+{style === 'h2' ? (
+  <h2 id={ancora}>
+    <slot />
+  </h2>
+) : style === 'h3' ? (
+  <h3 id={ancora}>
+    <slot />
+  </h3>
+) : style === 'blockquote' ? (
+  <blockquote>
+    <p>
+      <slot />
+    </p>
+  </blockquote>
+) : (
+  <p>
+    <slot />
+  </p>
+)}

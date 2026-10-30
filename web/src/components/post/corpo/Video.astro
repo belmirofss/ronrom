@@ -1,0 +1,45 @@
+---
+import type { TypedObjectProps } from 'astro-portabletext/types';
+import { hrefDoLinkExterno, type Corpo } from '@/lib/corpo';
+
+// Bloco "Vídeo". Provisório: só um link para o vídeo no YouTube ou no Instagram, com a legenda.
+// O player leve (fachada que carrega o iframe no clique) entra no lugar dele na #40 (WEB-10).
+type Props = TypedObjectProps;
+
+const { url, provedor, legenda } = Astro.props.node as Extract<Corpo[number], { _type: 'video' }>;
+
+const href = hrefDoLinkExterno(url);
+const rotulo =
+  provedor === 'instagram' ? 'Ver o post no Instagram' : 'Assistir ao vídeo no YouTube';
+---
+
+{href && (
+  <figure class="video">
+    <p>
+      <a class="video__link" href={href} rel="noopener noreferrer">
+        {rotulo}
+      </a>
+    </p>
+    {legenda && <figcaption class="video__legenda">{legenda}</figcaption>}
+  </figure>
+)}
+
+<style>
+  .video {
+    padding: var(--espaco-4) var(--espaco-5);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-md);
+    background-color: var(--cor-creme);
+  }
+
+  .video__link {
+    font-weight: var(--peso-medio);
+  }
+
+  .video__legenda {
+    margin-block-start: var(--espaco-2);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+    line-height: var(--altura-linha-base);
+  }
+</style>

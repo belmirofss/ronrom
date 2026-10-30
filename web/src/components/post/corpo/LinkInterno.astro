@@ -1,0 +1,19 @@
+---
+import type { MarkProps } from 'astro-portabletext/types';
+import { hrefDoLinkInterno } from '@/lib/corpo';
+import type { PostComRota } from '@/lib/rotas';
+
+// Link para outro post, com o caminho montado pelo `urlDoPost`. Destino apagado ou fora do ar
+// (`post: null`) vira só texto.
+type Props = MarkProps<{ post?: PostComRota | null }>;
+
+const href = hrefDoLinkInterno(Astro.props.node.markDef.post);
+---
+
+{href ? (
+  <a href={href}>
+    <slot />
+  </a>
+) : (
+  <slot />
+)}
