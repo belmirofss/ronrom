@@ -2,29 +2,31 @@
 import { Font } from 'astro:assets';
 import Cabecalho from '@/components/layout/Cabecalho.astro';
 import Rodape from '@/components/layout/Rodape.astro';
+import Seo from '@/components/seo/Seo.astro';
+import type { Metadados } from '@/lib/seo';
 import { IDIOMA } from '@/lib/utils/site';
-import { tituloDaPagina } from '@/lib/utils/titulo';
 import '@/styles/global.css';
 
 interface Props {
-  titulo?: string;
+  // Obrigatória: toda página tem título, description, canonical e imagem de compartilhamento.
+  seo: Metadados;
 }
 
-const { titulo } = Astro.props;
+const { seo } = Astro.props;
 ---
 
 <html lang={IDIOMA}>
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <title>{tituloDaPagina(titulo)}</title>
     {/* Preload só do peso 400 (o do texto corrido); 500 e 700 carregam sob demanda. */}
     <Font cssVariable="--fonte-dm-sans" preload={[{ weight: 400, style: 'normal' }]} />
-    {/* Metadados da página (o componente <Seo> da #32 entra aqui). */}
-    <slot name="head" />
+    {/* Title, description, canonical, Open Graph, Twitter e ícones. O slot `head` da página (o
+        JSON-LD) entra no fim do <Seo>. */}
+    <Seo {...seo}>
+      <slot name="head" />
+    </Seo>
   </head>
   <body>
     {/* Primeiro elemento focável: aparece só com o foco e leva o foco para o <main>. */}

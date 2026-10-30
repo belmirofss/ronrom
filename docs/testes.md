@@ -7,7 +7,7 @@ O que é conferido automaticamente, o que é conferido à mão e como escrever o
 Poucos testes, nos lugares certos:
 
 - **Teste unitário só onde existe lógica pura que pode quebrar sem ninguém ver:** cálculos, formatação e mapeamentos. Uma data no dia errado ou uma URL canônica com barra sobrando passam despercebidas no preview e só aparecem no Google semanas depois.
-- **Componente só é testado quando tem lógica condicional relevante:** hoje, apenas a nota em corações e a ficha da review. O resto é markup e já é coberto pelo E2E, pelo axe e pela revisão visual.
+- **Componente só é testado quando tem lógica condicional relevante:** hoje, apenas o `<Seo>`, a nota em corações e a ficha da review. O resto é markup e já é coberto pelo E2E, pelo axe e pela revisão visual.
 - **Sem teste de snapshot de HTML inteiro** e sem teste do que o próprio Astro ou o Sanity garantem.
 - **O teste nasce no PR do utilitário.** As issues que criam utilitários (#33, #34, #40, #51) escrevem os testes junto, cobrindo os [casos listados abaixo](#casos-por-utilitário).
 
@@ -148,6 +148,16 @@ O seed grava direto pela API, sem a validação do Studio. Os testes de [`studio
 - [ ] Cada post passa nas regras de slug, nota, data, ficha do modelo da categoria, vídeo e galeria; toda referência aponta para um documento do seed ou da taxonomia, e todo objeto em array tem `_key`.
 - [ ] Duas chamadas devolvem os mesmos documentos (o seed não usa a hora atual).
 
+### Metadados de SEO (#32)
+
+As regras de [`web/src/lib/seo.ts`](../web/src/lib/seo.ts) e o `ogImage` de [`web/src/lib/sanity/imagem.ts`](../web/src/lib/sanity/imagem.ts):
+
+- [ ] `resumir` devolve o texto inteiro dentro do limite, corta sem quebrar palavra, fecha com reticências sem pontuação antes delas e corta uma palavra maior que o limite.
+- [ ] Description do post: `seo.descricao`, depois o subtítulo, depois o começo do corpo (sem os subtítulos do texto), depois a do site.
+- [ ] `seoDoPost`: título, imagem e `noindex` do SEO quando preenchidos; a capa quando a imagem do SEO perdeu o arquivo; a categoria ou o formato como seção.
+- [ ] `ogImage` pede 1200×630 em JPG, `fit=crop`, qualidade 80 e o `rect` no hotspot; sem asset ou fora do CDN do Sanity devolve `null`.
+- [ ] Sem imagem, vale a `og-padrao.jpg` com URL absoluta; o alt vem do `imageAlt`, depois da imagem, depois do título.
+
 ### Nota em corações (#35)
 
 A conversão da nota para corações fica numa função pura, usada pelo `Coracoes.astro` e pelo JSON-LD (#51):
@@ -172,7 +182,8 @@ A conversão da nota para corações fica numa função pura, usada pelo `Coraco
 
 ### Componentes
 
-Teste de componente (Container API) existe só para estes dois:
+Teste de componente (Container API) existe só para estes três:
 
+- **`Seo.astro` (#32):** uma tag de cada (`<title>`, description, canonical, robots, `og:title`, `og:image`, `twitter:card`), canonical e `og:image` absolutos, a tagline na home, `noindex,follow` pela prop, as metas `article:*` só em `type="article"` e o aviso no build com título acima de 65 caracteres.
 - **`Coracoes.astro` (#35):** um único `role="img"` com o `aria-label` da nota, os SVGs internos com `aria-hidden="true"`, e o número de corações cheios, meios e vazios renderizados para `4.5` e `5`.
 - **`FichaDaReview.astro` (#42):** os rótulos certos para cada modelo de ficha (filme, série, livro, lugar, comida), campos vazios ocultos (sem `<dt>` sem `<dd>`), a nota em corações presente e nada renderizado para quem não é review.
