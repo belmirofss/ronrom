@@ -6,8 +6,8 @@ describe('tituloDaPagina', () => {
     expect(tituloDaPagina('Sobre')).toBe('Sobre · Ronrom');
   });
 
-  it('usa só o nome do site sem título', () => {
-    expect(tituloDaPagina()).toBe('Ronrom');
-    expect(tituloDaPagina('')).toBe('Ronrom');
+  it('usa o nome do site e a tagline sem título, como na home', () => {
+    expect(tituloDaPagina()).toBe('Ronrom · Reviews e pensamentos');
+    expect(tituloDaPagina('')).toBe('Ronrom · Reviews e pensamentos');
   });
 });

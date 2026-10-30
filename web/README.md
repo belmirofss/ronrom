@@ -72,13 +72,13 @@ O anel de foco (3px, offset 2px) é vinho sobre os fundos claros (9,70:1) e crem
 
 Toda página usa um dos layouts de [`src/layouts`](src/layouts), que montam a casca comum: skip link, cabeçalho, `<main>` e rodapé.
 
-- [`LayoutBase.astro`](src/layouts/LayoutBase.astro): `<html lang="pt-BR">`, o `<head>` com a fonte, o slot nomeado `head` (para o `<Seo>` da #32), o link "Pular para o conteúdo", o [`Cabecalho`](src/components/layout/Cabecalho.astro), o `<main id="conteudo" tabindex="-1">` com o conteúdo da página e o [`Rodape`](src/components/layout/Rodape.astro). Prop `titulo` (opcional).
+- [`LayoutBase.astro`](src/layouts/LayoutBase.astro): `<html lang="pt-BR">`, o `<head>` com a fonte e o [`<Seo>`](#seo-meta-tags-e-ícones), o slot nomeado `head` (para o JSON-LD da página), o link "Pular para o conteúdo", o [`Cabecalho`](src/components/layout/Cabecalho.astro), o `<main id="conteudo" tabindex="-1">` com o conteúdo da página e o [`Rodape`](src/components/layout/Rodape.astro). Prop `seo` (obrigatória), repassada ao `<Seo>`.
 - [`LayoutComBarraLateral.astro`](src/layouts/LayoutComBarraLateral.astro): o `LayoutBase` com uma grade conteúdo + `<aside>`. A barra lateral entra pelo slot `barra-lateral` e cai para baixo do conteúdo abaixo de 960px; sem esse slot, o conteúdo ocupa a largura toda e não há `<aside>`.
 - [`Container.astro`](src/components/layout/Container.astro): centraliza o conteúdo em `--container-max` com o `--gutter` nas laterais. `largura="leitura"` usa a `--coluna-leitura` (texto do post) e `as` troca o elemento (padrão `div`).
 
 ```astro
-<LayoutComBarraLateral titulo="Reviews">
-  <Seo slot="head" ... />
+<LayoutComBarraLateral seo={{ title: 'Reviews', description: '...', canonical: '/reviews' }}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
   <h1>Reviews</h1>
   <BarraLateral slot="barra-lateral" />
 </LayoutComBarraLateral>
@@ -90,6 +90,39 @@ Regras da casca:
 - **Seção atual:** o cabeçalho marca a seção com `aria-current` pelo prefixo da rota (`estadoDaSecao`, em [`src/lib/navegacao.ts`](src/lib/navegacao.ts)): `"page"` na própria página da seção (`/reviews`) e `"true"` nas páginas dentro dela (`/reviews/filmes/...`). "Início" só fica ativo em `/`.
 - **Celular:** os 4 links da navegação ficam sempre visíveis, sem menu hambúrguer, e quebram linha se não couberem. Todo link do cabeçalho e do rodapé tem pelo menos 44px de altura.
 - **Rodapé:** o link "Área da autora" aponta para `STUDIO_URL` (padrão `https://ronrom.sanity.studio`, veja [`docs/ambientes.md`](../docs/ambientes.md#variáveis-de-ambiente)), e o ano é o do build, no fuso de São Paulo.
+
+## SEO: meta tags e ícones
+
+O [`<Seo>`](src/components/seo/Seo.astro) concentra o `<head>` de todas as páginas, uma tag de cada: `<title>`, description, canonical, robots, Open Graph, Twitter card, o `<link>` do RSS e os ícones. Quem o renderiza é o `LayoutBase`, com a prop `seo`; a página não coloca outro `<title>` nem meta tag no slot `head`, que fica só para o JSON-LD (#50, #51).
+
+| Prop                            | Uso                                                                                                                         |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `title`                         | Título sem o nome do site. Vira `"{title} · Ronrom"`; sem ele (a home), `"Ronrom · Reviews e pensamentos"`                  |
+| `description`                   | Obrigatória. Vazia, vale a `DESCRICAO_DO_SITE` (`src/lib/utils/site.ts`)                                                    |
+| `canonical`                     | Obrigatória: o caminho da página (`/sobre`). O `<Seo>` monta a URL absoluta com o `canonicalUrl`, também usada no `og:url`  |
+| `image`, `imageAlt`             | Imagem do Sanity (capa, foto, imagem de compartilhamento). Sem ela, ou com o arquivo apagado, vale a `public/og-padrao.jpg` |
+| `type`                          | `website` (padrão) ou `article`. Só `article` emite `article:published_time`, `modified_time`, `section` e um `tag` por tag |
+| `noindex`                       | `noindex,follow` no lugar do padrão `index,follow,max-image-preview:large`                                                  |
+| `publishedTime`, `modifiedTime` | Datas ISO 8601 do post (`dataDePublicacao` e `_updatedAt`)                                                                  |
+| `tags`, `section`               | Nomes das tags e da categoria (review) ou do formato (pensamento)                                                           |
+
+Regras:
+
+- **Post:** a página do post (#42) monta as props com o `seoDoPost(post, urlDoPost(post))`, de [`src/lib/seo.ts`](src/lib/seo.ts). O título é o `seo.titulo` ou o título do post; a description é a `seo.descricao`, depois o subtítulo, depois os primeiros ~155 caracteres do texto, sem quebrar palavra; a imagem é a `seo.imagem` ou a capa.
+- **Imagem de compartilhamento:** o `ogImage(imagem)` ([`src/lib/sanity/imagem.ts`](src/lib/sanity/imagem.ts)) pede ao CDN do Sanity um JPG de 1200×630 recortado no hotspot (JPG porque alguns crawlers não aceitam WebP nem AVIF). O `og:title` e o `twitter:title` vão sem o " · Ronrom", que já aparece no `og:site_name`.
+- **Título longo:** acima de 65 caracteres (com o " · Ronrom"), o build mostra um aviso `[seo]` com a página. Não quebra o build: a autora encurta pelo "Título para o Google" do post.
+- **Prévia de link:** depois do deploy, confira a URL no [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/), no [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) e mandando o link no WhatsApp.
+
+### Ícones e imagem de compartilhamento
+
+Em [`public/`](public), todos com o gato do mosaico em vinho sobre rosa, o mesmo desenho do ícone do Studio (`studio/marca/IconeRonrom.tsx`):
+
+- `favicon.svg`: o desenho original, em 32×32.
+- `favicon.ico` (16, 32 e 48px), para navegadores sem SVG e leitores de RSS que pedem `/favicon.ico` direto.
+- `apple-touch-icon.png` (180×180, sem cantos arredondados, que o iOS aplica sozinho).
+- `og-padrao.jpg` (1200×630): o ícone sobre fundo creme, para as páginas sem imagem própria.
+
+Os três últimos foram exportados do `favicon.svg` com o `sharp`. Se o desenho mudar, exporte de novo nos mesmos tamanhos.
 
 ## Componentes de interface
 

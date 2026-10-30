@@ -32,8 +32,15 @@ const PAGINAS: { titulo: string; atual: number; total: number }[] = [
 ];
 ---
 
-<LayoutBase titulo="Vitrine de componentes">
-  <meta slot="head" name="robots" content="noindex" />
+<LayoutBase
+  seo={{
+    title: 'Vitrine de componentes',
+    description:
+      'Todos os estados dos componentes de interface, só no ambiente de desenvolvimento.',
+    canonical: '/vitrine',
+    noindex: true,
+  }}
+>
   <Container>
     <div class="vitrine">
       <h1>Vitrine de componentes</h1>
