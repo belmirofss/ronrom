@@ -130,6 +130,15 @@ As consultas de [`web/src/lib/sanity/consultas.ts`](../web/src/lib/sanity/consul
 - [ ] O post só é achado no tipo e na categoria (ou formato) certos, com a ficha do modelo da categoria e sem tags fora do ar.
 - [ ] Destaque com e sem escolha nas configurações, "Leia também" na ordem de prioridade, redirects e sitemap.
 
+### Seed de desenvolvimento (#26)
+
+O seed grava direto pela API, sem a validação do Studio. Os testes de [`studio/lib/seed.test.ts`](../studio/lib/seed.test.ts) conferem o conteúdo de exemplo com as mesmas regras:
+
+- [ ] A trava aceita só o dataset `development`, e o filtro do `--reset` (rodado no `groq-js`) pega `seed-*` e `drafts.seed-*`, nunca a taxonomia, os singletons ou um `_id` que só contém `seed`.
+- [ ] Uma review por categoria e um pensamento por formato, com frase curta, texto longo, post sem subtítulo e um post com todos os blocos do texto.
+- [ ] Cada post passa nas regras de slug, nota, data, ficha do modelo da categoria, vídeo e galeria; toda referência aponta para um documento do seed ou da taxonomia, e todo objeto em array tem `_key`.
+- [ ] Duas chamadas devolvem os mesmos documentos (o seed não usa a hora atual).
+
 ### Nota em corações (#35)
 
 A conversão da nota para corações fica numa função pura, usada pelo `Coracoes.astro` e pelo JSON-LD (#51):

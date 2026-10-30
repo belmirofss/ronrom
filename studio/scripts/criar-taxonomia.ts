@@ -4,7 +4,7 @@
 // Studio nesses dez documentos. Como rodar: studio/README.md#taxonomia-inicial.
 import { getCliClient } from 'sanity/cli';
 
-import { CATEGORIAS, FORMATOS } from '../lib/taxonomia';
+import { CATEGORIAS, documentosDaTaxonomia, FORMATOS } from '../lib/taxonomia';
 
 const DATASETS = ['development', 'production'];
 
@@ -21,19 +21,8 @@ async function criarTaxonomia() {
   const client = getCliClient({ apiVersion: API_VERSION }).withConfig({ dataset });
   const transacao = client.transaction();
 
-  for (const { slug, ...categoria } of CATEGORIAS) {
-    transacao.createOrReplace({
-      _type: 'categoria',
-      ...categoria,
-      slug: { _type: 'slug', current: slug },
-    });
-  }
-  for (const { slug, ...formato } of FORMATOS) {
-    transacao.createOrReplace({
-      _type: 'formato',
-      ...formato,
-      slug: { _type: 'slug', current: slug },
-    });
+  for (const documento of documentosDaTaxonomia()) {
+    transacao.createOrReplace(documento);
   }
 
   await transacao.commit();
