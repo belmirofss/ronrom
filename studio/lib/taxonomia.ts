@@ -2,6 +2,8 @@
 // modelos de ficha de docs/seo-urls.md. O script scripts/criar-taxonomia.ts grava estes
 // documentos; os schemas usam a lista de modelos de ficha.
 
+import type { Documento } from './seed';
+
 // Qual "ficha" (bloco de dados técnicos) a review de cada categoria usa. Os campos de cada
 // modelo ficam em lib/ficha.ts.
 export const MODELOS_DE_FICHA = [
@@ -118,3 +120,20 @@ export const FORMATOS: readonly Formato[] = [
     ordem: 4,
   },
 ];
+
+// Os dez documentos como são gravados no Sanity, com o slug no formato do campo. Usado pelo
+// scripts/criar-taxonomia.ts e pelo seed de desenvolvimento (scripts/seed.ts).
+export function documentosDaTaxonomia(): Documento[] {
+  return [
+    ...CATEGORIAS.map(({ slug, ...categoria }) => ({
+      _type: 'categoria',
+      ...categoria,
+      slug: { _type: 'slug', current: slug },
+    })),
+    ...FORMATOS.map(({ slug, ...formato }) => ({
+      _type: 'formato',
+      ...formato,
+      slug: { _type: 'slug', current: slug },
+    })),
+  ];
+}
