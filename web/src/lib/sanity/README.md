@@ -130,7 +130,7 @@ Toda imagem do conteúdo passa pelo [`<ImagemSanity>`](../../components/ui/Image
 
 O projeto e o dataset saem da URL do próprio asset (`https://cdn.sanity.io/images/{projeto}/{dataset}/...`), como no `ogImage` do `<Seo>`, sem depender das variáveis. Fora do CDN, como no [modo fixtures](#modo-fixtures), o `src` é o `url` do asset (o placeholder em SVG) e não há `srcset`.
 
-**Card** de post (listas, destaque, "Leia também", índice):
+**Card** de post ("Leia também" e índice):
 
 ```ts
 {
@@ -142,9 +142,11 @@ O projeto e o dataset saem da URL do próprio asset (`https://cdn.sanity.io/imag
 }
 ```
 
+**Card com leitura** (destaque e listagens, que mostram o tempo de leitura): o card e mais `textoDoCorpo`, só os blocos de texto do corpo com o texto dos spans (`{ _type: 'block', children: { text }[] }[]`), o que o `tempoDeLeitura` conta. Nos componentes, os dois formatos são os tipos `Card` e `CardComLeitura`, de [`src/lib/card.ts`](../card.ts).
+
 **Rota** (o mínimo do `urlDoPost`): `{ tipo, slug, categoria: { slug } | null, formato: { slug } | null }`.
 
-**Página de listagem**: `{ posts: Card[], total: number }`, com a fatia `[$inicio...$fim]` (fim exclusivo). Com 12 por página, a página `n` usa `inicio = (n - 1) * 12` e `fim = n * 12`; o `total` diz quantas páginas gerar.
+**Página de listagem**: `{ posts: CardComLeitura[], total: number }`, com a fatia `[$inicio...$fim]` (fim exclusivo). Com 12 por página, a página `n` usa `inicio = (n - 1) * 12` e `fim = n * 12`; o `total` diz quantas páginas gerar.
 
 ## Consultas
 
@@ -152,7 +154,7 @@ O projeto e o dataset saem da URL do próprio asset (`https://cdn.sanity.io/imag
 | --------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CONSULTA_DAS_CONFIGURACOES`      | —                               | `{ fraseDaSemana, seo: { descricao, imagem }, redes: { rede, url }[] }` ou `null`                                                                                                                           |
 | `CONSULTA_DO_SOBRE`               | —                               | `{ _updatedAt, nome, bio, foto, texto (Portable Text), seo: { descricao, imagem } }` ou `null`                                                                                                              |
-| `CONSULTA_DO_DESTAQUE`            | —                               | Card do post escolhido em Configurações; se não houver (ou ele saiu do ar), o do mais recente. `null` sem nenhum post                                                                                       |
+| `CONSULTA_DO_DESTAQUE`            | —                               | Card com leitura do post escolhido em Configurações; se não houver (ou ele saiu do ar), o do mais recente. `null` sem nenhum post                                                                           |
 | `CONSULTA_DOS_ULTIMOS_POSTS`      | `$inicio`, `$fim`               | Página de listagem com todos os posts                                                                                                                                                                       |
 | `CONSULTA_DOS_POSTS_DO_TIPO`      | `$tipo`, `$inicio`, `$fim`      | Página de listagem de reviews ou de pensamentos                                                                                                                                                             |
 | `CONSULTA_DOS_POSTS_DA_CATEGORIA` | `$categoria`, `$inicio`, `$fim` | Página de listagem e `categoria: { nome, slug, descricao }`, `null` se o slug não existe                                                                                                                    |

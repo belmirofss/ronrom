@@ -24,8 +24,8 @@ const TAXONOMIA = `{ nome, "slug": slug.current }`;
 // O que o `urlDoPost` (web/src/lib/rotas.ts, docs/seo-urls.md) precisa: tipo e slugs resolvidos.
 const ROTA = `tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current }`;
 
-// Card de post nas listas, no destaque e no "Leia também". Também traz o que o `urlDoPost` precisa.
-const CARD = `{
+// Card de post no "Leia também" e no índice. Também traz o que o `urlDoPost` precisa.
+const CAMPOS_DO_CARD = `
   _id,
   tipo,
   titulo,
@@ -36,12 +36,19 @@ const CARD = `{
   "categoria": categoria->${TAXONOMIA},
   "formato": formato->${TAXONOMIA},
   "capa": capa${IMAGEM_NO_GROQ}
+`;
+const CARD = `{${CAMPOS_DO_CARD}}`;
+
+// Card do destaque e das listagens, que mostram o tempo de leitura: o card e só o texto dos blocos
+// do corpo, o que o `tempoDeLeitura` conta. Imagens, vídeos e marcas ficam de fora.
+const CARD_COM_LEITURA = `{${CAMPOS_DO_CARD},
+  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }
 }`;
 
 // Página de uma listagem: a fatia `[$inicio...$fim]` (fim exclusivo) e o total, para saber quantas
 // páginas gerar. A página n de 12 posts usa inicio = (n - 1) * 12 e fim = n * 12.
 const PAGINA_DE_POSTS = (filtro: string) => `
-  "posts": *[${POST_PUBLICADO} && ${filtro}] | ${MAIS_RECENTES} [$inicio...$fim]${CARD},
+  "posts": *[${POST_PUBLICADO} && ${filtro}] | ${MAIS_RECENTES} [$inicio...$fim]${CARD_COM_LEITURA},
   "total": count(*[${POST_PUBLICADO} && ${filtro}])
 `;
 
@@ -73,8 +80,8 @@ export const CONSULTA_DO_SOBRE = defineQuery(`*[_id == "sobre"][0]{
 // Post escolhido em Configurações do site ou, sem escolha (ou com um post que saiu do ar), o mais
 // recente. `null` só sem nenhum post publicado.
 export const CONSULTA_DO_DESTAQUE = defineQuery(`coalesce(
-  *[${POST_PUBLICADO} && _id == *[_id == "configuracoes"][0].postEmDestaque._ref][0]${CARD},
-  *[${POST_PUBLICADO}] | ${MAIS_RECENTES} [0]${CARD}
+  *[${POST_PUBLICADO} && _id == *[_id == "configuracoes"][0].postEmDestaque._ref][0]${CARD_COM_LEITURA},
+  *[${POST_PUBLICADO}] | ${MAIS_RECENTES} [0]${CARD_COM_LEITURA}
 )`);
 
 // Todos os posts (/posts e o resto da home). Parâmetros: $inicio e $fim.

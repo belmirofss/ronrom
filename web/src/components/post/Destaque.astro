@@ -1,0 +1,136 @@
+---
+import Coracoes from '@/components/ui/Coracoes.astro';
+import Data from '@/components/ui/Data.astro';
+import ImagemSanity from '@/components/ui/ImagemSanity.astro';
+import { chamadaDoCard, rotuloDoCard, type CardComLeitura, type NivelDoTitulo } from '@/lib/card';
+import { urlDoPost } from '@/lib/rotas';
+import { tempoDeLeitura } from '@/lib/utils/leitura';
+
+interface Props {
+  /** O card de `buscarDestaque()`. */
+  post: CardComLeitura;
+  /** Padrão: 2, logo abaixo do h1 da home. */
+  nivelTitulo?: NivelDoTitulo;
+  /** Largura de exibição da capa. O padrão cobre a coluna principal da home, ao lado da barra. */
+  sizes?: string;
+  class?: string;
+}
+
+const {
+  post,
+  nivelTitulo = 2,
+  sizes = '(min-width: 60em) 26rem, (min-width: 40rem) 50vw, 100vw',
+  class: classe,
+} = Astro.props;
+
+const Titulo = `h${nivelTitulo}` as const;
+const [tipo, secao] = rotuloDoCard(post);
+---
+
+<article class:list={['destaque', 'card-clicavel', classe]}>
+  <div class="destaque__grade">
+    <div class="destaque__textos">
+      <Titulo class="destaque__titulo">
+        <a class="card-clicavel__link" href={urlDoPost(post)}>
+          {post.titulo}
+        </a>
+      </Titulo>
+      <p class="destaque__rotulo">
+        Destaque<span aria-hidden="true"> · </span>
+        {tipo}
+        <span aria-hidden="true"> · </span>
+        {secao}
+      </p>
+      {post.subtitulo && <p class="destaque__subtitulo">{post.subtitulo}</p>}
+      {post.tipo === 'review' && <Coracoes nota={post.nota} />}
+      <p class="destaque__meta">
+        <Data iso={post.dataDePublicacao} />
+        <span aria-hidden="true"> · </span>
+        {tempoDeLeitura(post.textoDoCorpo)}
+      </p>
+      {/* Só visual: o link do card é o título, e um segundo link anunciaria o mesmo destino. */}
+      <span class="destaque__botao" aria-hidden="true">
+        {chamadaDoCard(post)}
+      </span>
+    </div>
+    <ImagemSanity
+      class="destaque__capa"
+      imagem={post.capa}
+      alt=""
+      proporcao={4 / 3}
+      sizes={sizes}
+      prioridade
+    />
+  </div>
+</article>
+
+<style>
+  /* O layout segue a largura do próprio destaque, não da tela: a coluna da home muda de largura
+     com a barra lateral. */
+  .destaque {
+    container-type: inline-size;
+  }
+
+  .destaque__grade {
+    display: grid;
+    gap: var(--espaco-5);
+  }
+
+  /* No HTML, o título vem antes da capa e do rótulo, para o leitor de tela começar por ele. */
+  .destaque :global(.destaque__capa) {
+    order: -1;
+    border-radius: var(--raio-lg);
+  }
+
+  @container (min-width: 36rem) {
+    .destaque__grade {
+      grid-template-columns: 11fr 9fr;
+      align-items: center;
+      gap: var(--espaco-6);
+    }
+  }
+
+  .destaque__textos {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--espaco-3);
+    min-width: 0;
+  }
+
+  .destaque__rotulo {
+    order: -1;
+    color: var(--cor-vinho);
+    font-size: var(--texto-sm);
+    font-weight: var(--peso-medio);
+  }
+
+  .destaque__titulo {
+    font-size: var(--texto-3xl);
+  }
+
+  .destaque__subtitulo {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-lg);
+  }
+
+  .destaque__meta {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+  }
+
+  /* Vinho com texto creme (7,83:1). Escurece com o hover em qualquer lugar do card. */
+  .destaque__botao {
+    margin-block-start: var(--espaco-2);
+    padding: var(--espaco-3) var(--espaco-5);
+    border-radius: var(--raio-pilula);
+    background-color: var(--cor-vinho);
+    color: var(--cor-creme);
+    font-weight: var(--peso-medio);
+    line-height: var(--altura-linha-titulo);
+  }
+
+  .destaque:hover .destaque__botao {
+    background-color: var(--cor-vinho-hover);
+  }
+</style>
