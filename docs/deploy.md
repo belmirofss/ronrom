@@ -125,6 +125,8 @@ Para criar, com a URL do hook à mão (Vercel → Settings → Git → Deploy Ho
 pnpm --filter studio sanity hooks list
 ```
 
+A saída mostra a URL completa do hook: não cole em issue, PR ou print. Ela não mostra o filtro, os eventos nem os interruptores de rascunho; esses só aparecem no painel.
+
 ### Conferir o webhook
 
 Os três critérios, no Studio publicado (dataset `production`):
