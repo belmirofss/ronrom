@@ -156,7 +156,7 @@ Regras:
 
 ## Helpers de rota
 
-`web/src/lib/rotas.ts` (implementado na #33, com testes na #16) é a **única fonte de URLs do site**. Páginas, componentes, sitemap, RSS, JSON-LD, `<Seo>`, Pagefind e `/posts-index.json` chamam estes helpers; nenhum outro arquivo concatena caminhos de post, categoria, formato, tag ou paginação.
+`web/src/lib/rotas.ts` (implementado na #33, com testes na #16; o `canonicalUrl` entrou antes, na #32, junto do `<Seo>`) é a **única fonte de URLs do site**. Páginas, componentes, sitemap, RSS, JSON-LD, `<Seo>`, Pagefind e `/posts-index.json` chamam estes helpers; nenhum outro arquivo concatena caminhos de post, categoria, formato, tag ou paginação.
 
 ```ts
 // Caminhos relativos à raiz, sem barra no final.

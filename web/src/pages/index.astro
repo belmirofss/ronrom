@@ -1,10 +1,10 @@
 ---
 import Container from '@/components/layout/Container.astro';
 import LayoutBase from '@/layouts/LayoutBase.astro';
-import { NOME_DO_SITE } from '@/lib/utils/site';
+import { DESCRICAO_DO_SITE, NOME_DO_SITE } from '@/lib/utils/site';
 ---
 
-<LayoutBase titulo="Em construção">
+<LayoutBase seo={{ description: DESCRICAO_DO_SITE, canonical: '/' }}>
   <Container>
     <h1>{NOME_DO_SITE} em construção</h1>
   </Container>
