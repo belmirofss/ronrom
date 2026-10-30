@@ -140,9 +140,41 @@ Os componentes genéricos ficam em [`src/components/ui`](src/components/ui). A l
 <Paginacao base={urlDaCategoria('filmes')} atual={pagina} total={totalDePaginas(total)} />
 ```
 
+- [`EstadoVazio.astro`](src/components/ui/EstadoVazio.astro): listagem sem post. Props `mensagem` (padrão "Ainda não tem nada por aqui.") e `link` (`{ rotulo, href }`, padrão "Que tal ver todos os posts?" para `/posts`), com o gato do mosaico decorativo em cima.
+
+### Cards de post
+
+Os três formatos de post nas listas ficam em [`src/components/post`](src/components/post). Todos recebem o card como a consulta devolve (`post`) e `nivelTitulo`, o nível do título conforme a página: h2 numa listagem, embaixo do h1; h3 embaixo de uma seção, como as abas da home ou o "Leia também".
+
+| Componente                                                   | Onde                     | Card                                          | Mostra                                                                                                                                     | Título padrão |
+| ------------------------------------------------------------ | ------------------------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
+| [`Destaque.astro`](src/components/post/Destaque.astro)       | Home                     | `buscarDestaque()`                            | Capa 4:3 com `prioridade`, "Destaque · Review · Filmes", título, subtítulo, corações, data, tempo de leitura e "Ler review" ou "Ler texto" | h2            |
+| [`ItemDeLista.astro`](src/components/post/ItemDeLista.astro) | Abas da home e listagens | `buscarUltimos()`, `buscarPostsDoTipo()` etc. | Miniatura 4:3 com o chip da seção, "Review · Filmes", título, subtítulo, corações, data e tempo de leitura                                 | h2            |
+| [`CardDePost.astro`](src/components/post/CardDePost.astro)   | "Leia também"            | `buscarLeiaTambem()`                          | Capa 4:3 com o chip da seção, título e data                                                                                                | h3            |
+
+Regras:
+
+- **Um link só por card, no título.** O `::after` do link cobre o card inteiro (`.card-clicavel` e `.card-clicavel__link`, em [`global.css`](src/styles/global.css)), então capa, chip e o botão do destaque também levam ao post, mas o leitor de tela e o Tab encontram um link só, com o título como nome. Nada mais dentro do card pode ser link ou botão: o chip é texto e o "Ler review" é só visual (`aria-hidden`). O anel de foco contorna o card todo.
+- **Título primeiro no HTML.** O rótulo e a capa aparecem antes do título na tela, mas vêm depois dele no HTML (`order` no CSS), para quem navega por títulos ouvir o nome do post antes do resto. As capas dos cards são decorativas (`alt=""`): o título já diz do que se trata.
+- **Corações só em review**, e subtítulo ausente não deixa espaço: o parágrafo não é renderizado. O rótulo e o chip saem de [`src/lib/card.ts`](src/lib/card.ts) (`rotuloDoCard`, `secaoDoCard` e `chamadaDoCard`), que quebra o build com review sem categoria ou pensamento sem formato.
+- **Largura do próprio card**, não da tela: o Destaque e o ItemDeLista usam container queries, porque a coluna principal muda de largura com a barra lateral. Estreito, como no celular, a capa fica em cima do texto; título de 3 linhas ou mais e categoria longa ("Restaurantes e cafés") cabem em 320px. A prop `sizes` ajusta o `sizes` da capa quando o card fica numa coluna diferente da padrão.
+
+```astro
+<Destaque post={destaque} />
+<ul role="list">
+  {posts.map((post) => (
+    <li>
+      <ItemDeLista post={post} nivelTitulo={3} />
+    </li>
+  ))}
+</ul>
+<CardDePost post={post} />
+<EstadoVazio link={{ rotulo: 'Ver todas as reviews', href: '/reviews' }} />
+```
+
 ### Vitrine
 
-Com o `pnpm dev` rodando, http://localhost:4321/vitrine/corpo mostra o [texto do post](#texto-do-post-portable-text) com todos os blocos, e http://localhost:4321/vitrine mostra todos os estados desses componentes: as 10 notas, os 3 tamanhos, os chips nos dois tons (link, estático e sobre a miniatura), trilhas de review, pensamento, categoria e formato, e a paginação na primeira, no meio e na última página. A página ([`src/vitrine/Componentes.astro`](src/vitrine/Componentes.astro)) fica fora de `src/pages`: uma integração no `astro.config.mjs` injeta a rota só no `astro dev`, então ela não existe no build. Componente novo em `ui/` entra na vitrine no mesmo PR.
+Com o `pnpm dev` rodando, http://localhost:4321/vitrine/corpo mostra o [texto do post](#texto-do-post-portable-text) com todos os blocos, e http://localhost:4321/vitrine mostra todos os estados desses componentes: as 10 notas, os 3 tamanhos, os chips nos dois tons (link, estático e sobre a miniatura), trilhas de review, pensamento, categoria e formato, a paginação na primeira, no meio e na última página, os cards de post com o conteúdo do Sanity (ou das fixtures), inclusive título e categoria longos e pensamento sem subtítulo em 320px, e o estado vazio. A página ([`src/vitrine/Componentes.astro`](src/vitrine/Componentes.astro)) fica fora de `src/pages`: uma integração no `astro.config.mjs` injeta a rota só no `astro dev`, então ela não existe no build. Componente novo em `ui/` entra na vitrine no mesmo PR.
 
 ## Imagens, datas e tempo de leitura
 

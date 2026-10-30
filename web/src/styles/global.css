@@ -156,6 +156,42 @@ a:hover {
   color: var(--cor-fundo);
 }
 
+/* Card inteiro clicável com um link só, o do título (Destaque, ItemDeLista e CardDePost): o
+   ::after do link cobre o card, que é o bloco posicionado. Nada mais dentro do card pode ser
+   focável. O anel de foco sai do texto do link e contorna o card todo. */
+.card-clicavel {
+  position: relative;
+}
+
+.card-clicavel__link {
+  color: var(--cor-texto);
+  text-decoration-line: none;
+  overflow-wrap: anywhere;
+}
+
+.card-clicavel:hover .card-clicavel__link {
+  color: var(--cor-vinho-hover);
+  text-decoration-line: underline;
+}
+
+/* O z-index põe o ::after por cima dos blocos posicionados do card, como a miniatura com o chip. */
+.card-clicavel__link::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  border-radius: var(--raio-md);
+}
+
+.card-clicavel__link:focus-visible {
+  outline: none;
+}
+
+.card-clicavel__link:focus-visible::after {
+  outline: var(--foco-largura) solid var(--foco-cor);
+  outline-offset: var(--foco-offset);
+}
+
 /* Esconde da tela e mantém para leitores de tela. Fica visível ao receber foco (links de pular
    para o conteúdo, por exemplo). */
 .visualmente-oculto:not(:focus, :active) {

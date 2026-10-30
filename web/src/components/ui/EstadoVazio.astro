@@ -1,0 +1,65 @@
+---
+import Gato from '@/assets/formas/gato.svg';
+import type { LinkDeNavegacao } from '@/lib/navegacao';
+
+interface Props {
+  /** O que falta. Padrão: "Ainda não tem nada por aqui." */
+  mensagem?: string;
+  /** Para onde ir. Padrão: "Que tal ver todos os posts?", para /posts. */
+  link?: LinkDeNavegacao;
+  class?: string;
+}
+
+const {
+  mensagem = 'Ainda não tem nada por aqui.',
+  link = { rotulo: 'Que tal ver todos os posts?', href: '/posts' },
+  class: classe,
+} = Astro.props;
+---
+
+<div class:list={['estado-vazio', classe]}>
+  {/* O gato do mosaico, só decorativo. */}
+  <div class="estado-vazio__forma" aria-hidden="true">
+    <Gato />
+  </div>
+  <p class="estado-vazio__mensagem">
+    {mensagem}
+    <a href={link.href}>{link.rotulo}</a>
+  </p>
+</div>
+
+<style>
+  .estado-vazio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--espaco-4);
+    padding: var(--espaco-7) var(--espaco-4);
+    border: 1px dashed var(--cor-borda);
+    border-radius: var(--raio-lg);
+    text-align: center;
+  }
+
+  /* Rosa sobre vinho, como o primeiro quadrado do mosaico. */
+  .estado-vazio__forma {
+    width: 4rem;
+    padding: var(--espaco-3);
+    border-radius: var(--raio-md);
+    background-color: var(--cor-vinho);
+    color: var(--cor-rosa);
+  }
+
+  .estado-vazio__mensagem {
+    max-width: 32ch;
+    font-size: var(--texto-lg);
+  }
+
+  /* O link vai para a linha de baixo, com um alvo de toque confortável. */
+  .estado-vazio__mensagem a {
+    display: block;
+    width: fit-content;
+    margin-inline: auto;
+    padding-block: var(--espaco-2);
+    font-weight: var(--peso-medio);
+  }
+</style>

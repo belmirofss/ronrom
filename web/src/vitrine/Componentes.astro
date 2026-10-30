@@ -3,12 +3,17 @@
 // testar com teclado e leitor de tela. Fica fora de src/pages porque só existe no `astro dev`: a
 // integração do astro.config.mjs injeta a rota /vitrine no dev, e o build nem a conhece.
 import Container from '@/components/layout/Container.astro';
+import CardDePost from '@/components/post/CardDePost.astro';
+import Destaque from '@/components/post/Destaque.astro';
+import ItemDeLista from '@/components/post/ItemDeLista.astro';
 import Breadcrumb from '@/components/ui/Breadcrumb.astro';
 import ChipCategoria from '@/components/ui/ChipCategoria.astro';
 import Coracoes from '@/components/ui/Coracoes.astro';
+import EstadoVazio from '@/components/ui/EstadoVazio.astro';
 import Paginacao from '@/components/ui/Paginacao.astro';
 import LayoutBase from '@/layouts/LayoutBase.astro';
 import { NOTA_MAXIMA, NOTA_MINIMA } from '@/lib/nota';
+import { buscarDestaque, buscarLeiaTambem, buscarUltimos } from '@/lib/sanity/conteudo';
 import { urlDaCategoria, urlDaTag, urlDoFormato } from '@/lib/rotas';
 import { trilhaDaCategoria, trilhaDoFormato, trilhaDoPost } from '@/lib/trilha';
 
@@ -30,6 +35,25 @@ const PAGINAS: { titulo: string; atual: number; total: number }[] = [
   { titulo: 'Poucas páginas (2 de 3)', atual: 2, total: 3 },
   { titulo: 'Sete páginas, sem reticências (4 de 7)', atual: 4, total: 7 },
 ];
+
+// Os cards saem do Sanity (ou das fixtures). Os casos que o conteúdo pode não ter, como título
+// longo, categoria longa e pensamento sem subtítulo, são montados por cima de um post de verdade.
+const destaque = await buscarDestaque();
+const { posts } = await buscarUltimos();
+const leiaTambem = destaque ? await buscarLeiaTambem(destaque._id) : [];
+
+const review = posts.find((post) => post.tipo === 'review');
+const pensamento = posts.find((post) => post.tipo === 'pensamento');
+const TITULO_LONGO =
+  'Um título bem comprido, de três linhas ou mais no celular, para ver se o card aguenta sem cortar nada';
+const casosExtremos = [
+  review && {
+    ...review,
+    titulo: TITULO_LONGO,
+    categoria: { nome: 'Restaurantes e cafés', slug: 'restaurantes-e-cafes' },
+  },
+  pensamento && { ...pensamento, subtitulo: null },
+].filter((post) => post !== undefined);
 ---
 
 <LayoutBase
@@ -147,6 +171,75 @@ const PAGINAS: { titulo: string; atual: number; total: number }[] = [
         <p class="vitrine__nota">Não renderiza nada:</p>
         <Paginacao base={urlDaCategoria('filmes')} atual={1} total={1} />
       </section>
+
+      {/* Os cards ficam abaixo do h2 da seção, como o "Leia também": título em h3. */}
+      <section aria-labelledby="titulo-destaque">
+        <h2 id="titulo-destaque">Destaque</h2>
+        {destaque ? (
+          <Destaque post={destaque} nivelTitulo={3} />
+        ) : (
+          <p class="vitrine__nota">Nenhum post publicado.</p>
+        )}
+        {casosExtremos.map((post) => (
+          <>
+            <h3>
+              {post.tipo === 'review' ? 'Título e categoria longos' : 'Pensamento sem subtítulo'}
+            </h3>
+            <Destaque post={post} nivelTitulo={4} />
+          </>
+        ))}
+      </section>
+
+      <section aria-labelledby="titulo-item-de-lista">
+        <h2 id="titulo-item-de-lista">ItemDeLista</h2>
+        <h3>Todos os posts (página 1)</h3>
+        <ul class="vitrine__lista">
+          {posts.map((post) => (
+            <li>
+              <ItemDeLista post={post} nivelTitulo={4} />
+            </li>
+          ))}
+        </ul>
+        <h3>Casos extremos, na largura do celular de 320px</h3>
+        <ul class="vitrine__lista vitrine__lista--estreita">
+          {casosExtremos.map((post) => (
+            <li>
+              <ItemDeLista post={post} nivelTitulo={4} />
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-labelledby="titulo-card-de-post">
+        <h2 id="titulo-card-de-post">CardDePost</h2>
+        <h3>Leia também</h3>
+        <ul class="vitrine__cards">
+          {leiaTambem.map((post) => (
+            <li>
+              <CardDePost post={post} nivelTitulo={4} />
+            </li>
+          ))}
+        </ul>
+        <h3>Casos extremos, na largura do celular de 320px</h3>
+        <ul class="vitrine__cards vitrine__lista--estreita">
+          {casosExtremos.map((post) => (
+            <li>
+              <CardDePost post={post} nivelTitulo={4} />
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-labelledby="titulo-estado-vazio">
+        <h2 id="titulo-estado-vazio">EstadoVazio</h2>
+        <h3>Padrão</h3>
+        <EstadoVazio />
+        <h3>Com mensagem e link próprios</h3>
+        <EstadoVazio
+          mensagem="Nenhuma review de livros por enquanto."
+          link={{ rotulo: 'Ver todas as reviews', href: '/reviews' }}
+        />
+      </section>
     </div>
   </Container>
 </LayoutBase>
@@ -199,6 +292,29 @@ const PAGINAS: { titulo: string; atual: number; total: number }[] = [
     flex-wrap: wrap;
     align-items: center;
     gap: var(--espaco-3);
+  }
+
+  .vitrine__lista,
+  .vitrine__cards {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .vitrine__lista {
+    display: grid;
+    gap: var(--espaco-6);
+  }
+
+  .vitrine__cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+    gap: var(--espaco-5);
+  }
+
+  /* 320px menos o gutter de 16px de cada lado. */
+  .vitrine__lista--estreita {
+    max-width: 288px;
   }
 
   .vitrine__card {

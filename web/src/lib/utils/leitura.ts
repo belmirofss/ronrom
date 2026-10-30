@@ -7,7 +7,7 @@ export const PALAVRAS_POR_MINUTO = 200;
  */
 interface BlocoDoPortableText {
   _type: string;
-  children?: readonly { text?: string | undefined }[] | undefined;
+  children?: readonly { text?: string | null | undefined }[] | null | undefined;
 }
 
 // Palavra é um pedaço entre espaços com pelo menos uma letra ou número: "—" e "..." soltos não
