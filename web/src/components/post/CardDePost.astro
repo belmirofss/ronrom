@@ -1,0 +1,74 @@
+---
+import ChipCategoria from '@/components/ui/ChipCategoria.astro';
+import Data from '@/components/ui/Data.astro';
+import ImagemSanity from '@/components/ui/ImagemSanity.astro';
+import { secaoDoCard, type Card, type NivelDoTitulo } from '@/lib/card';
+import { urlDoPost } from '@/lib/rotas';
+
+interface Props {
+  /** Um card do "Leia também" (`buscarLeiaTambem`). */
+  post: Card;
+  /** Padrão: 3, embaixo do h2 "Leia também". */
+  nivelTitulo?: NivelDoTitulo;
+  /** Largura de exibição da capa. O padrão é o de três cards lado a lado no desktop. */
+  sizes?: string;
+  class?: string;
+}
+
+const {
+  post,
+  nivelTitulo = 3,
+  sizes = '(min-width: 60em) 22rem, (min-width: 40rem) 50vw, 100vw',
+  class: classe,
+} = Astro.props;
+
+const Titulo = `h${nivelTitulo}` as const;
+---
+
+<article class:list={['card-de-post', 'card-clicavel', classe]}>
+  <Titulo class="card-de-post__titulo">
+    <a class="card-clicavel__link" href={urlDoPost(post)}>
+      {post.titulo}
+    </a>
+  </Titulo>
+  <Data class="card-de-post__data" iso={post.dataDePublicacao} />
+  <div class="card-de-post__capa">
+    <ImagemSanity imagem={post.capa} alt="" proporcao={4 / 3} sizes={sizes} />
+    <ChipCategoria class="card-de-post__chip" nome={secaoDoCard(post)} />
+  </div>
+</article>
+
+<style>
+  .card-de-post {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-2);
+  }
+
+  /* No HTML, o título vem antes da capa, para o leitor de tela começar por ele. A categoria é
+     lida logo depois da data. */
+  .card-de-post__capa {
+    position: relative;
+    order: -1;
+    margin-block-end: var(--espaco-2);
+    overflow: hidden;
+    border-radius: var(--raio-md);
+  }
+
+  .card-de-post :global(.card-de-post__chip) {
+    position: absolute;
+    inset-block-start: var(--espaco-2);
+    inset-inline-start: var(--espaco-2);
+    max-width: calc(100% - 2 * var(--espaco-2));
+    white-space: normal;
+  }
+
+  .card-de-post__titulo {
+    font-size: var(--texto-lg);
+  }
+
+  .card-de-post :global(.card-de-post__data) {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+  }
+</style>

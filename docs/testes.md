@@ -179,6 +179,14 @@ A conversão da nota para corações fica numa função pura, usada pelo `Coraco
 - [ ] Valor inválido (`0`, `5.5`, `4.3`, `-1`, `NaN`, ausente) lança erro, para a review não sair com nota errada.
 - [ ] Texto acessível com vírgula decimal: `"Nota: 4,5 de 5 corações"`, `"Nota: 5 de 5 corações"` (sem `,0`).
 
+### Rótulo dos cards de post (#36)
+
+As funções de [`web/src/lib/card.ts`](../web/src/lib/card.ts), usadas pelo Destaque, pelo ItemDeLista e pelo CardDePost:
+
+- [ ] A seção do card é a categoria na review e o formato no pensamento, nunca o contrário; sem ela, lança erro.
+- [ ] O rótulo junta o tipo e a seção (`["Review", "Restaurantes e cafés"]`, `["Pensamento", "Frases soltas"]`).
+- [ ] O botão do destaque diz "Ler review" na review e "Ler texto" no pensamento.
+
 ### Categoria para tipo do JSON-LD (#51)
 
 - [ ] Uma linha por categoria (com `it.each`), com fixture de ficha preenchida: `filmes` → `Movie`, `series` → `TVSeries`, `livros` → `Book`, `restaurantes-e-cafes` → `Restaurant` ou `CafeOrCoffeeShop`, `lugares` → `TouristAttraction`, `comidas` → `Product` (com marca) ou `Thing`.

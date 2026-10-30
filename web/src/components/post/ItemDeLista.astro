@@ -1,0 +1,138 @@
+---
+import ChipCategoria from '@/components/ui/ChipCategoria.astro';
+import Coracoes from '@/components/ui/Coracoes.astro';
+import Data from '@/components/ui/Data.astro';
+import ImagemSanity from '@/components/ui/ImagemSanity.astro';
+import { rotuloDoCard, type CardComLeitura, type NivelDoTitulo } from '@/lib/card';
+import { urlDoPost } from '@/lib/rotas';
+import { tempoDeLeitura } from '@/lib/utils/leitura';
+
+interface Props {
+  /** Um card das listagens (`buscarUltimos`, `buscarPostsDoTipo` etc.). */
+  post: CardComLeitura;
+  /** Padrão: 2, numa listagem embaixo do h1. Nas abas da home, embaixo do h2 da aba, use 3. */
+  nivelTitulo?: NivelDoTitulo;
+  /** Largura de exibição da miniatura. */
+  sizes?: string;
+  class?: string;
+}
+
+const {
+  post,
+  nivelTitulo = 2,
+  sizes = '(min-width: 60em) 15rem, (min-width: 30rem) 40vw, 100vw',
+  class: classe,
+} = Astro.props;
+
+const Titulo = `h${nivelTitulo}` as const;
+const [tipo, secao] = rotuloDoCard(post);
+---
+
+<article class:list={['item-de-lista', 'card-clicavel', classe]}>
+  <div class="item-de-lista__grade">
+    <div class="item-de-lista__textos">
+      <Titulo class="item-de-lista__titulo">
+        <a class="card-clicavel__link" href={urlDoPost(post)}>
+          {post.titulo}
+        </a>
+      </Titulo>
+      <p class="item-de-lista__rotulo">
+        {tipo}
+        <span aria-hidden="true"> · </span>
+        {secao}
+      </p>
+      {post.subtitulo && <p class="item-de-lista__subtitulo">{post.subtitulo}</p>}
+      {post.tipo === 'review' && <Coracoes nota={post.nota} tamanho="pequeno" />}
+      <p class="item-de-lista__meta">
+        <Data iso={post.dataDePublicacao} />
+        <span aria-hidden="true"> · </span>
+        {tempoDeLeitura(post.textoDoCorpo)}
+      </p>
+    </div>
+    <div class="item-de-lista__miniatura">
+      <ImagemSanity
+        class="item-de-lista__capa"
+        imagem={post.capa}
+        alt=""
+        proporcao={4 / 3}
+        sizes={sizes}
+      />
+      {/* O rótulo já diz a seção: o chip repete para quem vê e fica fora do leitor de tela. */}
+      <span class="item-de-lista__chip" aria-hidden="true">
+        <ChipCategoria nome={secao} />
+      </span>
+    </div>
+  </div>
+</article>
+
+<style>
+  .item-de-lista {
+    container-type: inline-size;
+  }
+
+  /* Estreito (o celular), a miniatura vai em cima, na largura toda: ao lado do texto, ela ficaria
+     pequena demais para o chip de uma categoria longa. */
+  .item-de-lista__grade {
+    display: grid;
+    gap: var(--espaco-4);
+  }
+
+  .item-de-lista__miniatura {
+    position: relative;
+    order: -1;
+  }
+
+  @container (min-width: 30rem) {
+    .item-de-lista__grade {
+      grid-template-columns: min(40%, 15rem) minmax(0, 1fr);
+      align-items: start;
+      gap: var(--espaco-5);
+    }
+  }
+
+  .item-de-lista :global(.item-de-lista__capa) {
+    border-radius: var(--raio-md);
+  }
+
+  .item-de-lista__chip {
+    position: absolute;
+    inset-block-start: var(--espaco-2);
+    inset-inline: var(--espaco-2);
+    display: flex;
+  }
+
+  /* Uma categoria mais larga que a miniatura quebra a linha, em vez de vazar. */
+  .item-de-lista__chip :global(.chip) {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .item-de-lista__textos {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--espaco-2);
+    min-width: 0;
+  }
+
+  /* No HTML, o título vem antes do rótulo, para o leitor de tela começar por ele. */
+  .item-de-lista__rotulo {
+    order: -1;
+    color: var(--cor-vinho);
+    font-size: var(--texto-xs);
+    font-weight: var(--peso-medio);
+  }
+
+  .item-de-lista__titulo {
+    font-size: var(--texto-xl);
+  }
+
+  .item-de-lista__subtitulo {
+    color: var(--cor-texto-2);
+  }
+
+  .item-de-lista__meta {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+  }
+</style>
