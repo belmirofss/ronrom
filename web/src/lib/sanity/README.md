@@ -5,6 +5,7 @@ Como o site lê o conteúdo do Sanity no build:
 | Arquivo                                    | O que tem                                                                       | Issue |
 | ------------------------------------------ | ------------------------------------------------------------------------------- | ----- |
 | [`conteudo.ts`](conteudo.ts)               | As funções de acesso (`buscarPost`, `buscarUltimos`...): **o que páginas usam** | #33   |
+| [`imagem.ts`](imagem.ts)                   | As URLs do CDN de uma imagem (`fontesDaImagem`), usadas pelo `<ImagemSanity>`   | #34   |
 | [`consultas.ts`](consultas.ts)             | Todas as consultas GROQ, escritas com `defineQuery`                             | #25   |
 | [`tipos.gerados.d.ts`](tipos.gerados.d.ts) | Os tipos dos resultados, gerados pelo typegen: não edite à mão                  | #25   |
 | [`cliente.ts`](cliente.ts)                 | O `@sanity/client` e o `consultar`, que escolhe entre o Sanity e as fixtures    | #33   |
@@ -13,7 +14,7 @@ Como o site lê o conteúdo do Sanity no build:
 
 ## Funções de acesso
 
-Páginas, componentes e endpoints importam só de `@/lib/sanity/conteudo`. O ESLint recusa importar `@sanity/client`, `groq-js`, o `cliente.ts` ou as fixtures fora desta pasta, e as URLs saem sempre de [`@/lib/rotas`](../rotas.ts) (veja [`docs/seo-urls.md`](../../../../docs/seo-urls.md#helpers-de-rota)).
+Páginas, componentes e endpoints importam só de `@/lib/sanity/conteudo` (as URLs de imagem, do [`imagem.ts`](#imagens), pelo `<ImagemSanity>`). O ESLint recusa importar `@sanity/client`, `groq-js`, o `cliente.ts` ou as fixtures fora desta pasta, e as URLs saem sempre de [`@/lib/rotas`](../rotas.ts) (veja [`docs/seo-urls.md`](../../../../docs/seo-urls.md#helpers-de-rota)).
 
 ```astro
 ---
@@ -79,7 +80,7 @@ O que o dataset tem (o [`conteudo.test.ts`](conteudo.test.ts) confere):
 - **1 pensamento de cada formato**: um artigo com **todos os blocos do Portable Text** (subtítulos h2 e h3, citação, listas com marcadores e numerada, com subnível, negrito, itálico, link externo `https` e `mailto`, link interno no ar e fora do ar, imagem normal e larga, galeria, vídeo do YouTube e do Instagram e citação em destaque com e sem fonte), um texto sem subtítulo, uma frase curta (com `noindex` e um endereço antigo, para o sitemap e os redirects) e uma opinião com o SEO preenchido.
 - Tags, configurações (frase da semana, destaque e redes) e a página Sobre.
 
-**Imagens.** Cada asset é um placeholder em SVG num data URI (`url`), com dimensões e `lqip`: nada vai para o repositório nem para a rede. O `_id` segue o padrão dos assets do Sanity (`image-{id}-{largura}x{altura}-svg`), mas não existe no CDN, e sem `SANITY_PROJECT_ID` não há como montar uma URL do CDN. Quem gera o `srcset` a partir do `_id` (#34) usa o `url` do asset direto no modo fixtures.
+**Imagens.** Cada asset é um placeholder em SVG num data URI (`url`), com dimensões e `lqip`: nada vai para o repositório nem para a rede. O `_id` segue o padrão dos assets do Sanity (`image-{id}-{largura}x{altura}-svg`), mas não existe no CDN, e sem `SANITY_PROJECT_ID` não há como montar uma URL do CDN. O [`imagem.ts`](imagem.ts) usa o `url` do asset direto no modo fixtures, sem `srcset`, e o `<ImagemSanity>` recorta na proporção pelo CSS (veja [Imagens](#imagens)).
 
 São 10 posts, menos que uma página de listagem. Para testar a paginação, acrescente posts no `dataset.ts`.
 
@@ -117,6 +118,17 @@ asset: { _id: string; url: string; largura: number | null; altura: number | null
 ```
 
 `lqip` é uma prévia borrada em base64; `asset` vem `null` se o arquivo foi apagado.
+
+## Imagens
+
+Toda imagem do conteúdo passa pelo [`<ImagemSanity>`](../../components/ui/ImagemSanity.astro) (veja o [README do site](../../../README.md#imagens-datas-e-tempo-de-leitura)), que pega as URLs no [`imagem.ts`](imagem.ts). O `fontesDaImagem(imagem, proporcao?)` monta, com o [`@sanity/image-url`](https://github.com/sanity-io/image-url):
+
+- **`srcset` em larguras fixas** (`LARGURAS`: 320, 480, 640, 800, 1024, 1280, 1600 e 1920), sempre com `auto=format` (o CDN entrega AVIF ou WebP conforme o navegador) e `q=75`. Nenhuma versão passa do tamanho do arquivo: as larguras maiores que ele saem, e a última é a própria largura do arquivo (até 1920).
+- **Recorte e hotspot do Studio:** o `crop` vira o `rect` da URL. Com `proporcao` (largura / altura, como `4 / 3`), cada versão sai com `w`, `h` e `fit=crop`, no maior retângulo dessa proporção dentro do recorte, centrado no hotspot.
+- **`width` e `height`** da maior versão, para a tag reservar o espaço certo antes de a imagem chegar (sem CLS). As dimensões vêm do asset ou, se faltarem, do `_id` (`image-{id}-{largura}x{altura}-{ext}`).
+- **`null` sem asset** (arquivo apagado): o componente não renderiza nada.
+
+O projeto e o dataset saem da URL do próprio asset (`https://cdn.sanity.io/images/{projeto}/{dataset}/...`), como no `ogImage` do `<Seo>`, sem depender das variáveis. Fora do CDN, como no [modo fixtures](#modo-fixtures), o `src` é o `url` do asset (o placeholder em SVG) e não há `srcset`.
 
 **Card** de post (listas, destaque, "Leia também", índice):
 

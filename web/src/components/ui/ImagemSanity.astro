@@ -1,0 +1,63 @@
+---
+import { fontesDaImagem, type ImagemDoSanity } from '@/lib/sanity/imagem';
+
+interface Props {
+  /** A imagem como as consultas devolvem: capa, foto, imagem do corpo ou da galeria. */
+  imagem: ImagemDoSanity;
+  /** Texto alternativo. Obrigatório: `""` só para imagem decorativa. */
+  alt: string;
+  /** Largura de exibição, como `"(min-width: 768px) 50vw, 100vw"`: o navegador escolhe a versão. */
+  sizes: string;
+  /** Largura / altura, como `4 / 3` (capas) ou `21 / 9` (post). Sem ela, a proporção do recorte. */
+  proporcao?: number;
+  /** Imagem do LCP (capa do post, destaque da home): carrega logo e com prioridade alta. */
+  prioridade?: boolean;
+  class?: string;
+}
+
+const { imagem, alt, sizes, proporcao, prioridade = false, class: classe } = Astro.props;
+
+// Asset apagado no Sanity: nada aparece, em vez de uma imagem quebrada.
+const fontes = fontesDaImagem(imagem, proporcao);
+const lqip = imagem.asset?.lqip;
+
+// O lqip (prévia borrada) fica de fundo até a imagem chegar, sem JS. A proporção vai também no
+// CSS: no modo fixtures, o placeholder não vem recortado do CDN, e o object-fit recorta.
+const estilo = [
+  lqip ? `background-image: url("${lqip}")` : '',
+  proporcao ? `aspect-ratio: ${proporcao}` : '',
+]
+  .filter(Boolean)
+  .join('; ');
+---
+
+{fontes && (
+  <img
+    class:list={['imagem-sanity', { 'imagem-sanity--proporcao': proporcao }, classe]}
+    src={fontes.src}
+    srcset={fontes.srcset}
+    sizes={fontes.srcset ? sizes : undefined}
+    width={fontes.width}
+    height={fontes.height}
+    alt={alt}
+    loading={prioridade ? 'eager' : 'lazy'}
+    decoding="async"
+    fetchpriority={prioridade ? 'high' : undefined}
+    style={estilo || undefined}
+  />
+)}
+
+<style>
+  .imagem-sanity {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .imagem-sanity--proporcao {
+    width: 100%;
+    object-fit: cover;
+  }
+</style>

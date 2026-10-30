@@ -1,0 +1,15 @@
+---
+import { formatarData } from '@/lib/utils/data';
+
+interface Props {
+  /** Data e hora em ISO 8601, como o `dataDePublicacao` do Sanity. */
+  iso: string;
+  class?: string;
+}
+
+const { iso, class: classe } = Astro.props;
+---
+
+<time datetime={iso} class={classe}>
+  {formatarData(iso)}
+</time>

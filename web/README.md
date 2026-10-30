@@ -143,3 +143,28 @@ Os componentes genéricos ficam em [`src/components/ui`](src/components/ui). A l
 ### Vitrine
 
 Com o `pnpm dev` rodando, http://localhost:4321/vitrine mostra todos os estados desses componentes: as 10 notas, os 3 tamanhos, os chips nos dois tons (link, estático e sobre a miniatura), trilhas de review, pensamento, categoria e formato, e a paginação na primeira, no meio e na última página. A página ([`src/vitrine/Componentes.astro`](src/vitrine/Componentes.astro)) fica fora de `src/pages`: uma integração no `astro.config.mjs` injeta a rota só no `astro dev`, então ela não existe no build. Componente novo em `ui/` entra na vitrine no mesmo PR.
+
+## Imagens, datas e tempo de leitura
+
+Componentes em [`src/components/ui`](src/components/ui) usados em quase toda página:
+
+- [`ImagemSanity.astro`](src/components/ui/ImagemSanity.astro): toda imagem que vem do Sanity (capas, foto da autora, imagens do texto e da galeria). Props: `imagem` (o objeto que as consultas devolvem), `alt` (obrigatório; `""` só em imagem decorativa), `sizes`, `proporcao?` e `prioridade?`. Gera o `srcset` no CDN do Sanity respeitando o recorte e o hotspot, sempre com `width`, `height`, `loading="lazy"` e `decoding="async"`, e o `lqip` de fundo enquanto a imagem carrega. Como as URLs são montadas: [README do conteúdo](src/lib/sanity/README.md#imagens).
+- [`Data.astro`](src/components/ui/Data.astro): `<time datetime>` com a data por extenso no fuso de Brasília (`formatarData`, em [`src/lib/utils/data.ts`](src/lib/utils/data.ts)). Prop `iso`.
+
+```astro
+<ImagemSanity
+  imagem={post.capa}
+  alt={post.capa.alt ?? ''}
+  proporcao={21 / 9}
+  sizes="100vw"
+  prioridade
+/>
+<Data iso={post.dataDePublicacao} /> · {tempoDeLeitura(post.corpo)}
+```
+
+Regras:
+
+- **Proporções:** `4 / 3` nas capas do destaque e dos cards, `21 / 9` na capa do post e nenhuma nas imagens do texto, que ficam com a proporção do recorte.
+- **`sizes` de verdade:** é por ele que o navegador escolhe a versão. Uma capa que ocupa um terço da tela no desktop pede algo como `"(min-width: 960px) 33vw, 100vw"`; com `100vw` em tudo, o celular baixa a imagem certa, mas o desktop baixa uma grande demais.
+- **`prioridade` só na imagem do LCP:** a capa do post e o destaque da home. Ela troca o `lazy` por `loading="eager"` e `fetchpriority="high"`; em qualquer outra imagem, atrasa o que importa.
+- **Tempo de leitura:** `tempoDeLeitura(corpo)`, em [`src/lib/utils/leitura.ts`](src/lib/utils/leitura.ts), conta as palavras dos blocos de texto (sem legendas, `alt`, vídeos e citações em destaque) a 200 por minuto, arredonda para cima, com mínimo de 1, e devolve `"X min de leitura"`.
