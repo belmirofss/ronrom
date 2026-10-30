@@ -21,7 +21,9 @@ export default defineConfig({
   dataset,
 
   plugins: [
-    structureTool({ structure: estrutura }),
+    // Sem o `keepPanesOnCreate`, o post criado numa subpasta (Reviews › Livros) abre sozinho na
+    // tela e a autora perde as pastas da esquerda.
+    structureTool({ structure: estrutura, keepPanesOnCreate: true }),
     ptBRLocale(),
     // O Vision (playground de GROQ) só serve para quem programa: fica fora do Studio publicado.
     ...(isDev ? [visionTool()] : []),
