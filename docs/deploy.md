@@ -49,17 +49,15 @@ Documentação: [Instant Rollback](https://vercel.com/docs/instant-rollback), co
 
 O site é estático: um post novo só aparece depois de um build de produção. A decisão de usar um deploy hook para isso, e não renderização sob demanda, está no [ADR 0005](adr/0005-rebuild-por-deploy-hook.md).
 
-> **Até a #27:** o webhook do Sanity ainda não existe. Por enquanto, conteúdo novo entra no ar pelo rebuild diário, por um [disparo manual](#disparar-um-rebuild-à-mão) ou pelo próximo merge na `main`.
-
 ### Fluxo
 
 1. A autora publica, edita ou exclui um documento no dataset `production`. Rascunhos e o dataset `development` não disparam nada.
-2. O webhook GROQ do Sanity (#27) faz um `POST` na URL do Deploy Hook `sanity-publish` da Vercel, que aponta para a `main`.
+2. O [webhook GROQ do Sanity](#o-webhook-no-sanity) faz um `POST` na URL do Deploy Hook `sanity-publish` da Vercel, que aponta para a `main`.
 3. A Vercel responde na hora com um job `PENDING` e enfileira um deploy de **produção** do último commit da `main`. Na lista de Deployments, ele aparece marcado como disparado pelo hook.
 4. O build busca o conteúdo atual do Sanity, gera as páginas e publica. O que estava no ar continua no ar até o build terminar; se o build falhar, nada muda e a Vercel manda e-mail para o dono.
 5. Todo dia às 04:17 (horário de Brasília), o workflow [`rebuild-diario.yml`](../.github/workflows/rebuild-diario.yml) chama o mesmo hook, como rede de segurança se algum webhook falhar.
 
-**Tempo esperado:** um build de produção leva hoje cerca de **30 segundos** do disparo até o ar (medido em 29/10/2026 nos merges da `main`, com o site ainda sem posts). O tempo cresce com o número de posts. Se a fila tiver outro build na frente (o Hobby builda um de cada vez), soma o tempo dele. Se passar de alguns minutos, reavalie a decisão do [ADR 0005](adr/0005-rebuild-por-deploy-hook.md).
+**Tempo esperado:** entre o clique em **Publicar** e a mudança no ar passa o tempo da entrega do webhook (segundos) mais o de um build de produção, que leva hoje cerca de **30 segundos** (medido em 29/10/2026 nos merges da `main`, com o site ainda sem posts). O tempo cresce com o número de posts. Se a fila tiver outro build na frente (o Hobby builda um de cada vez), soma o tempo dele. Se passar de alguns minutos, reavalie a decisão do [ADR 0005](adr/0005-rebuild-por-deploy-hook.md). Para medir de novo, veja [conferir o webhook](#conferir-o-webhook).
 
 ### O hook na Vercel
 
@@ -69,7 +67,7 @@ O site é estático: um post novo só aparece depois de um build de produção. 
 | Branch | `main`                                                    |
 | Onde   | Vercel → projeto `ronrom` → Settings → Git → Deploy Hooks |
 
-A URL do hook fica em dois lugares, e só neles: no webhook do Sanity (#27) e no secret **`VERCEL_DEPLOY_HOOK_URL`** do GitHub (Settings → Secrets and variables → Actions), usado pelo rebuild diário. Ela nunca vai para o código, para uma issue ou para um PR. Para cadastrar ou trocar o secret, cole a URL quando o comando pedir (assim ela não fica no histórico do terminal):
+A URL do hook fica em dois lugares, e só neles: no [webhook do Sanity](#o-webhook-no-sanity) e no secret **`VERCEL_DEPLOY_HOOK_URL`** do GitHub (Settings → Secrets and variables → Actions), usado pelo rebuild diário. Ela nunca vai para o código, para uma issue ou para um PR. Para cadastrar ou trocar o secret, cole a URL quando o comando pedir (assim ela não fica no histórico do terminal):
 
 ```bash
 gh secret set VERCEL_DEPLOY_HOOK_URL
@@ -84,6 +82,71 @@ Limites ([deploy hooks](https://vercel.com/docs/deploy-hooks) e [limits](https:/
 - Vários disparos seguidos para o mesmo commit **cancelam os deploys anteriores daquele hook**, então uma rajada de edições na publicação vira um build só.
 
 A documentação da Vercel não diz o que acontece com um disparo acima do limite. Há relatos de hooks ficando `PENDING` sem nunca buildar depois de estourar a cota. Se um post publicado não aparecer, veja se o deploy existe na lista de Deployments; se não existir, a cota do dia pode ter acabado (ela volta em 24 horas, e um [disparo manual](#disparar-um-rebuild-à-mão) resolve depois disso).
+
+### O webhook no Sanity
+
+Fica em sanity.io/manage → projeto "Ronrom" → API → Webhooks. Ele não é versionado: os valores abaixo são a fonte da verdade, e qualquer mudança no painel deve vir para esta tabela.
+
+| Campo        | Valor                                                                              |
+| ------------ | ---------------------------------------------------------------------------------- |
+| Name         | `vercel-rebuild-producao`                                                          |
+| Description  | `Rebuild de produção na Vercel ao publicar (docs/deploy.md)`                       |
+| URL          | a URL do Deploy Hook `sanity-publish` (a mesma do secret `VERCEL_DEPLOY_HOOK_URL`) |
+| Dataset      | `production`                                                                       |
+| Trigger on   | Create, Update e Delete                                                            |
+| Filter       | `_type in ["post", "categoria", "formato", "tag", "configuracoes", "sobre"]`       |
+| Projection   | `{_id, _type}`                                                                     |
+| Status       | habilitado                                                                         |
+| HTTP method  | `POST`                                                                             |
+| HTTP headers | nenhum                                                                             |
+| API version  | `v2025-02-19`                                                                      |
+| Drafts       | desligado                                                                          |
+| Versions     | desligado                                                                          |
+| Secret       | vazio                                                                              |
+
+Por que assim:
+
+- **Dataset `production`:** só ele. O `development` nunca dispara deploy de produção.
+- **Drafts e Versions desligados:** o Sanity ignora os IDs `drafts.*` e `versions.*`, então salvar um rascunho não dispara nada. Com eles ligados, quase toda tecla no Studio viraria um deploy.
+- **Create, Update e Delete:** publicar um documento novo é um create; publicar uma edição, um update; despublicar ou excluir um publicado, um delete.
+- **Filter:** só os tipos que o site mostra. Upload de imagem (`sanity.imageAsset`) e documentos internos do Sanity não disparam build. Um tipo novo que o site passe a mostrar precisa entrar neste filtro (o [`schemaTypes/index.ts`](../studio/schemaTypes/index.ts) lembra disso).
+- **Projection `{_id, _type}`:** a Vercel ignora o corpo do `POST`. Com a projeção vazia o Sanity mandaria o documento inteiro, que não precisa sair dali.
+- **Sem secret:** a Vercel não confere assinatura. Quem protege o hook é a própria URL ([rotação](#rotacionar-a-url-do-hook)).
+
+Limites e comportamento ([pricing](https://www.sanity.io/pricing) e [webhooks](https://www.sanity.io/docs/webhooks), conferidos em 29/10/2026):
+
+- O plano Free permite **2 webhooks GROQ** por projeto (o Growth, 4). Este é o primeiro; sobra um.
+- Um pedido de cada vez por webhook, com timeout de 30 segundos. Resposta `2xx` é sucesso; `429` e `5xx` são tentados de novo **duas vezes, com 30 segundos de intervalo**; outro `4xx` é dado como não entregue e não volta a ser tentado. Se as três tentativas falharem, o [rebuild diário](#fluxo) cobre a mudança.
+- Cada documento alterado gera uma entrega. Publicar vários documentos de uma vez (rodar a taxonomia em `production`, por exemplo) dispara vários deploys seguidos: a Vercel cancela os anteriores e builda um só, mas todos contam no limite de 60 disparos por hora do hook.
+
+Para criar, com a URL do hook à mão (Vercel → Settings → Git → Deploy Hooks): em API → Webhooks → **Create webhook**, preencha os campos da tabela e salve. Para conferir pela CLI, da raiz, com `sanity login` feito e `SANITY_STUDIO_PROJECT_ID` no `studio/.env`:
+
+```bash
+pnpm --filter studio sanity hooks list
+```
+
+A saída mostra a URL completa do hook: não cole em issue, PR ou print. Ela não mostra o filtro, os eventos nem os interruptores de rascunho; esses só aparecem no painel.
+
+### Conferir o webhook
+
+Os três critérios, no Studio publicado (dataset `production`):
+
+1. **Publicar dispara deploy:** edite e publique um documento. Em segundos aparece um deploy novo de produção na lista de Deployments da Vercel, marcado como disparado pelo hook. Depois do build, a mudança está no ar, sem commit nenhum.
+2. **Rascunho não dispara:** edite sem publicar. Nenhum deploy novo aparece, e o webhook não ganha tentativa nova.
+3. **`development` não dispara:** publique algo pelo `pnpm studio:dev` (dataset `development`). Nenhum deploy novo aparece.
+
+**Histórico de entregas:**
+
+- **No painel:** API → Webhooks → menu de três pontos do webhook → log de tentativas (_attempts log_). Mostra cada tentativa, com status HTTP, duração e a resposta da Vercel.
+- **Pela CLI** (da raiz, com `sanity login` feito e `SANITY_STUDIO_PROJECT_ID` no `studio/.env`):
+
+  ```bash
+  pnpm --filter studio sanity hooks logs vercel-rebuild-producao --detailed
+  ```
+
+  O `sanity hooks attempt <id>` mostra os detalhes de uma tentativa.
+
+**Medir o tempo:** anote a hora do clique em **Publicar**, a do deploy na lista de Deployments (entrega do webhook) e a do `Ready` (no ar). A diferença total é o número de [tempo esperado](#fluxo); atualize-o quando ele mudar de ordem de grandeza.
 
 ### Disparar um rebuild à mão
 
