@@ -6,7 +6,14 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig(
-  globalIgnores(['**/dist/', '**/.astro/', '**/.sanity/', '**/.vercel/']),
+  // tipos.gerados.d.ts sai do `pnpm typegen` (web/src/lib/sanity/README.md): não se edita à mão.
+  globalIgnores([
+    '**/dist/',
+    '**/.astro/',
+    '**/.sanity/',
+    '**/.vercel/',
+    'web/src/lib/sanity/tipos.gerados.d.ts',
+  ]),
   js.configs.recommended,
   tseslint.configs.recommended,
   astro.configs.recommended,

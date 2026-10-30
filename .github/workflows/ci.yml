@@ -39,6 +39,20 @@ jobs:
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm check
+      # Os tipos das consultas GROQ (#25) são versionados: o arquivo tem de ser o que o
+      # `pnpm typegen` gera a partir dos schemas e das consultas deste commit. A extração do
+      # schema não acessa o Sanity, então o project ID pode ser qualquer valor (e os PRs do
+      # Dependabot, sem as variáveis do repositório, também passam).
+      - run: pnpm typegen
+        env:
+          SANITY_STUDIO_PROJECT_ID: typegen
+          SANITY_STUDIO_DATASET: development
+      - name: tipos gerados atualizados
+        run: |
+          if ! git diff --exit-code -- web/src/lib/sanity/tipos.gerados.d.ts; then
+            echo "::error file=web/src/lib/sanity/tipos.gerados.d.ts::Tipos desatualizados. Rode pnpm typegen e commite o arquivo."
+            exit 1
+          fi
 
   # Testes unitários e de componente (Vitest). O que cobrir: docs/testes.md.
   unit:

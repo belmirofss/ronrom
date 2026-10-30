@@ -11,6 +11,7 @@
     "build": "sanity build",
     "deploy": "sanity deploy --url ronrom",
     "typecheck": "tsc --noEmit",
+    "typegen": "sanity schema extract --force && sanity typegen generate",
     "test": "vitest run",
     "taxonomia": "sanity exec scripts/criar-taxonomia.ts --with-user-token --",
     "sanity": "sanity"
