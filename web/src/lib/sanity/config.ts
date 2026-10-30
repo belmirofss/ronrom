@@ -5,7 +5,8 @@ import {
   SANITY_PROJECT_ID,
 } from 'astro:env/server';
 
-// De onde vem o conteúdo do build. O cliente e as fixtures da #33 (WEB-03) leem daqui.
+// De onde vem o conteúdo do build: o Sanity ou as fixtures (README desta pasta). O cliente.ts lê
+// daqui.
 // Em produção, o astro:env já exige SANITY_PROJECT_ID e SANITY_DATASET e proíbe as fixtures.
 export type FonteDoConteudo =
   | { tipo: 'sanity'; projectId: string; dataset: string; apiVersion: string }

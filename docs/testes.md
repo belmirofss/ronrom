@@ -60,7 +60,16 @@ O `pnpm test` roda o `test` de todo workspace que tiver o script (hoje, `web` e 
   ```
 
 - **Fuso horário:** os testes rodam sempre em UTC (`TZ=UTC` no `vitest.config.ts`), como o build da Vercel. Assim, uma data formatada sem `timeZone: 'America/Sao_Paulo'` quebra o teste também numa máquina em Brasília, e não só no CI. O [`ambiente.test.ts`](../web/src/ambiente.test.ts) falha se essa configuração sumir.
-- **Sem rede:** nenhum teste chama o Sanity, o YouTube ou outro serviço. Use as fixtures da #33 ou objetos montados no próprio teste.
+- **Sem rede:** nenhum teste chama o Sanity, o YouTube ou outro serviço. Use as [fixtures](../web/src/lib/sanity/README.md#modo-fixtures) ou objetos montados no próprio teste. Para ler as fixtures pelas funções de `conteudo.ts`, ligue o modo fixtures com um mock, como no [`conteudo.test.ts`](../web/src/lib/sanity/conteudo.test.ts):
+
+  ```ts
+  vi.mock('astro:env/server', () => ({
+    SANITY_FIXTURES: true,
+    SANITY_PROJECT_ID: undefined,
+    SANITY_DATASET: undefined,
+    SANITY_API_VERSION: '2025-02-19',
+  }));
+  ```
 
 ### Teste de componente
 

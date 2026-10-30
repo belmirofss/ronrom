@@ -143,7 +143,7 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 
 ### Sem o Sanity configurado: fixtures
 
-Fora de produção, sem `SANITY_PROJECT_ID` e `SANITY_DATASET` (ou com `SANITY_FIXTURES=true`), o build usa as fixtures locais em vez de quebrar. Quem decide é [`web/src/lib/sanity/config.ts`](../web/src/lib/sanity/config.ts) (`fonteDoConteudo`), que o cliente e as fixtures da #33 vão ler. Em produção (`VERCEL_ENV=production`), as duas variáveis são obrigatórias e `SANITY_FIXTURES=true` derruba o build, para o site nunca sair com conteúdo de exemplo.
+Fora de produção, sem `SANITY_PROJECT_ID` e `SANITY_DATASET` (ou com `SANITY_FIXTURES=true`), o build usa as fixtures locais em vez de quebrar. Quem decide é [`web/src/lib/sanity/config.ts`](../web/src/lib/sanity/config.ts) (`fonteDoConteudo`), lido pelo cliente da #33. O que o dataset de exemplo tem e como ele é consultado: [README do conteúdo](../web/src/lib/sanity/README.md#modo-fixtures). Em produção (`VERCEL_ENV=production`), as duas variáveis são obrigatórias e `SANITY_FIXTURES=true` derruba o build, para o site nunca sair com conteúdo de exemplo.
 
 ### GitHub Actions
 

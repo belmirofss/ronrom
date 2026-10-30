@@ -156,7 +156,7 @@ Regras:
 
 ## Helpers de rota
 
-`web/src/lib/rotas.ts` (implementado na #33, com testes na #16) é a **única fonte de URLs do site**. Páginas, componentes, sitemap, RSS, JSON-LD, `<Seo>`, Pagefind e `/posts-index.json` chamam estes helpers; nenhum outro arquivo concatena caminhos de post, categoria, formato, tag ou paginação.
+[`web/src/lib/rotas.ts`](../web/src/lib/rotas.ts) (#33, testes em [`rotas.test.ts`](../web/src/lib/rotas.test.ts)) é a **única fonte de URLs do site**. Páginas, componentes, sitemap, RSS, JSON-LD, `<Seo>`, Pagefind e `/posts-index.json` chamam estes helpers; nenhum outro arquivo concatena caminhos de post, categoria, formato, tag ou paginação.
 
 ```ts
 // Caminhos relativos à raiz, sem barra no final.
@@ -169,28 +169,36 @@ function urlDaPagina(base: string, n: number): string;
 // URL absoluta e canônica, a partir de um caminho.
 function canonicalUrl(path: string): string;
 
-// O mínimo que a consulta GROQ precisa trazer para montar a URL de um post.
-type PostComRota =
-  | { tipo: 'review'; slug: string; categoria: { slug: string } }
-  | { tipo: 'pensamento'; slug: string; formato: { slug: string } };
+// O mínimo que a consulta GROQ precisa trazer para montar a URL de um post. Tudo opcional, como
+// o typegen gera: quem confere a categoria (review) e o formato (pensamento) é o urlDoPost.
+interface PostComRota {
+  tipo: 'review' | 'pensamento';
+  slug?: string | null;
+  categoria?: { slug?: string | null } | null;
+  formato?: { slug?: string | null } | null;
+}
 ```
+
+Qualquer resultado das consultas com `tipo`, `slug`, `categoria` e `formato` (rota, card, post, link interno do corpo) serve direto como `PostComRota`.
+
+O ESLint recusa, fora do `rotas.ts`, template literal ou concatenação que comece com `/reviews/`, `/pensamentos/` ou `/tags/`, ou que termine em `/pagina/`.
 
 ### `urlDoPost(post)`
 
 - Review: `/reviews/{categoria.slug}/{slug}`. Pensamento: `/pensamentos/{formato.slug}/{slug}`.
 - Recebe os slugs já resolvidos pela consulta (`"slug": slug.current`, `categoria->{ "slug": slug.current }`).
-- Lança erro, derrubando o build, se faltar slug, categoria (review) ou formato (pensamento), ou se algum slug não seguir o [formato](#formato). Link quebrado não chega a produção.
+- Lança erro, derrubando o build, se faltar slug, categoria (review) ou formato (pensamento), ou se algum slug não seguir o [formato](#formato) ou for [reservado](#slugs-reservados). Link quebrado não chega a produção. `urlDaCategoria`, `urlDoFormato` e `urlDaTag` validam o slug do mesmo jeito.
 
 ### `urlDaPagina(base, n)`
 
 - `n === 1` devolve `base`; `n >= 2` devolve `{base}/pagina/{n}`.
-- Lança erro para `n` que não seja inteiro maior ou igual a 1.
+- Lança erro para `n` que não seja inteiro maior ou igual a 1, e para `base` que não seja um caminho sem barra no final (`/`, `posts` e `/posts/` são recusados).
 
 ### `canonicalUrl(path)`
 
 - Recebe um caminho começando com `/` e devolve a URL absoluta com `URL_DO_SITE` como origem (`new URL(path, URL_DO_SITE)`, que funciona com ou sem barra no fim da `SITE_URL`).
 - Normaliza: remove query string e `#fragmento`, remove `index.html` ou `.html` do fim e remove a barra final, menos na home. Assim, `canonicalUrl('/sobre/')`, `canonicalUrl('/sobre/index.html')` e `canonicalUrl('/sobre')` dão o mesmo resultado.
-- Lança erro se receber uma URL absoluta (`https://...`): a origem vem sempre da `SITE_URL`.
+- Lança erro se receber uma URL absoluta (`https://...` ou `//outro.site/...`): a origem vem sempre da `SITE_URL`.
 
 ### Exemplos (viram casos de teste)
 
