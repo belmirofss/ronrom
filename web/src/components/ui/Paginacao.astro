@@ -1,0 +1,155 @@
+---
+import { paginasVisiveis } from '@/lib/paginacao';
+import { urlDaPagina } from '@/lib/rotas';
+
+interface Props {
+  /** A URL da página 1 da listagem (ex.: `urlDaCategoria('filmes')`). */
+  base: string;
+  /** A página que está aberta, a partir de 1. */
+  atual: number;
+  /** Total de páginas da listagem (`totalDePaginas(total)`, de @/lib/sanity/conteudo). */
+  total: number;
+  class?: string;
+}
+
+const { base, atual, total, class: classe } = Astro.props;
+
+// Com uma página só, não há para onde ir: nada é renderizado.
+const itens = total > 1 ? paginasVisiveis(atual, total) : [];
+const anterior = atual > 1 ? urlDaPagina(base, atual - 1) : undefined;
+const proxima = atual < total ? urlDaPagina(base, atual + 1) : undefined;
+---
+
+{itens.length > 0 && (
+  <nav class:list={['paginacao', classe]} aria-label="Paginação">
+    <ul class="paginacao__itens">
+      <li class="paginacao__item--anterior">
+        {/* Desabilitado: <a> sem href não recebe foco nem é clicável; role="link" e
+              aria-disabled fazem o leitor de tela anunciar "link, indisponível". */}
+        <a
+          class="paginacao__link paginacao__passo"
+          href={anterior}
+          rel={anterior ? 'prev' : undefined}
+          role={anterior ? undefined : 'link'}
+          aria-disabled={anterior ? undefined : 'true'}
+        >
+          Anterior
+        </a>
+      </li>
+      {itens.map((item) =>
+        item === 'reticencias' ? (
+          <li class="paginacao__reticencias" aria-hidden="true">
+            …
+          </li>
+        ) : (
+          <li>
+            <a
+              class="paginacao__link paginacao__numero"
+              href={urlDaPagina(base, item)}
+              aria-current={item === atual ? 'page' : undefined}
+            >
+              <span class="visualmente-oculto">Página </span>
+              {item}
+            </a>
+          </li>
+        ),
+      )}
+      <li class="paginacao__item--proxima">
+        <a
+          class="paginacao__link paginacao__passo"
+          href={proxima}
+          rel={proxima ? 'next' : undefined}
+          role={proxima ? undefined : 'link'}
+          aria-disabled={proxima ? undefined : 'true'}
+        >
+          Próxima
+        </a>
+      </li>
+    </ul>
+  </nav>
+)}
+
+<style>
+  .paginacao__itens {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--espaco-1);
+  }
+
+  /* Alvo de pelo menos 44px, como os links do cabeçalho. */
+  .paginacao__link,
+  .paginacao__reticencias {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: var(--raio-md);
+    font-weight: var(--peso-medio);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .paginacao__link {
+    color: var(--cor-texto);
+    text-decoration-line: none;
+  }
+
+  .paginacao__passo {
+    padding-inline: var(--espaco-3);
+  }
+
+  .paginacao__link[href]:hover {
+    background-color: var(--cor-creme);
+    color: var(--cor-vinho-hover);
+    text-decoration-line: underline;
+  }
+
+  /* A página atual: fundo vinho e texto creme (7,83:1). */
+  .paginacao__link[aria-current='page'] {
+    background-color: var(--cor-vinho);
+    color: var(--cor-creme);
+  }
+
+  .paginacao__link[aria-current='page']:hover {
+    background-color: var(--cor-vinho-hover);
+    color: var(--cor-creme);
+  }
+
+  /* Na página atual o fundo já é vinho: o anel de foco ganha distância para não sumir nele. */
+  .paginacao__link[aria-current='page']:focus-visible {
+    outline-offset: calc(var(--foco-offset) + 1px);
+  }
+
+  /* Desabilitado em texto secundário (7,38:1), legível mas visivelmente apagado. */
+  .paginacao__link[aria-disabled='true'] {
+    color: var(--cor-texto-2);
+    font-weight: var(--peso-regular);
+    cursor: default;
+  }
+
+  .paginacao__reticencias {
+    min-width: 2ch;
+    color: var(--cor-texto-2);
+  }
+
+  /* No celular, os 7 números cabem numa linha (7 × 44px), mas não com "Anterior" e "Próxima":
+     os dois sobem para uma linha só deles, nas pontas, e os números ficam centralizados embaixo. */
+  @media (width < 40rem) {
+    .paginacao__item--anterior,
+    .paginacao__item--proxima {
+      display: flex;
+      /* Metade da linha cada, descontado o gap: nenhum número cabe ao lado deles. */
+      flex: 0 0 calc(50% - var(--espaco-1) / 2);
+      order: -1;
+    }
+
+    .paginacao__item--proxima {
+      justify-content: flex-end;
+    }
+  }
+</style>

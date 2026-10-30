@@ -86,7 +86,27 @@ Toda página usa um dos layouts de [`src/layouts`](src/layouts), que montam a ca
 
 Regras da casca:
 
-- **Landmarks únicos:** um `<header>`, um `<nav aria-label="Principal">`, um `<main>` e um `<footer>` por página. Páginas e componentes não criam outro `<main>` nem outro `<nav>`; os grupos de links do rodapé são listas com título, sem `<nav>`.
+- **Landmarks únicos:** um `<header>`, um `<nav aria-label="Principal">`, um `<main>` e um `<footer>` por página. Páginas e componentes não criam outro `<main>`. Os únicos outros `<nav>` são o `Breadcrumb` (`aria-label="Trilha de navegação"`) e a `Paginacao` (`aria-label="Paginação"`), cada um com nome próprio; os grupos de links do rodapé são listas com título, sem `<nav>`.
 - **Seção atual:** o cabeçalho marca a seção com `aria-current` pelo prefixo da rota (`estadoDaSecao`, em [`src/lib/navegacao.ts`](src/lib/navegacao.ts)): `"page"` na própria página da seção (`/reviews`) e `"true"` nas páginas dentro dela (`/reviews/filmes/...`). "Início" só fica ativo em `/`.
 - **Celular:** os 4 links da navegação ficam sempre visíveis, sem menu hambúrguer, e quebram linha se não couberem. Todo link do cabeçalho e do rodapé tem pelo menos 44px de altura.
 - **Rodapé:** o link "Área da autora" aponta para `STUDIO_URL` (padrão `https://ronrom.sanity.studio`, veja [`docs/ambientes.md`](../docs/ambientes.md#variáveis-de-ambiente)), e o ano é o do build, no fuso de São Paulo.
+
+## Componentes de interface
+
+Os componentes genéricos ficam em [`src/components/ui`](src/components/ui). A lógica de cada um mora numa função pura em `src/lib`, com teste, para o JSON-LD e as páginas reaproveitarem sem passar pelo componente.
+
+- [`Coracoes.astro`](src/components/ui/Coracoes.astro): a nota da review. Props `nota` (0,5 a 5, em passos de 0,5; fora disso o build quebra) e `tamanho` (`pequeno`, `medio` ou `grande`). Um único `role="img"` com `aria-label="Nota: 4,5 de 5 corações"` e os 5 SVGs com `aria-hidden`: o leitor de tela anuncia a nota uma vez. Coração cheio, meio ou só o contorno, tudo em vinho. A conversão está em [`src/lib/nota.ts`](src/lib/nota.ts) (`coracoesDaNota`, `rotuloDaNota` e `validarNota`, que o `reviewRating` do JSON-LD usa).
+- [`ChipCategoria.astro`](src/components/ui/ChipCategoria.astro): o nome da categoria, do formato ou da tag num chip. Props `nome`, `href` (com ele, é link; sem ele, é texto, para ficar por cima da miniatura de um card que já é link) e `tom` (`creme`, com texto vinho, 7,83:1; ou `rosa`, com `--cor-texto`, 7,26:1).
+- [`Breadcrumb.astro`](src/components/ui/Breadcrumb.astro): `<nav aria-label="Trilha de navegação">` com `<ol>`, separadores desenhados no CSS (nada é lido) e `aria-current="page"` no último item. Recebe `itens`, montados por `trilhaDoPost`, `trilhaDaCategoria` ou `trilhaDoFormato` ([`src/lib/trilha.ts`](src/lib/trilha.ts)); o BreadcrumbList do JSON-LD usa os mesmos itens, com `canonicalUrl(href)`.
+- [`Paginacao.astro`](src/components/ui/Paginacao.astro): `<nav aria-label="Paginação">` com "Anterior", os números e "Próxima", só links (funciona sem JS). Props `base` (a URL da página 1), `atual` e `total` (de páginas, o `totalDePaginas` de `conteudo.ts`). As URLs saem do `urlDaPagina`. Mostra a primeira, a última, a atual e as vizinhas, com reticências no resto ([`src/lib/paginacao.ts`](src/lib/paginacao.ts)); a página atual tem `aria-current="page"`, e "Anterior" na primeira e "Próxima" na última ficam desabilitados (`<a>` sem `href`, fora da ordem de foco). Com uma página só, não renderiza nada.
+
+```astro
+<Breadcrumb itens={trilhaDoPost(post)} />
+<Coracoes nota={post.nota} tamanho="grande" />
+<ChipCategoria nome={categoria.nome} href={urlDaCategoria(categoria.slug)} />
+<Paginacao base={urlDaCategoria('filmes')} atual={pagina} total={totalDePaginas(total)} />
+```
+
+### Vitrine
+
+Com o `pnpm dev` rodando, http://localhost:4321/vitrine mostra todos os estados desses componentes: as 10 notas, os 3 tamanhos, os chips nos dois tons (link, estático e sobre a miniatura), trilhas de review, pensamento, categoria e formato, e a paginação na primeira, no meio e na última página. A página ([`src/vitrine/Componentes.astro`](src/vitrine/Componentes.astro)) fica fora de `src/pages`: uma integração no `astro.config.mjs` injeta a rota só no `astro dev`, então ela não existe no build. Componente novo em `ui/` entra na vitrine no mesmo PR.
