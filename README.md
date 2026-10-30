@@ -70,22 +70,23 @@ Antes de abrir uma branch ou um PR, leia o [guia de contribuição](CONTRIBUTING
 
 Rode na raiz do repositório:
 
-| Comando              | O que faz                                         |
-| -------------------- | ------------------------------------------------- |
-| `pnpm install`       | Instala as dependências de todos os workspaces    |
-| `pnpm dev`           | Sobe o site em `http://localhost:4321`            |
-| `pnpm build`         | Gera o site em `web/.vercel/output`               |
-| `pnpm check`         | Roda o `astro check` (diagnóstico de .astro e TS) |
-| `pnpm typecheck`     | Roda o `tsc --noEmit` no site e no Studio         |
-| `pnpm test`          | Roda os testes do site e do Studio (Vitest)       |
-| `pnpm test:watch`    | Roda os testes do site a cada arquivo salvo       |
-| `pnpm studio:dev`    | Sobe o Sanity Studio em `http://localhost:3333`   |
-| `pnpm studio:build`  | Gera o Studio em `studio/dist`                    |
-| `pnpm studio:deploy` | Publica o Studio em `ronrom.sanity.studio`        |
-| `pnpm lint`          | Roda o ESLint (TS, .astro e acessibilidade)       |
-| `pnpm lint:fix`      | Roda o ESLint corrigindo o que for automático     |
-| `pnpm format`        | Formata tudo com o Prettier                       |
-| `pnpm format:check`  | Confere a formatação sem alterar arquivos         |
+| Comando              | O que faz                                                   |
+| -------------------- | ----------------------------------------------------------- |
+| `pnpm install`       | Instala as dependências de todos os workspaces              |
+| `pnpm dev`           | Sobe o site em `http://localhost:4321`                      |
+| `pnpm build`         | Gera o site em `web/.vercel/output`                         |
+| `pnpm check`         | Roda o `astro check` (diagnóstico de .astro e TS)           |
+| `pnpm typecheck`     | Roda o `tsc --noEmit` no site e no Studio                   |
+| `pnpm test`          | Roda os testes do site e do Studio (Vitest)                 |
+| `pnpm test:watch`    | Roda os testes do site a cada arquivo salvo                 |
+| `pnpm typegen`       | Gera os tipos das consultas GROQ (precisa do `studio/.env`) |
+| `pnpm studio:dev`    | Sobe o Sanity Studio em `http://localhost:3333`             |
+| `pnpm studio:build`  | Gera o Studio em `studio/dist`                              |
+| `pnpm studio:deploy` | Publica o Studio em `ronrom.sanity.studio`                  |
+| `pnpm lint`          | Roda o ESLint (TS, .astro e acessibilidade)                 |
+| `pnpm lint:fix`      | Roda o ESLint corrigindo o que for automático               |
+| `pnpm format`        | Formata tudo com o Prettier                                 |
+| `pnpm format:check`  | Confere a formatação sem alterar arquivos                   |
 
 Não há `pnpm preview`: o adapter da Vercel não suporta o comando. Teste as rotas sob demanda com o `pnpm dev` e o resto no preview do PR.
 
@@ -108,7 +109,7 @@ Monorepo com workspaces do pnpm (`pnpm-workspace.yaml`):
 │       │   └── ui/         # componentes genéricos reutilizáveis
 │       ├── layouts/        # layouts de página (LayoutBase)
 │       ├── lib/
-│       │   ├── sanity/     # cliente e consultas do Sanity
+│       │   ├── sanity/     # consultas GROQ, tipos gerados e cliente do Sanity
 │       │   ├── utils/      # utilitários gerais
 │       │   └── views/      # contador de visualizações e ranking
 │       ├── pages/          # rotas do site (api/ para as rotas sob demanda)

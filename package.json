@@ -16,6 +16,7 @@
     "studio:dev": "pnpm --filter studio dev",
     "studio:build": "pnpm --filter studio build",
     "studio:deploy": "pnpm --filter studio run deploy",
+    "typegen": "pnpm --filter studio typegen",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

@@ -3,7 +3,10 @@ import { describe, expect, it } from 'vitest';
 
 import { CORPO_NO_GROQ } from './corpo';
 
-// Um parágrafo com um link externo e um interno, e uma imagem no meio do texto.
+const referenciaDoAsset = { _type: 'reference', _ref: 'image-xicara-800x600-jpg' };
+
+// Um parágrafo com um link externo e um interno, uma imagem no meio do texto, uma galeria e uma
+// citação.
 const corpo = [
   {
     _type: 'block',
@@ -15,11 +18,47 @@ const corpo = [
     ],
     children: [{ _type: 'span', _key: 's1', text: 'Veja também', marks: ['interno'] }],
   },
-  { _type: 'imagem', _key: 'i1', alt: 'Uma xícara', largura: 'normal' },
+  {
+    _type: 'imagem',
+    _key: 'i1',
+    asset: referenciaDoAsset,
+    hotspot: { x: 0.5, y: 0.3, width: 1, height: 1 },
+    alt: 'Uma xícara',
+    legenda: 'Foto: autora',
+    largura: 'normal',
+  },
+  {
+    _type: 'galeria',
+    _key: 'g1',
+    imagens: [
+      { _type: 'image', _key: 'a', asset: referenciaDoAsset, alt: 'Primeira' },
+      { _type: 'image', _key: 'b', asset: { _type: 'reference', _ref: 'apagado' }, alt: 'Sumiu' },
+    ],
+  },
+  { _type: 'citacaoDestaque', _key: 'c1', texto: 'Frase', fonte: 'Alguém' },
 ];
+
+const asset = {
+  _id: 'image-xicara-800x600-jpg',
+  _type: 'sanity.imageAsset',
+  url: 'https://cdn.sanity.io/images/p/d/xicara-800x600.jpg',
+  metadata: {
+    dimensions: { width: 800, height: 600, aspectRatio: 4 / 3 },
+    lqip: 'data:image/jpeg',
+  },
+};
+
+const assetExpandido = {
+  _id: asset._id,
+  url: asset.url,
+  largura: 800,
+  altura: 600,
+  lqip: 'data:image/jpeg',
+};
 
 function dataset(destino: Record<string, unknown> | undefined) {
   return [
+    asset,
     { _id: 'categoria-filmes', _type: 'categoria', slug: { current: 'filmes' } },
     { _id: 'formato-frases', _type: 'formato', slug: { current: 'frases' } },
     ...(destino ? [{ _id: 'destino', _type: 'post', ...destino }] : []),
@@ -78,10 +117,23 @@ describe('CORPO_NO_GROQ', () => {
     expect(await destinoDoLink(undefined)).toBeNull();
   });
 
-  it('não mexe no link externo, nos spans nem nos outros blocos', async () => {
-    const [paragrafo, imagem] = await corpoDaOrigem(review);
+  it('não mexe no link externo, nos spans nem na citação', async () => {
+    const [paragrafo, , , citacao] = await corpoDaOrigem(review);
     expect(paragrafo?.children).toEqual(corpo[0]?.children);
     expect((paragrafo?.markDefs as unknown[])[0]).toEqual(corpo[0]?.markDefs?.[0]);
-    expect(imagem).toEqual(corpo[1]);
+    expect(citacao).toEqual(corpo[3]);
+  });
+
+  it('expande o asset da imagem e mantém alt, legenda, hotspot e largura', async () => {
+    const [, imagem] = await corpoDaOrigem(review);
+    expect(imagem).toEqual({ ...corpo[1], asset: assetExpandido });
+  });
+
+  it('expande cada imagem da galeria, com asset null se ele foi apagado', async () => {
+    const [, , galeria] = await corpoDaOrigem(review);
+    expect(galeria?.imagens).toEqual([
+      { _type: 'image', _key: 'a', asset: assetExpandido, alt: 'Primeira' },
+      { _type: 'image', _key: 'b', asset: null, alt: 'Sumiu' },
+    ]);
   });
 });

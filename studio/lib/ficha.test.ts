@@ -148,14 +148,39 @@ describe('FICHA_NO_GROQ', () => {
     { _id: 'pensamento', _type: 'post', tipo: 'pensamento', ficha },
   ];
 
-  async function fichaDo(id: string) {
+  async function fichaDo(id: string, emDataset: Record<string, unknown>[] = dataset) {
     const consulta = parse(`*[_id == $id][0]{ "ficha": ${FICHA_NO_GROQ} }.ficha`);
-    const resultado = await evaluate(consulta, { dataset, params: { id } });
+    const resultado = await evaluate(consulta, { dataset: emDataset, params: { id } });
     return resultado.get();
   }
 
+  // A projeção é escrita à mão: um campo novo em CAMPOS_DA_FICHA que não entrar nela some do site.
+  it.each(MODELOS_DE_FICHA.map(({ value }) => value))(
+    'devolve o modelo e os campos de %s',
+    async (modelo) => {
+      const todosOsCampos = Object.fromEntries(
+        [...Object.values(CAMPOS_DA_FICHA).flat(), ...CAMPOS_COMUNS].map((campo) => [campo, 1]),
+      );
+      const devolvida = await fichaDo('post', [
+        { _id: 'categoria', _type: 'categoria', modeloFicha: modelo },
+        {
+          _id: 'post',
+          _type: 'post',
+          tipo: 'review',
+          categoria: { _ref: 'categoria' },
+          ficha: todosOsCampos,
+        },
+      ]);
+      expect(Object.keys(devolvida as object).sort()).toEqual(
+        ['modelo', ...camposDoModelo(modelo)].sort(),
+      );
+      expect(devolvida).toMatchObject({ modelo });
+    },
+  );
+
   it('em review de filme, devolve só os campos de filme', async () => {
     expect(await fichaDo('filme')).toEqual({
+      modelo: 'filme',
       direcao: 'Wim Wenders',
       ano: 2023,
       duracao: null,
@@ -166,6 +191,7 @@ describe('FICHA_NO_GROQ', () => {
 
   it('em review de lugar, devolve só os campos de lugar', async () => {
     expect(await fichaDo('lugar')).toEqual({
+      modelo: 'lugar',
       endereco: ficha.endereco,
       linkDoMapa: null,
       faixaDePreco: null,

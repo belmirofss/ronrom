@@ -91,8 +91,24 @@ export function problemaNoInstagram(perfil: string) {
 }
 
 // `"ficha": ${FICHA_NO_GROQ}` numa consulta de post devolve só os campos do modelo da categoria,
-// mesmo que a ficha guarde campos de outro modelo. Em pensamento, ou sem ficha, devolve `null`.
-export const FICHA_NO_GROQ = `select(${MODELOS_DE_FICHA.map(
-  ({ value }) =>
-    `categoria->modeloFicha == "${value}" => ficha{${camposDoModelo(value).join(', ')}}`,
-).join(', ')})`;
+// mesmo que a ficha guarde campos de outro modelo, e o `modelo` que os identifica (para o tipo
+// gerado pelo typegen virar uma união por modelo). Em pensamento, ou sem ficha, devolve `null`.
+// Escrita por extenso porque o typegen do Sanity não roda código: um teste confere que cada
+// ramo traz os campos de CAMPOS_DA_FICHA e CAMPOS_COMUNS.
+export const FICHA_NO_GROQ = `select(
+  categoria->modeloFicha == "filme" => ficha{
+    "modelo": "filme", direcao, ano, duracao, ondeVi, valeAPena
+  },
+  categoria->modeloFicha == "serie" => ficha{
+    "modelo": "serie", criacao, anoDeEstreia, anoDeFim, temporadasVistas, ondeVi, valeAPena
+  },
+  categoria->modeloFicha == "livro" => ficha{
+    "modelo": "livro", autoria, editora, ano, paginas, formatoDoLivro, valeAPena
+  },
+  categoria->modeloFicha == "lugar" => ficha{
+    "modelo": "lugar", endereco, linkDoMapa, faixaDePreco, tipoDeCozinha, oQuePedi, instagram, valeAPena
+  },
+  categoria->modeloFicha == "comida" => ficha{
+    "modelo": "comida", marca, preco, oQueProvei, valeAPena
+  }
+)`;

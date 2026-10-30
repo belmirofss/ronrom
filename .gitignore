@@ -11,6 +11,9 @@ dist/
 # runtime temporário do Sanity Studio (recriado a cada `sanity dev`)
 .sanity/
 
+# schema extraído pelo `pnpm typegen` (os tipos gerados a partir dele são versionados)
+studio/schema.json
+
 # variáveis de ambiente (só o exemplo é versionado)
 .env*
 !.env.example

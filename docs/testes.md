@@ -121,6 +121,15 @@ Os helpers de `rotas.ts` (#33):
 - [ ] **Paginação:** `urlDaPagina(base, 1)` é a própria `base`; `2` em diante vira `{base}/pagina/{n}`; `0`, `-1`, `1.5` e `NaN` lançam erro.
 - [ ] `urlDoPost` lança erro sem slug, sem categoria (review) ou sem formato (pensamento), e com slug fora do formato (`"Dias Perfeitos"`, `"pagina"`).
 
+### Consultas GROQ (#25)
+
+As consultas de [`web/src/lib/sanity/consultas.ts`](../web/src/lib/sanity/consultas.ts) rodam com o `groq-js` num dataset montado no teste, com o "agora" fixo:
+
+- [ ] Nenhuma consulta devolve rascunho (`drafts.*`), versão de release (`versions.*`) ou post com data no futuro.
+- [ ] Listagens em ordem do mais recente, com a fatia da página e o total; categoria, formato ou tag inexistente vem `null`.
+- [ ] O post só é achado no tipo e na categoria (ou formato) certos, com a ficha do modelo da categoria e sem tags fora do ar.
+- [ ] Destaque com e sem escolha nas configurações, "Leia também" na ordem de prioridade, redirects e sitemap.
+
 ### Nota em corações (#35)
 
 A conversão da nota para corações fica numa função pura, usada pelo `Coracoes.astro` e pelo JSON-LD (#51):

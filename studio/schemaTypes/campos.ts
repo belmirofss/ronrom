@@ -1,4 +1,10 @@
-import { defineArrayMember, defineField, type SlugRule, type SlugValue } from 'sanity';
+import {
+  defineArrayMember,
+  defineField,
+  type SlugRule,
+  type SlugValue,
+  type TextRule,
+} from 'sanity';
 
 import { problemaNoSlug, slugify, TAMANHO_MAXIMO_DO_SLUG } from '../lib/slug';
 
@@ -50,6 +56,17 @@ export function campoNome(description: string) {
 // Acima disso o Google corta a description no resultado da busca.
 export const TAMANHO_IDEAL_DA_DESCRICAO = 160;
 
+// Avisa, sem impedir a publicação, quando a descrição fica vazia. Não usa `required().warning()`:
+// com o `required()`, o `sanity schema extract` marca o campo como obrigatório e o tipo gerado
+// para o site (web/src/lib/sanity) esconde que ele pode vir vazio.
+function avisoSeVazia(rule: TextRule) {
+  return rule
+    .custom((descricao: string | undefined) =>
+      descricao ? true : 'Sem descrição, o Google escolhe sozinho um trecho da página.',
+    )
+    .warning();
+}
+
 type Taxonomia = 'categoria' | 'formato';
 
 // "Categoria" é feminino e "formato", masculino.
@@ -65,7 +82,7 @@ export function campoDescricao(tipo: Taxonomia) {
     rows: 3,
     description: `Uma ou duas frases sobre o que entra ${NESTE[tipo]}. Aparecem no topo da página da listagem e no resultado do Google.`,
     validation: (rule) => [
-      rule.required().warning('Sem descrição, o Google escolhe sozinho um trecho da página.'),
+      avisoSeVazia(rule),
       rule
         .max(TAMANHO_IDEAL_DA_DESCRICAO)
         .warning(
@@ -130,9 +147,7 @@ export function campoDescricaoSeo(description: string, obrigatoria = false) {
     rows: 3,
     description,
     validation: (rule) => [
-      ...(obrigatoria
-        ? [rule.required().warning('Sem descrição, o Google escolhe sozinho um trecho da página.')]
-        : []),
+      ...(obrigatoria ? [avisoSeVazia(rule)] : []),
       rule
         .max(TAMANHO_IDEAL_DA_DESCRICAO)
         .warning(

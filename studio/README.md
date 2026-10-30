@@ -8,14 +8,17 @@ Painel de edição do Ronrom, feito com o [Sanity Studio](https://www.sanity.io/
 2. Copie `studio/.env.example` para `studio/.env` e preencha as variáveis (tabela abaixo).
 3. Na raiz, rode `pnpm studio:dev` e abra `http://localhost:3333`. O Studio pede login com uma conta que seja membro do projeto no Sanity.
 
-| Comando (na raiz)    | O que faz                                                                                    |
-| -------------------- | -------------------------------------------------------------------------------------------- |
-| `pnpm studio:dev`    | Sobe o Studio em `http://localhost:3333`                                                     |
-| `pnpm studio:build`  | Gera o Studio estático em `studio/dist`                                                      |
-| `pnpm studio:deploy` | Faz o build e publica em `ronrom.sanity.studio` (pede `sanity login` ou `SANITY_AUTH_TOKEN`) |
-| `pnpm typecheck`     | Roda o `tsc --noEmit` no site e no Studio                                                    |
+| Comando (na raiz)    | O que faz                                                                                          |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| `pnpm studio:dev`    | Sobe o Studio em `http://localhost:3333`                                                           |
+| `pnpm studio:build`  | Gera o Studio estático em `studio/dist`                                                            |
+| `pnpm studio:deploy` | Faz o build e publica em `ronrom.sanity.studio` (pede `sanity login` ou `SANITY_AUTH_TOKEN`)       |
+| `pnpm typecheck`     | Roda o `tsc --noEmit` no site e no Studio                                                          |
+| `pnpm typegen`       | Gera os tipos das consultas do site a partir dos schemas ([veja](../web/src/lib/sanity/README.md)) |
 
 Para outros comandos da CLI: `pnpm --filter studio sanity <comando>` (ex.: `pnpm --filter studio sanity login`).
+
+Mudou um schema? Rode `pnpm typegen` e commite o `web/src/lib/sanity/tipos.gerados.d.ts` junto: o CI falha se os tipos do site ficarem desatualizados.
 
 `deployment.autoUpdates` fica desligado: o Studio publicado roda a versão do `pnpm-lock.yaml`, e atualizar o Sanity é um PR de dependência como outro qualquer.
 
@@ -90,7 +93,7 @@ A lista de posts mostra a capa, o título e um subtítulo como "Review · Filmes
 | `comida` | Comidas                       | `marca` (marca ou onde comprar), `preco` (reais), **`oQueProvei`**                                                                            |
 | todos    |                               | `valeAPena` (frase curta opcional)                                                                                                            |
 
-Os campos de todos os modelos ficam num objeto só e sem prefixo; os que têm o mesmo sentido em mais de um modelo (`ano`, `ondeVi`) têm o mesmo nome e continuam valendo ao trocar de categoria. Os obrigatórios são conferidos por uma validação que também busca o modelo da categoria. Ao trocar para uma categoria de outro modelo, nada é apagado em silêncio: o input lista os campos preenchidos que deixaram de valer e oferece o botão "Apagar esses campos". Eles ficam guardados, mas o site não os lê: as consultas usam o `FICHA_NO_GROQ` de `lib/ficha.ts` (`"ficha": ${FICHA_NO_GROQ}`), que devolve só os campos do modelo da categoria e `null` em pensamento ou sem ficha. A lista de campos foi aprovada na #1 e pode mudar depois do onboarding da autora (#31).
+Os campos de todos os modelos ficam num objeto só e sem prefixo; os que têm o mesmo sentido em mais de um modelo (`ano`, `ondeVi`) têm o mesmo nome e continuam valendo ao trocar de categoria. Os obrigatórios são conferidos por uma validação que também busca o modelo da categoria. Ao trocar para uma categoria de outro modelo, nada é apagado em silêncio: o input lista os campos preenchidos que deixaram de valer e oferece o botão "Apagar esses campos". Eles ficam guardados, mas o site não os lê: as consultas usam o `FICHA_NO_GROQ` de `lib/ficha.ts` (`"ficha": ${FICHA_NO_GROQ}`), que devolve só os campos do modelo da categoria, mais o `modelo` que os identifica, e `null` em pensamento ou sem ficha. A projeção é escrita por extenso, porque o typegen não roda código ([`web/src/lib/sanity`](../web/src/lib/sanity/README.md)); um teste confere que cada modelo traz os campos de `CAMPOS_DA_FICHA`. A lista de campos foi aprovada na #1 e pode mudar depois do onboarding da autora (#31).
 
 **Texto do post.** O `corpo` fica em [`schemaTypes/corpo.ts`](schemaTypes/corpo.ts) e oferece só o que o layout "Caderno" do site sabe mostrar (WEB-09), com rótulos e ícones em pt-BR:
 
@@ -105,7 +108,7 @@ Os campos de todos os modelos ficam num objeto só e sem prefixo; os que têm o 
 | `video`           | `url` obrigatória (YouTube ou Instagram), `legenda` opcional e, escondidos, `provedor` e `idVideo`; no editor, a miniatura ou um cartão |
 | `citacaoDestaque` | `texto` obrigatório e `fonte` (autor ou fonte) opcional, mostrada no editor em letra grande e vinho, parecida com o site                |
 
-O `linkInterno` guarda o `_id` do post, não o endereço: o link continua certo depois que o destino muda de slug, categoria ou formato. Como a referência é forte, o Sanity não deixa apagar um post que outro post linka (ele mostra quais). As consultas do site usam o `CORPO_NO_GROQ` de [`lib/corpo.ts`](lib/corpo.ts) (`"corpo": ${CORPO_NO_GROQ}`), que troca cada referência pelo post de destino com os slugs já resolvidos para o `urlDoPost`; destino ainda não publicado vem como `post: null`, e o site mostra só o texto. A projeção tem testes com o `groq-js`.
+O `linkInterno` guarda o `_id` do post, não o endereço: o link continua certo depois que o destino muda de slug, categoria ou formato. Como a referência é forte, o Sanity não deixa apagar um post que outro post linka (ele mostra quais). As consultas do site usam o `CORPO_NO_GROQ` de [`lib/corpo.ts`](lib/corpo.ts) (`"corpo": ${CORPO_NO_GROQ}`), que troca cada referência pelo post de destino com os slugs já resolvidos para o `urlDoPost`; destino ainda não publicado vem como `post: null`, e o site mostra só o texto. A mesma projeção expande o asset das imagens soltas e das da galeria com o `IMAGEM_NO_GROQ` de [`lib/imagem.ts`](lib/imagem.ts) (URL, dimensões e `lqip`). As duas têm testes com o `groq-js`.
 
 **Vídeo e galeria.** As regras ficam em [`lib/video.ts`](lib/video.ts) e [`lib/galeria.ts`](lib/galeria.ts), com testes. O `video` aceita `youtube.com/watch?v=`, `youtu.be/`, `youtube.com/shorts/` e `instagram.com/p/` ou `/reel/`; qualquer outro link é recusado com "Cole o link de um vídeo do YouTube ou de um post do Instagram." O `provedor` (`youtube` ou `instagram`) e o `idVideo` são gravados no próprio bloco pelo input de [`componentes/VideoInput.tsx`](componentes/VideoInput.tsx), a cada link novo, para o site montar o player sem interpretar a URL; se um dia ficarem diferentes do link (documento mudado fora do Studio), a validação não deixa publicar. A prévia ([`componentes/PreviewVideo.tsx`](componentes/PreviewVideo.tsx)) mostra a miniatura do YouTube (`img.youtube.com/vi/<id>/hqdefault.jpg`) ou um cartão do Instagram, que não oferece miniatura sem login; vídeo sem miniatura (apagado ou privado) ou link inválido mostram "Prévia indisponível" com o link. A `galeria` com menos de 2 imagens, mais de 12, imagem sem arquivo ou sem `alt` não publica; para uma foto só, o bloco certo é a `imagem`.
 
