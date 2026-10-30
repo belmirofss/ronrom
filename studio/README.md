@@ -70,7 +70,7 @@ Um único tipo `post`, com o campo `tipo` (`review` ou `pensamento`), para que s
 | `slug`             | Gerado do título, obrigatório e único entre os posts                                                                     |
 | `dataDePublicacao` | Obrigatória, começa com a hora da criação e não aceita data no futuro (não há agendamento)                               |
 | `capa`             | Imagem com hotspot, obrigatória; `alt` obrigatório e `legenda` (legenda ou crédito) opcional                             |
-| `corpo`            | Portable Text com estilos, listas, links, imagem e citação em destaque; veja "Texto do post" abaixo                      |
+| `corpo`            | Portable Text com estilos, listas, links, imagem, galeria, vídeo e citação em destaque; veja "Texto do post" abaixo      |
 | `tags`             | Referências a `tag`, sem repetir                                                                                         |
 | `seo`              | `titulo` (aviso acima de 60), `descricao` (aviso acima de 160), `imagem` (`alt` obrigatório se houver imagem), `noindex` |
 | `slugsAnteriores`  | Caminhos antigos do post, só leitura, dentro de "Avançado" na aba SEO                                                    |
@@ -101,9 +101,13 @@ Os campos de todos os modelos ficam num objeto só e sem prefixo; os que têm o 
 | Listas            | Com marcadores e numerada                                                                                                               |
 | Links             | `link` (externo, `href` obrigatório em `http`, `https` ou `mailto`) e `linkInterno` (referência a outro post, sem criar post pelo link) |
 | `imagem`          | Imagem com hotspot; `alt` obrigatório, `legenda` opcional e `largura` (`normal` ou `larga`); sem a imagem, o bloco não deixa publicar   |
+| `galeria`         | `imagens`: de 2 a 12 imagens com hotspot, cada uma com `alt` obrigatório e `legenda` opcional; no editor, as miniaturas de todas        |
+| `video`           | `url` obrigatória (YouTube ou Instagram), `legenda` opcional e, escondidos, `provedor` e `idVideo`; no editor, a miniatura ou um cartão |
 | `citacaoDestaque` | `texto` obrigatório e `fonte` (autor ou fonte) opcional, mostrada no editor em letra grande e vinho, parecida com o site                |
 
 O `linkInterno` guarda o `_id` do post, não o endereço: o link continua certo depois que o destino muda de slug, categoria ou formato. Como a referência é forte, o Sanity não deixa apagar um post que outro post linka (ele mostra quais). As consultas do site usam o `CORPO_NO_GROQ` de [`lib/corpo.ts`](lib/corpo.ts) (`"corpo": ${CORPO_NO_GROQ}`), que troca cada referência pelo post de destino com os slugs já resolvidos para o `urlDoPost`; destino ainda não publicado vem como `post: null`, e o site mostra só o texto. A projeção tem testes com o `groq-js`.
+
+**Vídeo e galeria.** As regras ficam em [`lib/video.ts`](lib/video.ts) e [`lib/galeria.ts`](lib/galeria.ts), com testes. O `video` aceita `youtube.com/watch?v=`, `youtu.be/`, `youtube.com/shorts/` e `instagram.com/p/` ou `/reel/`; qualquer outro link é recusado com "Cole o link de um vídeo do YouTube ou de um post do Instagram." O `provedor` (`youtube` ou `instagram`) e o `idVideo` são gravados no próprio bloco pelo input de [`componentes/VideoInput.tsx`](componentes/VideoInput.tsx), a cada link novo, para o site montar o player sem interpretar a URL; se um dia ficarem diferentes do link (documento mudado fora do Studio), a validação não deixa publicar. A prévia ([`componentes/PreviewVideo.tsx`](componentes/PreviewVideo.tsx)) mostra a miniatura do YouTube (`img.youtube.com/vi/<id>/hqdefault.jpg`) ou um cartão do Instagram, que não oferece miniatura sem login; vídeo sem miniatura (apagado ou privado) ou link inválido mostram "Prévia indisponível" com o link. A `galeria` com menos de 2 imagens, mais de 12, imagem sem arquivo ou sem `alt` não publica; para uma foto só, o bloco certo é a `imagem`.
 
 **Endereço antigo.** O botão "Publicar" do post é envolvido por [`acoes/publicarPost.ts`](acoes/publicarPost.ts): ao publicar um post que já estava no ar com outro slug, categoria ou formato, ele guarda o caminho publicado (`/reviews/filmes/slug-antigo`) em `slugsAnteriores`, para a #53 gerar o redirect. Se a consulta ao Sanity falhar, o post não é publicado e a autora vê um aviso para tentar de novo. Mudar o slug, a categoria ou o formato de um post publicado mostra um aviso amarelo no campo, sem impedir a publicação.
 
