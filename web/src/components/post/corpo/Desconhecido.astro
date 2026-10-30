@@ -1,0 +1,7 @@
+---
+import type { TypedObjectProps } from 'astro-portabletext/types';
+
+// Tipo de bloco que o site não conhece (um bloco novo no Studio antes de o site saber mostrá-lo):
+// não renderiza nada e não quebra o build. O aviso sai no `onMissingComponent` do <CorpoDoPost>.
+export type Props = TypedObjectProps;
+---

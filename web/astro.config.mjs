@@ -68,8 +68,9 @@ export default defineConfig({
     },
   ],
   integrations: [
-    // Vitrine dos componentes (#35) em /vitrine, só no `astro dev`: a rota não existe no build,
-    // então não chega a produção, ao sitemap nem à busca. O arquivo fica fora de src/pages.
+    // Vitrine dos componentes (#35) em /vitrine e do texto do post (#39) em /vitrine/corpo, só no
+    // `astro dev`: as rotas não existem no build, então não chegam a produção, ao sitemap nem à
+    // busca. Os arquivos ficam fora de src/pages.
     {
       name: 'ronrom:vitrine',
       hooks: {
@@ -78,6 +79,10 @@ export default defineConfig({
           injectRoute({
             pattern: '/vitrine',
             entrypoint: new URL('./src/vitrine/Componentes.astro', import.meta.url),
+          });
+          injectRoute({
+            pattern: '/vitrine/corpo',
+            entrypoint: new URL('./src/vitrine/Corpo.astro', import.meta.url),
           });
         },
       },

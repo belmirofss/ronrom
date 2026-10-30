@@ -1,0 +1,18 @@
+---
+import type { MarkProps } from 'astro-portabletext/types';
+import { hrefDoLinkExterno } from '@/lib/corpo';
+
+// Link externo do texto. Abre na mesma aba; o `rel` não passa a página de origem nem dá ao destino
+// acesso a esta janela. Endereço com esquema fora dos aceitos (`javascript:`) vira só texto.
+type Props = MarkProps<{ href?: string }>;
+
+const href = hrefDoLinkExterno(Astro.props.node.markDef.href);
+---
+
+{href ? (
+  <a href={href} rel="noopener noreferrer">
+    <slot />
+  </a>
+) : (
+  <slot />
+)}

@@ -1,0 +1,116 @@
+---
+import { PortableText } from 'astro-portabletext';
+import type { MissingComponentHandler } from 'astro-portabletext/types';
+import Bloco from '@/components/post/corpo/Bloco.astro';
+import CitacaoDestaque from '@/components/post/corpo/CitacaoDestaque.astro';
+import Desconhecido from '@/components/post/corpo/Desconhecido.astro';
+import Galeria from '@/components/post/corpo/Galeria.astro';
+import Imagem from '@/components/post/corpo/Imagem.astro';
+import LinkExterno from '@/components/post/corpo/LinkExterno.astro';
+import LinkInterno from '@/components/post/corpo/LinkInterno.astro';
+import Video from '@/components/post/corpo/Video.astro';
+import { prepararCorpo, type Corpo } from '@/lib/corpo';
+
+interface Props {
+  /** O `corpo` da `CONSULTA_DO_POST`, com os links internos e as imagens já resolvidos. */
+  corpo: Corpo | null | undefined;
+  class?: string;
+}
+
+const { corpo, class: classe } = Astro.props;
+
+// Subtítulos com nível e âncora, sem blocos vazios (@/lib/corpo).
+const itens = prepararCorpo(corpo);
+
+// Negrito e itálico ficam com os componentes padrão do astro-portabletext (<strong> e <em>), assim
+// como as listas (<ul>/<ol>, com os subníveis dentro do <li>).
+const componentes = {
+  block: Bloco,
+  mark: { link: LinkExterno, linkInterno: LinkInterno },
+  type: { imagem: Imagem, galeria: Galeria, video: Video, citacaoDestaque: CitacaoDestaque },
+  unknownType: Desconhecido,
+};
+
+// Bloco, estilo, lista ou marca que o site não conhece: sai sem o componente (o texto aparece, o
+// bloco desconhecido some), e o `astro dev` avisa no terminal. O build não quebra.
+const avisar: MissingComponentHandler = (_, { nodeType, type }) => {
+  if (import.meta.env.DEV) {
+    console.warn(`[corpo] O site ainda não sabe mostrar o ${nodeType} "${type}" do texto do post.`);
+  }
+};
+---
+
+<div class:list={['corpo', classe]}>
+  <PortableText value={itens} components={componentes} onMissingComponent={avisar} />
+</div>
+
+<style>
+  /* Coluna de leitura: 18px com entrelinha 1,75. A largura (--coluna-leitura) vem da página,
+     pelo <Container largura="leitura">; a imagem larga passa dela (Figura.astro). */
+  .corpo {
+    font-size: var(--texto-post);
+    line-height: var(--altura-linha-post);
+    overflow-wrap: break-word;
+  }
+
+  /* Ritmo vertical: o espaço fica todo aqui, entre os filhos diretos, e os blocos não têm margem
+     própria. Imagens, galerias, vídeos e citações em destaque respiram mais. */
+  .corpo > :global(* + *) {
+    margin-block-start: var(--espaco-5);
+  }
+
+  .corpo > :global(:is(figure, .galeria) + *),
+  .corpo > :global(* + :is(figure, .galeria)) {
+    margin-block-start: var(--espaco-7);
+  }
+
+  .corpo > :global(* + h2) {
+    margin-block-start: var(--espaco-7);
+  }
+
+  .corpo > :global(* + h3) {
+    margin-block-start: var(--espaco-6);
+  }
+
+  .corpo > :global(:is(h2, h3) + *) {
+    margin-block-start: var(--espaco-3);
+  }
+
+  .corpo :global(h2) {
+    font-size: var(--texto-2xl);
+  }
+
+  .corpo :global(h3) {
+    font-size: var(--texto-xl);
+  }
+
+  .corpo :global(strong) {
+    font-weight: var(--peso-negrito);
+  }
+
+  /* Citação comum (o estilo "Citação" do editor): um fio decorativo à esquerda. */
+  .corpo > :global(blockquote) {
+    padding-inline-start: var(--espaco-5);
+    border-inline-start: 3px solid var(--cor-malva);
+    color: var(--cor-texto-2);
+  }
+
+  /* Listas: só as do texto, não a galeria. Os subníveis ficam dentro do <li>. */
+  .corpo :global(:is(ul, ol):not(.galeria)) {
+    margin-block-end: 0;
+    padding-inline-start: 1.5em;
+  }
+
+  .corpo :global(:is(ul, ol):not(.galeria) li + li),
+  .corpo :global(li > :is(ul, ol)) {
+    margin-block-start: var(--espaco-2);
+  }
+
+  .corpo :global(li::marker) {
+    color: var(--cor-vinho);
+  }
+
+  .corpo :global(ol > li::marker) {
+    font-weight: var(--peso-medio);
+  }
+</style>
