@@ -2,6 +2,8 @@
 // Vitrine dos componentes de interface: todos os estados numa página só, para revisar o visual e
 // testar com teclado e leitor de tela. Fica fora de src/pages porque só existe no `astro dev`: a
 // integração do astro.config.mjs injeta a rota /vitrine no dev, e o build nem a conhece.
+import BarraLateral from '@/components/barra-lateral/BarraLateral.astro';
+import FraseDaSemana from '@/components/barra-lateral/FraseDaSemana.astro';
 import Container from '@/components/layout/Container.astro';
 import CardDePost from '@/components/post/CardDePost.astro';
 import Destaque from '@/components/post/Destaque.astro';
@@ -34,6 +36,22 @@ const PAGINAS: { titulo: string; atual: number; total: number }[] = [
   { titulo: 'Meio de 50 (25)', atual: 25, total: 50 },
   { titulo: 'Poucas páginas (2 de 3)', atual: 2, total: 3 },
   { titulo: 'Sete páginas, sem reticências (4 de 7)', atual: 4, total: 7 },
+];
+
+const FRASES_DA_SEMANA: { titulo: string; frase: { texto?: string; autoria?: string } }[] = [
+  {
+    titulo: 'Com autoria',
+    frase: { texto: 'Devagar também é um jeito de chegar.', autoria: 'Ditado de avó' },
+  },
+  { titulo: 'Sem autoria', frase: { texto: 'Café passado na hora resolve quase tudo.' } },
+  {
+    titulo: 'No limite de 280 caracteres',
+    frase: {
+      texto:
+        'Tem semana que a gente só quer um filme bom, um livro que não acabe e um café que não esfrie antes do último gole. Nesta, eu quis as três coisas e ainda um pouco de silêncio, daquele que só existe às seis da manhã, antes de o prédio acordar e o gato pedir comida pela terceira vez.',
+      autoria: 'Caderno, página 42',
+    },
+  },
 ];
 
 // Os cards saem do Sanity (ou das fixtures). Os casos que o conteúdo pode não ter, como título
@@ -240,6 +258,32 @@ const casosExtremos = [
           link={{ rotulo: 'Ver todas as reviews', href: '/reviews' }}
         />
       </section>
+
+      <section aria-labelledby="titulo-frase">
+        <h2 id="titulo-frase">FraseDaSemana</h2>
+        <div class="vitrine__grade vitrine__grade--larga">
+          {FRASES_DA_SEMANA.map(({ titulo, frase }) => (
+            <div>
+              <h3>{titulo}</h3>
+              <FraseDaSemana frase={frase} />
+            </div>
+          ))}
+        </div>
+        <h3>Sem frase cadastrada</h3>
+        <p class="vitrine__nota">Não renderiza nada:</p>
+        <FraseDaSemana frase={{ texto: '   ', autoria: 'Ditado de avó' }} />
+      </section>
+
+      {/* Os títulos da barra lateral são h2: aqui ficam abaixo do h2 da seção, como na página. */}
+      <section aria-labelledby="titulo-barra-lateral">
+        <h2 id="titulo-barra-lateral">BarraLateral</h2>
+        <p class="vitrine__nota">
+          Com o conteúdo do Sanity (ou das fixtures), na largura da coluna lateral (20rem).
+        </p>
+        <div class="vitrine__barra-lateral">
+          <BarraLateral />
+        </div>
+      </section>
     </div>
   </Container>
 </LayoutBase>
@@ -280,6 +324,16 @@ const casosExtremos = [
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
     gap: var(--espaco-4);
+  }
+
+  .vitrine__grade--larga {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    align-items: start;
+  }
+
+  .vitrine__barra-lateral {
+    max-width: 20rem;
+    margin-block-start: var(--espaco-5);
   }
 
   .vitrine__grade dt {

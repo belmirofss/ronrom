@@ -86,10 +86,27 @@ Toda página usa um dos layouts de [`src/layouts`](src/layouts), que montam a ca
 
 Regras da casca:
 
-- **Landmarks únicos:** um `<header>`, um `<nav aria-label="Principal">`, um `<main>` e um `<footer>` por página. Páginas e componentes não criam outro `<main>`. Os únicos outros `<nav>` são o `Breadcrumb` (`aria-label="Trilha de navegação"`) e a `Paginacao` (`aria-label="Paginação"`), cada um com nome próprio; os grupos de links do rodapé são listas com título, sem `<nav>`.
+- **Landmarks únicos:** um `<header>`, um `<nav aria-label="Principal">`, um `<main>` e um `<footer>` por página. Páginas e componentes não criam outro `<main>`. Os únicos outros `<nav>` são o `Breadcrumb` (`aria-label="Trilha de navegação"`), a `Paginacao` (`aria-label="Paginação"`) e os dois menus da [barra lateral](#barra-lateral) (`"Categorias das reviews"` e `"Formatos dos pensamentos"`), cada um com nome próprio; os grupos de links do rodapé são listas com título, sem `<nav>`.
 - **Seção atual:** o cabeçalho marca a seção com `aria-current` pelo prefixo da rota (`estadoDaSecao`, em [`src/lib/navegacao.ts`](src/lib/navegacao.ts)): `"page"` na própria página da seção (`/reviews`) e `"true"` nas páginas dentro dela (`/reviews/filmes/...`). "Início" só fica ativo em `/`.
 - **Celular:** os 4 links da navegação ficam sempre visíveis, sem menu hambúrguer, e quebram linha se não couberem. Todo link do cabeçalho e do rodapé tem pelo menos 44px de altura.
 - **Rodapé:** o link "Área da autora" aponta para `STUDIO_URL` (padrão `https://ronrom.sanity.studio`, veja [`docs/ambientes.md`](../docs/ambientes.md#variáveis-de-ambiente)), e o ano é o do build, no fuso de São Paulo.
+
+## Barra lateral
+
+A [`BarraLateral.astro`](src/components/barra-lateral/BarraLateral.astro) é o conteúdo do slot `barra-lateral` do `LayoutComBarraLateral` (home e, se quiser, as listagens). Ela mesma busca o Sanity (`buscarSobre`, `buscarConfiguracoes` e `buscarTaxonomia`), então a página só a coloca no slot. De cima para baixo:
+
+- **Autora:** o gato do mosaico num quadrado vinho (decorativo, `aria-hidden`), "Oi, eu sou a {nome}" e a bio do singleton Sobre, com o link "Mais sobre mim" para `/sobre`. Nada da autora fica no código: sem `nome` no Sobre, o bloco some.
+- **Reviews e Pensamentos:** dois `<nav>` separados, com as categorias e os formatos na ordem do menu do Studio e as URLs do `urlDaCategoria` e do `urlDoFormato`. Cada link mostra o total de posts no ar; o número fica `aria-hidden` e o leitor de tela ouve "Filmes, 3 posts" (ou "nenhum post"). Categoria sem post continua com link, porque a listagem existe vazia. O `aria-label` dos menus não é só "Reviews" e "Pensamentos" para não repetir o nome dos links do menu principal.
+- **Frase da semana:** a [`FraseDaSemana.astro`](src/components/barra-lateral/FraseDaSemana.astro), com prop `frase` (o `fraseDaSemana` de Configurações do site). Bloco `.superficie-vinho` (texto creme, 7,83:1, e anel de foco creme), com `<figure>`, `<blockquote>` e a autoria, se houver, no `<figcaption>`. Sem texto (ou só com espaços), não renderiza nada.
+
+No celular (abaixo de 960px) a barra lateral vem depois do conteúdo principal, pela ordem do HTML. Os dois menus repetem as categorias do rodapé, mas com outro papel: o rodapé não é `<nav>` e só lista as categorias. A lógica (frase vazia, URLs e o texto do total) está em [`src/lib/barra-lateral.ts`](src/lib/barra-lateral.ts), com teste.
+
+```astro
+<LayoutComBarraLateral seo={{ description: '...', canonical: '/' }}>
+  <h1>...</h1>
+  <BarraLateral slot="barra-lateral" />
+</LayoutComBarraLateral>
+```
 
 ## SEO: meta tags e ícones
 
@@ -174,7 +191,7 @@ Regras:
 
 ### Vitrine
 
-Com o `pnpm dev` rodando, http://localhost:4321/vitrine/corpo mostra o [texto do post](#texto-do-post-portable-text) com todos os blocos, e http://localhost:4321/vitrine mostra todos os estados desses componentes: as 10 notas, os 3 tamanhos, os chips nos dois tons (link, estático e sobre a miniatura), trilhas de review, pensamento, categoria e formato, a paginação na primeira, no meio e na última página, os cards de post com o conteúdo do Sanity (ou das fixtures), inclusive título e categoria longos e pensamento sem subtítulo em 320px, e o estado vazio. A página ([`src/vitrine/Componentes.astro`](src/vitrine/Componentes.astro)) fica fora de `src/pages`: uma integração no `astro.config.mjs` injeta a rota só no `astro dev`, então ela não existe no build. Componente novo em `ui/` entra na vitrine no mesmo PR.
+Com o `pnpm dev` rodando, http://localhost:4321/vitrine/corpo mostra o [texto do post](#texto-do-post-portable-text) com todos os blocos, e http://localhost:4321/vitrine mostra todos os estados desses componentes: as 10 notas, os 3 tamanhos, os chips nos dois tons (link, estático e sobre a miniatura), trilhas de review, pensamento, categoria e formato, a paginação na primeira, no meio e na última página, os cards de post com o conteúdo do Sanity (ou das fixtures), inclusive título e categoria longos e pensamento sem subtítulo em 320px, o estado vazio, a frase da semana (com e sem autoria, longa e vazia) e a barra lateral com o conteúdo das fixtures. A página ([`src/vitrine/Componentes.astro`](src/vitrine/Componentes.astro)) fica fora de `src/pages`: uma integração no `astro.config.mjs` injeta a rota só no `astro dev`, então ela não existe no build. Componente novo em `ui/` entra na vitrine no mesmo PR.
 
 ## Imagens, datas e tempo de leitura
 
