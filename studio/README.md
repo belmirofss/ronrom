@@ -15,6 +15,7 @@ Painel de edição do Ronrom, feito com o [Sanity Studio](https://www.sanity.io/
 | `pnpm studio:deploy` | Faz o build e publica em `ronrom.sanity.studio` (pede `sanity login` ou `SANITY_AUTH_TOKEN`)       |
 | `pnpm typecheck`     | Roda o `tsc --noEmit` no site e no Studio                                                          |
 | `pnpm typegen`       | Gera os tipos das consultas do site a partir dos schemas ([veja](../web/src/lib/sanity/README.md)) |
+| `pnpm seed`          | Popula o dataset `development` com conteúdo de exemplo ([veja](#seed))                             |
 
 Para outros comandos da CLI: `pnpm --filter studio sanity <comando>` (ex.: `pnpm --filter studio sanity login`).
 
@@ -168,6 +169,36 @@ pnpm --filter studio taxonomia --dataset production
 ```
 
 O dataset é sempre explícito: sem `--dataset`, o script não grava nada.
+
+### Seed
+
+Conteúdo de exemplo para desenvolver e testar o site antes da autora escrever. Grava **só no dataset `development`**: [`scripts/seed.ts`](scripts/seed.ts) grava a taxonomia inicial e, depois, o conteúdo de [`seed/conteudo.ts`](seed/conteudo.ts):
+
+- **12 posts:** uma review por categoria, com nota e ficha preenchidas, e pensamentos dos quatro formatos. Entre eles, uma frase bem curta ("Café primeiro."), um texto longo ("Por que eu ainda escrevo à mão"), três posts sem subtítulo e a review de "Dias Perfeitos", com todos os blocos do texto (imagem, galeria, vídeo do YouTube e do Instagram, citação em destaque, citação, listas, link externo e link para outro post).
+- **13 tags**, as **Configurações do site** (frase da semana, destaque, SEO e redes) e o **Sobre mim**.
+- **11 imagens** de [`seed/imagens`](seed/imagens): ilustrações próprias com a paleta do Ronrom, sem direitos de terceiros, enviadas como assets.
+
+Com `studio/.env` preenchido e `sanity login` feito (o token do usuário é o token de escrita, como na taxonomia), na raiz:
+
+```bash
+pnpm seed
+```
+
+```bash
+pnpm seed --reset
+```
+
+Os documentos têm `_id` fixo com o prefixo `seed-` (`seed-post-01`, `seed-tag-cafe`), as datas são fixas e tudo é gravado com `createOrReplace`: rodar de novo não duplica nada e desfaz edições feitas nos documentos do seed. As imagens não duplicam, porque o Sanity identifica o asset pelo conteúdo do arquivo. Leva menos de 10 segundos.
+
+O `--reset` apaga antes todos os documentos `seed-*`, publicados e rascunhos, inclusive os que saíram do seed, e tira o destaque da home se ele for um post do seed. Não apaga a taxonomia, os singletons (que o seed sobrescreve) nem os assets. Se um documento seu referenciar um post do seed, o Sanity recusa o reset e mostra qual.
+
+**Trava:** o seed só aceita o dataset `development`, mesmo com `SANITY_STUDIO_DATASET=production` no `.env`. Com `SANITY_DATASET` com qualquer outro valor, ele aborta antes de gravar:
+
+```bash
+SANITY_DATASET=production pnpm seed
+```
+
+O link do Instagram do post "Dias Perfeitos" é fictício (`/p/DExemploRonrom/`): passa na validação do Studio, mas o embed do site mostra o post indisponível.
 
 ## Idioma, marca e ferramentas
 

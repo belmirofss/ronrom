@@ -1,6 +1,87 @@
-# Consultas do Sanity
+# Conteúdo do Sanity
 
-Todas as consultas GROQ do site ficam em [`consultas.ts`](consultas.ts) (#25), escritas com `defineQuery`. O cliente e as funções de acesso que as usam ficam na #33. Os tipos dos resultados ficam em [`tipos.gerados.d.ts`](tipos.gerados.d.ts), gerado pelo typegen do Sanity: não edite esse arquivo à mão.
+Como o site lê o conteúdo do Sanity no build:
+
+| Arquivo                                    | O que tem                                                                       | Issue |
+| ------------------------------------------ | ------------------------------------------------------------------------------- | ----- |
+| [`conteudo.ts`](conteudo.ts)               | As funções de acesso (`buscarPost`, `buscarUltimos`...): **o que páginas usam** | #33   |
+| [`consultas.ts`](consultas.ts)             | Todas as consultas GROQ, escritas com `defineQuery`                             | #25   |
+| [`tipos.gerados.d.ts`](tipos.gerados.d.ts) | Os tipos dos resultados, gerados pelo typegen: não edite à mão                  | #25   |
+| [`cliente.ts`](cliente.ts)                 | O `@sanity/client` e o `consultar`, que escolhe entre o Sanity e as fixtures    | #33   |
+| [`config.ts`](config.ts)                   | De onde vem o conteúdo (`fonteDoConteudo`): Sanity ou fixtures                  | #8    |
+| [`fixtures/`](fixtures)                    | O dataset de exemplo do [modo fixtures](#modo-fixtures)                         | #33   |
+
+## Funções de acesso
+
+Páginas, componentes e endpoints importam só de `@/lib/sanity/conteudo`. O ESLint recusa importar `@sanity/client`, `groq-js`, o `cliente.ts` ou as fixtures fora desta pasta, e as URLs saem sempre de [`@/lib/rotas`](../rotas.ts) (veja [`docs/seo-urls.md`](../../../../docs/seo-urls.md#helpers-de-rota)).
+
+```astro
+---
+import { urlDoPost } from '@/lib/rotas';
+import { buscarRotasDosPosts } from '@/lib/sanity/conteudo';
+
+const rotas = await buscarRotasDosPosts();
+---
+
+<ul>
+  {rotas.map((rota) => (
+    <li>
+      <a href={urlDoPost(rota)}>{rota.slug}</a>
+    </li>
+  ))}
+</ul>
+```
+
+| Função                                  | Consulta                          |
+| --------------------------------------- | --------------------------------- |
+| `buscarConfiguracoes()`                 | `CONSULTA_DAS_CONFIGURACOES`      |
+| `buscarSobre()`                         | `CONSULTA_DO_SOBRE`               |
+| `buscarDestaque()`                      | `CONSULTA_DO_DESTAQUE`            |
+| `buscarUltimos(pagina?)`                | `CONSULTA_DOS_ULTIMOS_POSTS`      |
+| `buscarPostsDoTipo(tipo, pagina?)`      | `CONSULTA_DOS_POSTS_DO_TIPO`      |
+| `buscarPostsDaCategoria(slug, pagina?)` | `CONSULTA_DOS_POSTS_DA_CATEGORIA` |
+| `buscarPostsDoFormato(slug, pagina?)`   | `CONSULTA_DOS_POSTS_DO_FORMATO`   |
+| `buscarPostsDaTag(slug, pagina?)`       | `CONSULTA_DOS_POSTS_DA_TAG`       |
+| `buscarTaxonomia()`                     | `CONSULTA_DA_TAXONOMIA`           |
+| `buscarPost({ tipo, secao, slug })`     | `CONSULTA_DO_POST`                |
+| `buscarRotasDosPosts()`                 | `CONSULTA_DAS_ROTAS_DOS_POSTS`    |
+| `buscarLeiaTambem(id)`                  | `CONSULTA_DO_LEIA_TAMBEM`         |
+| `buscarIndiceDePosts()`                 | `CONSULTA_DO_INDICE_DE_POSTS`     |
+| `buscarRedirects()`                     | `CONSULTA_DOS_REDIRECTS`          |
+| `buscarSitemap()`                       | `CONSULTA_DO_SITEMAP`             |
+
+As listagens recebem o número da página (a partir de 1; o padrão é 1) e calculam a fatia com `fatiaDaPagina(n)`, a partir de `POSTS_POR_PAGINA` (12). `totalDePaginas(total)` diz quantas páginas gerar, com pelo menos uma.
+
+Cada função devolve o tipo `<NOME_DA_CONSULTA>_RESULT` do typegen, passado explicitamente ao `consultar`. Não dá para deixar o `@sanity/client` achar o tipo sozinho pelo texto da consulta: as consultas paginadas são montadas com uma função (`PAGINA_DE_POSTS`), e o TypeScript vê o texto delas como `string`. Consulta nova ganha uma função nova aqui, com o tipo dela.
+
+## Cliente
+
+O [`cliente.ts`](cliente.ts) cria o `@sanity/client` com:
+
+- **`apiVersion` fixa**, da `SANITY_API_VERSION` (padrão `2025-02-19`): uma mudança da API não muda o site sem um PR.
+- **`useCdn: false`**: o build roda logo depois da publicação ([deploy hook](../../../../docs/deploy.md)) e precisa do conteúdo novo, que a API CDN pode levar alguns instantes para entregar. São poucas consultas por build.
+- **`perspective: 'published'`**: nunca rascunho nem versão de release, além do filtro que as próprias consultas já fazem.
+- **Sem token.** O conteúdo publicado é público; o token viewer (`SANITY_API_READ_TOKEN`) é só da pré-visualização de rascunhos (#43). O `cliente.ts` lê o `astro:env/server` (pelo `config.ts`), que o Astro recusa em código de navegador: o cliente, e qualquer token que ele venha a ter, roda só no build e nas rotas sob demanda.
+
+## Modo fixtures
+
+Sem `SANITY_PROJECT_ID` e `SANITY_DATASET`, ou com `SANITY_FIXTURES=true`, o site lê um dataset de exemplo guardado no repositório em vez do Sanity: o build roda sem rede e sem segredo, como no CI. Em produção isso é proibido (veja [`docs/ambientes.md`](../../../../docs/ambientes.md#sem-o-sanity-configurado-fixtures)). Para forçar as fixtures com o Sanity configurado, ponha `SANITY_FIXTURES=true` no `web/.env`.
+
+As fixtures são **documentos no formato do Sanity**, não resultados prontos: o `consultar` roda as mesmas consultas de `consultas.ts` com o [`groq-js`](https://github.com/sanity-io/groq-js), a implementação de GROQ do Sanity. Assim, filtros, ordem, paginação e referências se comportam como no Sanity, e não há um segundo formato para manter.
+
+- [`fixtures/dataset.ts`](fixtures/dataset.ts): o conteúdo. A taxonomia é a do Studio ([`studio/lib/taxonomia.ts`](../../../../studio/lib/taxonomia.ts)), com os `_id` e slugs de produção. Os documentos são tipados com os tipos do schema gerados pelo typegen: um campo renomeado no Studio quebra o `pnpm check` aqui.
+- [`fixtures/documentos.ts`](fixtures/documentos.ts): os helpers que montam documentos, imagens e blocos de Portable Text.
+- [`fixtures/index.ts`](fixtures/index.ts): o `consultarFixtures`, carregado com import dinâmico só no modo fixtures.
+
+O que o dataset tem (o [`conteudo.test.ts`](conteudo.test.ts) confere):
+
+- **1 review de cada categoria**, com nota e ficha do modelo certo. A ficha do mirante (Lugares) fica sem tipo de cozinha e sem Instagram: o caso do campo vazio.
+- **1 pensamento de cada formato**: um artigo com **todos os blocos do Portable Text** (subtítulos h2 e h3, citação, listas com marcadores e numerada, com subnível, negrito, itálico, link externo `https` e `mailto`, link interno no ar e fora do ar, imagem normal e larga, galeria, vídeo do YouTube e do Instagram e citação em destaque com e sem fonte), um texto sem subtítulo, uma frase curta (com `noindex` e um endereço antigo, para o sitemap e os redirects) e uma opinião com o SEO preenchido.
+- Tags, configurações (frase da semana, destaque e redes) e a página Sobre.
+
+**Imagens.** Cada asset é um placeholder em SVG num data URI (`url`), com dimensões e `lqip`: nada vai para o repositório nem para a rede. O `_id` segue o padrão dos assets do Sanity (`image-{id}-{largura}x{altura}-svg`), mas não existe no CDN, e sem `SANITY_PROJECT_ID` não há como montar uma URL do CDN. Quem gera o `srcset` a partir do `_id` (#34) usa o `url` do asset direto no modo fixtures.
+
+São 10 posts, menos que uma página de listagem. Para testar a paginação, acrescente posts no `dataset.ts`.
 
 ## Gerar os tipos
 
@@ -13,7 +94,7 @@ pnpm typegen
 O comando roda no Studio, porque é a CLI dele que conhece os schemas, e precisa do `studio/.env` (veja o [README do Studio](../../../../studio/README.md#rodar-localmente)). São dois passos, configurados no [`studio/sanity.cli.ts`](../../../../studio/sanity.cli.ts):
 
 1. `sanity schema extract` grava os schemas em `studio/schema.json` (fora do Git). Com `enforceRequiredFields`, campo com `required()` não vem opcional no tipo: as consultas só leem documentos publicados, que passaram pela validação. Por isso um aviso de campo vazio usa `custom(...).warning()`, nunca `required().warning()`, que tiraria o `null` do tipo de um campo que pode vir vazio.
-2. `sanity typegen generate` lê as consultas de `consultas.ts` e grava o `tipos.gerados.d.ts`: os tipos dos documentos e um `<NOME_DA_CONSULTA>_RESULT` por consulta, como `CONSULTA_DO_POST_RESULT`. O arquivo também registra cada consulta no `@sanity/client`, para o `client.fetch(CONSULTA_DO_POST, params)` da #33 já sair tipado.
+2. `sanity typegen generate` lê as consultas de `consultas.ts` e grava o `tipos.gerados.d.ts`: os tipos dos documentos e um `<NOME_DA_CONSULTA>_RESULT` por consulta, como `CONSULTA_DO_POST_RESULT`. O arquivo também registra cada consulta no mapa `SanityQueries` do `@sanity/client`, mas o site não depende disso: veja [Funções de acesso](#funções-de-acesso).
 
 O check `ci / quality` roda o `pnpm typegen` e falha se o arquivo versionado for diferente do gerado. Como o texto de cada consulta entra no arquivo, mudar uma projeção do Studio (abaixo) também muda o site, e o preview da Vercel builda.
 
@@ -24,6 +105,7 @@ O typegen lê as consultas sem rodar o código: os pedaços reaproveitados são 
 - **Só conteúdo no ar:** nunca rascunho (`drafts.*`) nem versão de release (`versions.*`), e post só com `dataDePublicacao` até agora. Os testes ([`consultas.test.ts`](consultas.test.ts)) rodam cada consulta com o [`groq-js`](https://github.com/sanity-io/groq-js) num dataset com rascunho, versão e post no futuro, e falham se algum aparecer.
 - **Ordem:** do mais recente para o mais antigo, com o `_id` desempatando, para a paginação não repetir nem pular post.
 - **Slugs resolvidos:** `slug`, `categoria.slug` e `formato.slug` já vêm como texto, prontos para o `urlDoPost` (veja [`docs/seo-urls.md`](../../../../docs/seo-urls.md#helpers-de-rota)).
+- **Parâmetro `$tag`:** o tipo `QueryParams` do `@sanity/client` reserva `tag`, que é o nome de uma opção do `fetch`. É só uma trava de tipo: o `consultar` aceita o parâmetro, e ele chega ao Sanity como `$tag`.
 - **Projeções do Studio:** o corpo (`CORPO_NO_GROQ`), a ficha (`FICHA_NO_GROQ`) e as imagens (`IMAGEM_NO_GROQ`) vêm de [`studio/lib`](../../../../studio/lib), ao lado dos schemas e com os próprios testes.
 
 ## Formatos compartilhados

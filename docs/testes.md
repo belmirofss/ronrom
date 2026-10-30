@@ -60,7 +60,16 @@ O `pnpm test` roda o `test` de todo workspace que tiver o script (hoje, `web` e 
   ```
 
 - **Fuso horário:** os testes rodam sempre em UTC (`TZ=UTC` no `vitest.config.ts`), como o build da Vercel. Assim, uma data formatada sem `timeZone: 'America/Sao_Paulo'` quebra o teste também numa máquina em Brasília, e não só no CI. O [`ambiente.test.ts`](../web/src/ambiente.test.ts) falha se essa configuração sumir.
-- **Sem rede:** nenhum teste chama o Sanity, o YouTube ou outro serviço. Use as fixtures da #33 ou objetos montados no próprio teste.
+- **Sem rede:** nenhum teste chama o Sanity, o YouTube ou outro serviço. Use as [fixtures](../web/src/lib/sanity/README.md#modo-fixtures) ou objetos montados no próprio teste. Para ler as fixtures pelas funções de `conteudo.ts`, ligue o modo fixtures com um mock, como no [`conteudo.test.ts`](../web/src/lib/sanity/conteudo.test.ts):
+
+  ```ts
+  vi.mock('astro:env/server', () => ({
+    SANITY_FIXTURES: true,
+    SANITY_PROJECT_ID: undefined,
+    SANITY_DATASET: undefined,
+    SANITY_API_VERSION: '2025-02-19',
+  }));
+  ```
 
 ### Teste de componente
 
@@ -129,6 +138,15 @@ As consultas de [`web/src/lib/sanity/consultas.ts`](../web/src/lib/sanity/consul
 - [ ] Listagens em ordem do mais recente, com a fatia da página e o total; categoria, formato ou tag inexistente vem `null`.
 - [ ] O post só é achado no tipo e na categoria (ou formato) certos, com a ficha do modelo da categoria e sem tags fora do ar.
 - [ ] Destaque com e sem escolha nas configurações, "Leia também" na ordem de prioridade, redirects e sitemap.
+
+### Seed de desenvolvimento (#26)
+
+O seed grava direto pela API, sem a validação do Studio. Os testes de [`studio/lib/seed.test.ts`](../studio/lib/seed.test.ts) conferem o conteúdo de exemplo com as mesmas regras:
+
+- [ ] A trava aceita só o dataset `development`, e o filtro do `--reset` (rodado no `groq-js`) pega `seed-*` e `drafts.seed-*`, nunca a taxonomia, os singletons ou um `_id` que só contém `seed`.
+- [ ] Uma review por categoria e um pensamento por formato, com frase curta, texto longo, post sem subtítulo e um post com todos os blocos do texto.
+- [ ] Cada post passa nas regras de slug, nota, data, ficha do modelo da categoria, vídeo e galeria; toda referência aponta para um documento do seed ou da taxonomia, e todo objeto em array tem `_key`.
+- [ ] Duas chamadas devolvem os mesmos documentos (o seed não usa a hora atual).
 
 ### Metadados de SEO (#32)
 

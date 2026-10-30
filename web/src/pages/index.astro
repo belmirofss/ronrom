@@ -1,11 +1,24 @@
 ---
+import TopoHome from '@/components/home/TopoHome.astro';
 import Container from '@/components/layout/Container.astro';
 import LayoutBase from '@/layouts/LayoutBase.astro';
-import { DESCRICAO_DO_SITE, NOME_DO_SITE } from '@/lib/utils/site';
+import { buscarConfiguracoes } from '@/lib/sanity/conteudo';
+import { DESCRICAO_DO_SITE } from '@/lib/utils/site';
+
+// Description e imagem de compartilhamento da home: as de Configurações do site, se preenchidas.
+const seo = (await buscarConfiguracoes())?.seo;
 ---
 
-<LayoutBase seo={{ description: DESCRICAO_DO_SITE, canonical: '/' }}>
+{/* Home provisória: o resto (destaque, abas e barra lateral) entra na #44. */}
+<LayoutBase
+  seo={{
+    description: seo?.descricao || DESCRICAO_DO_SITE,
+    canonical: '/',
+    image: seo?.imagem,
+  }}
+>
   <Container>
-    <h1>{NOME_DO_SITE} em construção</h1>
+    <TopoHome />
+    <p>Em construção.</p>
   </Container>
 </LayoutBase>

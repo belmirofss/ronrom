@@ -6,8 +6,8 @@ export const IDIOMA = 'pt-BR';
 // Complemento do título da home ("Ronrom · Reviews e pensamentos", #32).
 export const TAGLINE = 'Reviews e pensamentos';
 
-// Description da home e fallback de qualquer página sem description própria. Quando a consulta de
-// configurações estiver ligada (#33), a home passa a usar a `seo.descricao` do Studio, se houver.
+// Description de qualquer página sem description própria, inclusive da home quando a `seo.descricao`
+// de Configurações do site está vazia.
 export const DESCRICAO_DO_SITE =
   'Reviews de filmes, séries, livros, restaurantes, lugares e comidas, e pensamentos em artigos, textos, frases e opiniões.';
 

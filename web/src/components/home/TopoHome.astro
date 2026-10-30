@@ -1,0 +1,59 @@
+---
+import Mosaico from '@/components/home/Mosaico.astro';
+import { NOME_DO_SITE } from '@/lib/utils/site';
+
+interface Props {
+  /** Frase embaixo do nome. */
+  subtitulo?: string;
+}
+
+const {
+  subtitulo = 'Reviews de filmes, séries, livros, restaurantes e lugares, e pensamentos sobre o resto.',
+} = Astro.props;
+---
+
+<div class="topo-home">
+  <div class="topo-home__textos">
+    <h1 class="topo-home__nome">{NOME_DO_SITE}</h1>
+    <p class="topo-home__subtitulo">{subtitulo}</p>
+  </div>
+  <Mosaico />
+</div>
+
+<style>
+  /* No celular, o mosaico fica embaixo do nome; a partir de 640px, à direita dele. */
+  .topo-home {
+    display: grid;
+    gap: var(--espaco-6);
+    padding-block: var(--espaco-7);
+  }
+
+  .topo-home > :global(.mosaico) {
+    width: min(100%, 20rem);
+  }
+
+  @media (min-width: 40rem) {
+    .topo-home {
+      grid-template-columns: 1fr auto;
+      align-items: end;
+    }
+
+    .topo-home > :global(.mosaico) {
+      width: clamp(11rem, 28vw, 20rem);
+    }
+  }
+
+  .topo-home__nome {
+    color: var(--cor-vinho);
+    font-size: var(--texto-ronrom);
+    line-height: var(--altura-linha-ronrom);
+    letter-spacing: var(--espacamento-ronrom);
+  }
+
+  .topo-home__subtitulo {
+    max-width: 32ch;
+    margin-block-start: var(--espaco-4);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-lg);
+  }
+</style>

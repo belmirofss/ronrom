@@ -17,9 +17,9 @@ export const ALTURA_OG = 630;
 
 // Imagem de compartilhamento (og:image) no CDN do Sanity: 1200×630, recortada no hotspot que a
 // autora marcou no Studio. JPG explícito porque alguns crawlers não aceitam WebP nem AVIF.
-// O projeto e o dataset saem da URL do próprio asset, que já vem do Sanity: assim o helper não
-// depende das variáveis do Sanity e funciona igual com as fixtures da #33. Sem asset (arquivo
-// apagado) ou fora do CDN, devolve `null` e a página usa a imagem padrão.
+// O projeto e o dataset saem da URL do próprio asset, que já vem do Sanity, sem depender das
+// variáveis. Sem asset (arquivo apagado) ou fora do CDN, como os placeholders `data:` das fixtures
+// (#33), devolve `null` e a página usa a imagem padrão.
 export function ogImage(imagem: ImagemDoSanity): string | null {
   const [, projectId, dataset] = imagem.asset?.url.match(URL_DO_CDN) ?? [];
   if (!projectId || !dataset) {
