@@ -113,7 +113,8 @@ Monorepo com workspaces do pnpm (`pnpm-workspace.yaml`):
 │       │   ├── utils/      # utilitários gerais
 │       │   └── views/      # contador de visualizações e ranking
 │       ├── pages/          # rotas do site (api/ para as rotas sob demanda)
-│       └── styles/         # CSS global e tokens
+│       ├── styles/         # CSS global e tokens
+│       └── vitrine/        # vitrine dos componentes, só no dev (/vitrine)
 ├── studio/                 # Sanity Studio (veja studio/README.md)
 │   └── schemaTypes/        # schemas de conteúdo
 ├── docs/                   # documentação e ADRs (veja a tabela abaixo)

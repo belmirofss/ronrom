@@ -67,6 +67,22 @@ export default defineConfig({
       },
     },
   ],
+  integrations: [
+    // Vitrine dos componentes (#35) em /vitrine, só no `astro dev`: a rota não existe no build,
+    // então não chega a produção, ao sitemap nem à busca. O arquivo fica fora de src/pages.
+    {
+      name: 'ronrom:vitrine',
+      hooks: {
+        'astro:config:setup': ({ command, injectRoute }) => {
+          if (command !== 'dev') return;
+          injectRoute({
+            pattern: '/vitrine',
+            entrypoint: new URL('./src/vitrine/Componentes.astro', import.meta.url),
+          });
+        },
+      },
+    },
+  ],
   // Saída estática (o padrão do Astro): só as rotas com `export const prerender = false` viram
   // Vercel Function. Decisão no docs/adr/0001; como criar uma rota sob demanda: docs/ambientes.md.
   adapter: vercel({

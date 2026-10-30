@@ -1,0 +1,76 @@
+---
+import type { ItemDaTrilha } from '@/lib/trilha';
+
+interface Props {
+  /**
+   * Do Início até a página atual, montados por `trilhaDoPost`, `trilhaDaCategoria` ou
+   * `trilhaDoFormato` (@/lib/trilha). O JSON-LD usa os mesmos itens no BreadcrumbList.
+   */
+  itens: readonly ItemDaTrilha[];
+  class?: string;
+}
+
+const { itens, class: classe } = Astro.props;
+const ultimo = itens.length - 1;
+---
+
+<nav class:list={['trilha', classe]} aria-label="Trilha de navegação">
+  <ol class="trilha__itens">
+    {itens.map(({ rotulo, href }, i) => (
+      <li class="trilha__item">
+        <a class="trilha__link" href={href} aria-current={i === ultimo ? 'page' : undefined}>
+          {rotulo}
+        </a>
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .trilha__itens {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--espaco-2);
+    font-size: var(--texto-sm);
+  }
+
+  .trilha__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--espaco-2);
+    min-width: 0;
+  }
+
+  /* Separador só visual: uma seta desenhada com borda, sem texto para o leitor de tela ler. */
+  .trilha__item + .trilha__item::before {
+    content: '';
+    flex: none;
+    width: 0.4em;
+    height: 0.4em;
+    border-block-start: 1.5px solid currentColor;
+    border-inline-end: 1.5px solid currentColor;
+    color: var(--cor-texto-2);
+    transform: rotate(45deg);
+  }
+
+  /* Texto secundário (7,38:1), sublinhado só no hover; a página atual fica em --cor-texto. */
+  .trilha__link {
+    color: var(--cor-texto-2);
+    text-decoration-line: none;
+    overflow-wrap: anywhere;
+  }
+
+  .trilha__link:hover {
+    color: var(--cor-vinho-hover);
+    text-decoration-line: underline;
+  }
+
+  .trilha__link[aria-current='page'] {
+    color: var(--cor-texto);
+    font-weight: var(--peso-medio);
+  }
+</style>
