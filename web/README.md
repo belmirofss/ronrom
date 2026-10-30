@@ -90,3 +90,28 @@ Regras da casca:
 - **Seção atual:** o cabeçalho marca a seção com `aria-current` pelo prefixo da rota (`estadoDaSecao`, em [`src/lib/navegacao.ts`](src/lib/navegacao.ts)): `"page"` na própria página da seção (`/reviews`) e `"true"` nas páginas dentro dela (`/reviews/filmes/...`). "Início" só fica ativo em `/`.
 - **Celular:** os 4 links da navegação ficam sempre visíveis, sem menu hambúrguer, e quebram linha se não couberem. Todo link do cabeçalho e do rodapé tem pelo menos 44px de altura.
 - **Rodapé:** o link "Área da autora" aponta para `STUDIO_URL` (padrão `https://ronrom.sanity.studio`, veja [`docs/ambientes.md`](../docs/ambientes.md#variáveis-de-ambiente)), e o ano é o do build, no fuso de São Paulo.
+
+## Imagens, datas e tempo de leitura
+
+Componentes em [`src/components/ui`](src/components/ui) usados em quase toda página:
+
+- [`ImagemSanity.astro`](src/components/ui/ImagemSanity.astro): toda imagem que vem do Sanity (capas, foto da autora, imagens do texto e da galeria). Props: `imagem` (o objeto que as consultas devolvem), `alt` (obrigatório; `""` só em imagem decorativa), `sizes`, `proporcao?` e `prioridade?`. Gera o `srcset` no CDN do Sanity respeitando o recorte e o hotspot, sempre com `width`, `height`, `loading="lazy"` e `decoding="async"`, e o `lqip` de fundo enquanto a imagem carrega. Como as URLs são montadas: [README do conteúdo](src/lib/sanity/README.md#imagens).
+- [`Data.astro`](src/components/ui/Data.astro): `<time datetime>` com a data por extenso no fuso de Brasília (`formatarData`, em [`src/lib/utils/data.ts`](src/lib/utils/data.ts)). Prop `iso`.
+
+```astro
+<ImagemSanity
+  imagem={post.capa}
+  alt={post.capa.alt ?? ''}
+  proporcao={21 / 9}
+  sizes="100vw"
+  prioridade
+/>
+<Data iso={post.dataDePublicacao} /> · {tempoDeLeitura(post.corpo)}
+```
+
+Regras:
+
+- **Proporções:** `4 / 3` nas capas do destaque e dos cards, `21 / 9` na capa do post e nenhuma nas imagens do texto, que ficam com a proporção do recorte.
+- **`sizes` de verdade:** é por ele que o navegador escolhe a versão. Uma capa que ocupa um terço da tela no desktop pede algo como `"(min-width: 960px) 33vw, 100vw"`; com `100vw` em tudo, o celular baixa a imagem certa, mas o desktop baixa uma grande demais.
+- **`prioridade` só na imagem do LCP:** a capa do post e o destaque da home. Ela troca o `lazy` por `loading="eager"` e `fetchpriority="high"`; em qualquer outra imagem, atrasa o que importa.
+- **Tempo de leitura:** `tempoDeLeitura(corpo)`, em [`src/lib/utils/leitura.ts`](src/lib/utils/leitura.ts), conta as palavras dos blocos de texto (sem legendas, `alt`, vídeos e citações em destaque) a 200 por minuto, arredonda para cima, com mínimo de 1, e devolve `"X min de leitura"`.

@@ -114,6 +114,18 @@ Cada item abaixo vira pelo menos um `it` no PR da issue indicada. Quem implement
 - [ ] Virada de ano: `2026-12-31T23:30:00-03:00` é `"31 de dezembro de 2026"`.
 - [ ] Data inválida (`''`, `'ontem'`) lança erro, em vez de mostrar `"Invalid Date"`.
 
+### Imagens do Sanity: `fontesDaImagem(imagem, proporcao?)` (#34)
+
+As funções de [`web/src/lib/sanity/imagem.ts`](../web/src/lib/sanity/imagem.ts) recebem o projeto do CDN como parâmetro, sem depender do `web/.env`:
+
+- [ ] Cada URL do `srcset` tem `auto=format`, `q=75` e o `w` da largura declarada; o `src` é a maior versão.
+- [ ] Larguras fixas até 1920; numa imagem menor, nenhuma passa da largura dela, e a última é a própria largura (uma imagem de 200px só tem a versão de 200px).
+- [ ] `width` e `height` da maior versão, na proporção do original ou da `proporcao` pedida.
+- [ ] Com `proporcao`, cada versão tem `w`, `h` e `fit=crop`, e o `rect` muda com o hotspot (à esquerda, no meio e à direita), sem sair da imagem.
+- [ ] O recorte do Studio (`crop`) vira o `rect` e reduz as larguras e as dimensões.
+- [ ] Sem `largura` e `altura` no asset, as dimensões saem do `_id`.
+- [ ] Asset apagado devolve `null`; no modo fixtures, o `src` é o `url` do asset e não há `srcset`.
+
 ### Slugs e URLs (#18, #33)
 
 O `slugify` compartilhado (#18):
