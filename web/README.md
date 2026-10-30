@@ -191,7 +191,7 @@ Regras:
 
 ### Vitrine
 
-Com o `pnpm dev` rodando, http://localhost:4321/vitrine mostra todos os estados desses componentes: as 10 notas, os 3 tamanhos, os chips nos dois tons (link, estático e sobre a miniatura), trilhas de review, pensamento, categoria e formato, a paginação na primeira, no meio e na última página, os cards de post com o conteúdo do Sanity (ou das fixtures), inclusive título e categoria longos e pensamento sem subtítulo em 320px, o estado vazio, a frase da semana (com e sem autoria, longa e vazia) e a barra lateral com o conteúdo das fixtures. A página ([`src/vitrine/Componentes.astro`](src/vitrine/Componentes.astro)) fica fora de `src/pages`: uma integração no `astro.config.mjs` injeta a rota só no `astro dev`, então ela não existe no build. Componente novo em `ui/` entra na vitrine no mesmo PR.
+Com o `pnpm dev` rodando, http://localhost:4321/vitrine/corpo mostra o [texto do post](#texto-do-post-portable-text) com todos os blocos, e http://localhost:4321/vitrine mostra todos os estados desses componentes: as 10 notas, os 3 tamanhos, os chips nos dois tons (link, estático e sobre a miniatura), trilhas de review, pensamento, categoria e formato, a paginação na primeira, no meio e na última página, os cards de post com o conteúdo do Sanity (ou das fixtures), inclusive título e categoria longos e pensamento sem subtítulo em 320px, o estado vazio, a frase da semana (com e sem autoria, longa e vazia) e a barra lateral com o conteúdo das fixtures. A página ([`src/vitrine/Componentes.astro`](src/vitrine/Componentes.astro)) fica fora de `src/pages`: uma integração no `astro.config.mjs` injeta a rota só no `astro dev`, então ela não existe no build. Componente novo em `ui/` entra na vitrine no mesmo PR.
 
 ## Imagens, datas e tempo de leitura
 
@@ -217,3 +217,35 @@ Regras:
 - **`sizes` de verdade:** é por ele que o navegador escolhe a versão. Uma capa que ocupa um terço da tela no desktop pede algo como `"(min-width: 960px) 33vw, 100vw"`; com `100vw` em tudo, o celular baixa a imagem certa, mas o desktop baixa uma grande demais.
 - **`prioridade` só na imagem do LCP:** a capa do post e o destaque da home. Ela troca o `lazy` por `loading="eager"` e `fetchpriority="high"`; em qualquer outra imagem, atrasa o que importa.
 - **Tempo de leitura:** `tempoDeLeitura(corpo)`, em [`src/lib/utils/leitura.ts`](src/lib/utils/leitura.ts), conta as palavras dos blocos de texto (sem legendas, `alt`, vídeos e citações em destaque) a 200 por minuto, arredonda para cima, com mínimo de 1, e devolve `"X min de leitura"`.
+
+## Texto do post (Portable Text)
+
+O [`CorpoDoPost.astro`](src/components/post/CorpoDoPost.astro) renderiza o `corpo` da `CONSULTA_DO_POST` com o [`astro-portabletext`](https://github.com/theisel/astro-portabletext). A página do post (#42) o coloca na coluna de leitura (`<Container largura="leitura">`): 720px, texto de 18px com entrelinha 1,75 (`--texto-post` e `--altura-linha-post`). O espaço vertical entre os blocos fica todo no `CorpoDoPost`; os blocos não têm margem própria.
+
+```astro
+<Container largura="leitura">
+  <CorpoDoPost corpo={post.corpo} />
+</Container>
+```
+
+| Bloco do Studio            | HTML                                                                                                                         | Componente                                                                       |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Parágrafo                  | `<p>`                                                                                                                        | [`corpo/Bloco.astro`](src/components/post/corpo/Bloco.astro)                     |
+| Subtítulo, subtítulo menor | `<h2 id>`, `<h3 id>`                                                                                                         | `corpo/Bloco.astro`                                                              |
+| Citação                    | `<blockquote><p>`, com um fio malva à esquerda                                                                               | `corpo/Bloco.astro`                                                              |
+| Listas                     | `<ul>`/`<ol>`, com o subnível dentro do `<li>`                                                                               | padrão do `astro-portabletext`                                                   |
+| Negrito, itálico           | `<strong>`, `<em>`                                                                                                           | padrão do `astro-portabletext`                                                   |
+| Link externo               | `<a rel="noopener noreferrer">`, na mesma aba                                                                                | [`corpo/LinkExterno.astro`](src/components/post/corpo/LinkExterno.astro)         |
+| Link para outro post       | `<a>` com o caminho do `urlDoPost`                                                                                           | [`corpo/LinkInterno.astro`](src/components/post/corpo/LinkInterno.astro)         |
+| Imagem                     | `<figure>` com o `<ImagemSanity>` e o `<figcaption>` opcional                                                                | [`Figura.astro`](src/components/post/Figura.astro)                               |
+| Galeria                    | `<ul>` de `<figure>`, recortadas em quadrado: duas colunas, ou três a partir de 600px com 3, 6, 9 ou 12 fotos                | [`corpo/Galeria.astro`](src/components/post/corpo/Galeria.astro)                 |
+| Vídeo                      | Provisório: `<figure>` com um link para o YouTube ou o Instagram e a legenda. O player leve entra na #40                     | [`corpo/Video.astro`](src/components/post/corpo/Video.astro)                     |
+| Citação em destaque        | `<figure>` com `<blockquote>` e a fonte no `<figcaption>`: centralizada, maior, em vinho, com as aspas grandes `aria-hidden` | [`corpo/CitacaoDestaque.astro`](src/components/post/corpo/CitacaoDestaque.astro) |
+
+Regras, aplicadas pelo `prepararCorpo` ([`src/lib/corpo.ts`](src/lib/corpo.ts), com teste) antes de renderizar:
+
+- **Subtítulos sem pular nível.** O título do post é o único h1: um h1 vindo de fora do Studio vira h2, e um h3 antes de qualquer h2 também. Cada subtítulo tem um `id` para âncora, com o `slugify` das URLs (`"O papel lembra por mim"` → `#o-papel-lembra-por-mim`), `-2`, `-3`... nos repetidos e nunca `conteudo`, o id do `<main>`.
+- **Sem bloco vazio.** Parágrafos, subtítulos e itens de lista sem texto (o Enter a mais no editor) não aparecem.
+- **Links seguros.** Link externo só com `http`, `https` ou `mailto`, como no Studio; outro esquema (um `javascript:` vindo da API) vira texto. Link interno com o destino fora do ar também vira texto.
+- **Imagens.** `alt` sempre (vem do Studio, onde é obrigatório) e `loading="lazy"`: nenhuma imagem do texto carrega antes de chegar perto da viewport. A imagem `larga` tem 960px a partir de 1100px de tela e ocupa a coluna abaixo disso; o `sizes` de cada variante segue essas larguras.
+- **Bloco desconhecido** (um tipo novo no Studio antes de o site saber mostrá-lo): não aparece e não quebra o build; o `astro dev` avisa no terminal (`[corpo] O site ainda não sabe mostrar...`).

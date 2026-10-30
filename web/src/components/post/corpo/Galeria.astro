@@ -1,0 +1,65 @@
+---
+import type { TypedObjectProps } from 'astro-portabletext/types';
+import ImagemSanity from '@/components/ui/ImagemSanity.astro';
+import type { Corpo } from '@/lib/corpo';
+
+// Bloco "Galeria": as fotos lado a lado, recortadas em quadrado no hotspot, cada uma com a própria
+// legenda. Duas colunas; três a partir de 600px quando o número de fotos é múltiplo de três.
+type Props = TypedObjectProps;
+
+const { imagens } = Astro.props.node as Extract<Corpo[number], { _type: 'galeria' }>;
+// Asset apagado: a foto sai, em vez de deixar um buraco na grade.
+const fotos = (imagens ?? []).filter((imagem) => imagem.asset);
+const tresColunas = fotos.length % 3 === 0;
+
+const sizes = tresColunas
+  ? '(min-width: 800px) 240px, (min-width: 600px) 33vw, 50vw'
+  : '(min-width: 800px) 360px, 50vw';
+---
+
+{fotos.length > 0 && (
+  <ul class:list={['galeria', { 'galeria--tres': tresColunas }]}>
+    {fotos.map((imagem) => (
+      <li>
+        <figure class="galeria__foto">
+          <ImagemSanity
+            class="galeria__imagem"
+            imagem={imagem}
+            alt={imagem.alt ?? ''}
+            proporcao={1}
+            sizes={sizes}
+          />
+          {imagem.legenda && <figcaption class="galeria__legenda">{imagem.legenda}</figcaption>}
+        </figure>
+      </li>
+    ))}
+  </ul>
+)}
+
+<style>
+  .galeria {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--espaco-3);
+  }
+
+  @media (min-width: 600px) {
+    .galeria--tres {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .galeria :global(.galeria__imagem) {
+    border-radius: var(--raio-md);
+  }
+
+  .galeria__legenda {
+    margin-block-start: var(--espaco-2);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+    line-height: var(--altura-linha-base);
+  }
+</style>

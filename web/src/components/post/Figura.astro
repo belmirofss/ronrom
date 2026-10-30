@@ -1,0 +1,55 @@
+---
+import ImagemSanity from '@/components/ui/ImagemSanity.astro';
+import type { ImagemDoSanity } from '@/lib/sanity/imagem';
+
+interface Props {
+  /** A imagem do bloco "Imagem" do texto, com `alt` e `legenda`. */
+  imagem: ImagemDoSanity & { legenda?: string | undefined };
+  /**
+   * `normal` acompanha a coluna de leitura; `larga` passa um pouco das margens (960px) nas telas
+   * a partir de 1100px. Abaixo disso, as duas ocupam a coluna.
+   */
+  largura?: 'normal' | 'larga';
+}
+
+const { imagem, largura = 'normal' } = Astro.props;
+
+// A largura de exibição de cada variante, para o navegador escolher a versão do `srcset`. A
+// coluna de leitura tem 720px (--coluna-leitura); 800px é ela com o --gutter dos dois lados.
+const SIZES = {
+  normal: '(min-width: 800px) 720px, 100vw',
+  larga: '(min-width: 1100px) 960px, (min-width: 800px) 720px, 100vw',
+};
+
+// O `alt` é obrigatório no Studio; vazio, só num documento vindo de fora dele.
+const alt = imagem.alt ?? '';
+---
+
+{imagem.asset && (
+  <figure class:list={['figura', `figura--${largura}`]}>
+    <ImagemSanity class="figura__imagem" imagem={imagem} alt={alt} sizes={SIZES[largura]} />
+    {imagem.legenda && <figcaption class="figura__legenda">{imagem.legenda}</figcaption>}
+  </figure>
+)}
+
+<style>
+  .figura :global(.figura__imagem) {
+    width: 100%;
+    border-radius: var(--raio-md);
+  }
+
+  /* 1100px deixa 190px de cada lado da coluna: os 120px da imagem larga cabem com a barra de
+     rolagem, sem rolagem horizontal. */
+  @media (min-width: 1100px) {
+    .figura--larga {
+      margin-inline: -120px;
+    }
+  }
+
+  .figura__legenda {
+    margin-block-start: var(--espaco-2);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+    line-height: var(--altura-linha-base);
+  }
+</style>
