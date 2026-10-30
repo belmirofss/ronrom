@@ -1,0 +1,54 @@
+---
+import { fraseParaMostrar } from '@/lib/barra-lateral';
+
+interface Props {
+  /** O `fraseDaSemana` de Configurações do site. Sem texto, o bloco não é renderizado. */
+  frase: { texto?: string | null; autoria?: string | null } | null | undefined;
+}
+
+const frase = fraseParaMostrar(Astro.props.frase);
+---
+
+{frase && (
+  <section class="frase superficie-vinho">
+    <h2 class="frase__titulo">Frase da semana</h2>
+    <figure class="frase__figura">
+      <blockquote class="frase__texto">
+        <p>{frase.texto}</p>
+      </blockquote>
+      {frase.autoria && <figcaption class="frase__autoria">— {frase.autoria}</figcaption>}
+    </figure>
+  </section>
+)}
+
+<style>
+  /* Texto creme sobre vinho: 7,83:1 (AA e AAA). O .superficie-vinho também troca o anel de foco
+     para creme, caso algo focável entre no bloco. */
+  .frase {
+    padding: var(--espaco-5);
+    border-radius: var(--raio-lg);
+  }
+
+  .frase__titulo {
+    font-size: var(--texto-xs);
+    font-weight: var(--peso-medio);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .frase__figura {
+    margin-block-start: var(--espaco-3);
+  }
+
+  .frase__texto {
+    font-size: var(--texto-xl);
+    font-weight: var(--peso-medio);
+    line-height: var(--altura-linha-titulo);
+    letter-spacing: var(--espacamento-titulo);
+  }
+
+  .frase__autoria {
+    margin-block-start: var(--espaco-3);
+    font-size: var(--texto-sm);
+  }
+</style>

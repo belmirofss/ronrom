@@ -1,0 +1,151 @@
+---
+import Gato from '@/assets/formas/gato.svg';
+import FraseDaSemana from '@/components/barra-lateral/FraseDaSemana.astro';
+import { navegacaoDaBarraLateral, rotuloDoTotal } from '@/lib/barra-lateral';
+import { buscarConfiguracoes, buscarSobre, buscarTaxonomia } from '@/lib/sanity/conteudo';
+
+// Conteúdo do slot `barra-lateral` do LayoutComBarraLateral: a autora, as categorias e os formatos
+// e a frase da semana. Tudo vem do Sanity; o que não estiver cadastrado some.
+const [sobre, configuracoes, taxonomia] = await Promise.all([
+  buscarSobre(),
+  buscarConfiguracoes(),
+  buscarTaxonomia(),
+]);
+
+const { categorias, formatos } = navegacaoDaBarraLateral(taxonomia);
+
+// Os dois menus têm nome acessível próprio: "Reviews" e "Pensamentos" já são links do menu
+// principal, e dois landmarks com o mesmo nome confundem quem navega por eles.
+const menus = [
+  { titulo: 'Reviews', rotulo: 'Categorias das reviews', itens: categorias },
+  { titulo: 'Pensamentos', rotulo: 'Formatos dos pensamentos', itens: formatos },
+].filter(({ itens }) => itens.length > 0);
+---
+
+<div class="barra-lateral">
+  {sobre?.nome && (
+    <section class="autora">
+      <span class="autora__icone">
+        <Gato class="autora__gato" aria-hidden="true" />
+      </span>
+      <h2 class="autora__titulo">Oi, eu sou a {sobre.nome}</h2>
+      {sobre.bio && <p class="autora__bio">{sobre.bio}</p>}
+      <a class="autora__link" href="/sobre">
+        Mais sobre mim
+      </a>
+    </section>
+  )}
+
+  {menus.map(({ titulo, rotulo, itens }) => (
+    <nav class="menu" aria-label={rotulo}>
+      <h2 class="menu__titulo">{titulo}</h2>
+      <ul class="menu__links">
+        {itens.map(({ rotulo, href, total }) => (
+          <li>
+            <a href={href}>
+              <span class="menu__rotulo">{rotulo}</span>
+              {/* O número fica visível; o leitor de tela ouve "Filmes, 3 posts". */}
+              <span class="menu__total" aria-hidden="true">
+                {total}
+              </span>
+              <span class="visualmente-oculto">, {rotuloDoTotal(total)}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  ))}
+
+  <FraseDaSemana frase={configuracoes?.fraseDaSemana} />
+</div>
+
+<style>
+  .barra-lateral {
+    display: grid;
+    gap: var(--espaco-6);
+    align-content: start;
+  }
+
+  .autora {
+    display: grid;
+    gap: var(--espaco-3);
+    justify-items: start;
+  }
+
+  /* O quadrado vinho com o gato em rosa, o mesmo do mosaico e do favicon. */
+  .autora__icone {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    aspect-ratio: 1;
+    border-radius: var(--raio-md);
+    background-color: var(--cor-vinho);
+    color: var(--cor-rosa);
+  }
+
+  .autora :global(.autora__gato) {
+    width: 60%;
+    height: 60%;
+  }
+
+  .autora__titulo {
+    font-size: var(--texto-xl);
+  }
+
+  .autora__bio {
+    color: var(--cor-texto-2);
+  }
+
+  .autora__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-weight: var(--peso-medio);
+  }
+
+  .menu {
+    padding-block-start: var(--espaco-5);
+    border-block-start: 1px solid var(--cor-borda);
+  }
+
+  .menu__titulo {
+    margin-block-end: var(--espaco-2);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-xs);
+    font-weight: var(--peso-medio);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .menu__links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Cada link ocupa 44px de altura, o alvo de toque mínimo, com o total alinhado à direita. */
+  .menu__links a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espaco-3);
+    min-height: 44px;
+    text-decoration: none;
+  }
+
+  /* Só o nome é sublinhado, como os outros links; o total fica limpo. */
+  .menu__rotulo {
+    text-decoration-line: underline;
+    text-decoration-thickness: 0.08em;
+  }
+
+  .menu__links a:hover .menu__rotulo {
+    text-decoration-thickness: 0.12em;
+  }
+
+  .menu__total {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+    font-variant-numeric: tabular-nums;
+  }
+</style>
