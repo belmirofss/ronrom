@@ -1,0 +1,99 @@
+---
+import Biologia from '@/assets/formas/biologia.svg';
+import Cafe from '@/assets/formas/cafe.svg';
+import Chocolate from '@/assets/formas/chocolate.svg';
+import Crossfit from '@/assets/formas/crossfit.svg';
+import Filmes from '@/assets/formas/filmes.svg';
+import Gato from '@/assets/formas/gato.svg';
+import Livros from '@/assets/formas/livros.svg';
+import Pilates from '@/assets/formas/pilates.svg';
+import Series from '@/assets/formas/series.svg';
+
+type Tom = 'vinho' | 'malva' | 'rosa' | 'creme';
+
+// Na ordem da grade, linha a linha. Vizinhos nunca repetem o fundo, e cada forma usa um tom com
+// contraste sobre o próprio fundo (malva sobre malva ou rosa sobre creme sumiriam).
+const QUADRADOS: { Forma: typeof Gato; fundo: Tom; forma: Tom }[] = [
+  { Forma: Gato, fundo: 'vinho', forma: 'rosa' },
+  { Forma: Cafe, fundo: 'creme', forma: 'vinho' },
+  { Forma: Pilates, fundo: 'malva', forma: 'creme' },
+  { Forma: Livros, fundo: 'rosa', forma: 'vinho' },
+  { Forma: Crossfit, fundo: 'vinho', forma: 'creme' },
+  { Forma: Filmes, fundo: 'creme', forma: 'malva' },
+  { Forma: Series, fundo: 'creme', forma: 'vinho' },
+  { Forma: Biologia, fundo: 'malva', forma: 'creme' },
+  { Forma: Chocolate, fundo: 'rosa', forma: 'vinho' },
+];
+---
+
+{/* Só decorativo: fora da árvore de acessibilidade e sem nada focável. */}
+<div class="mosaico" aria-hidden="true">
+  {QUADRADOS.map(({ Forma, fundo, forma }) => (
+    <div class:list={['mosaico__quadrado', `fundo-${fundo}`, `forma-${forma}`]}>
+      <Forma class="mosaico__forma" />
+    </div>
+  ))}
+</div>
+
+<style>
+  /* O tamanho vem todo do CSS (largura do contêiner + aspect-ratio), sem esperar o SVG: sem CLS. */
+  .mosaico {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .mosaico__quadrado {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    background-color: var(--fundo);
+    color: var(--forma);
+  }
+
+  .mosaico :global(.mosaico__forma) {
+    width: 58%;
+    height: 58%;
+  }
+
+  .fundo-vinho {
+    --fundo: var(--cor-vinho);
+  }
+
+  .fundo-malva {
+    --fundo: var(--cor-malva);
+  }
+
+  .fundo-rosa {
+    --fundo: var(--cor-rosa);
+  }
+
+  .fundo-creme {
+    --fundo: var(--cor-creme);
+  }
+
+  .forma-vinho {
+    --forma: var(--cor-vinho);
+  }
+
+  .forma-malva {
+    --forma: var(--cor-malva);
+  }
+
+  .forma-rosa {
+    --forma: var(--cor-rosa);
+  }
+
+  .forma-creme {
+    --forma: var(--cor-creme);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .mosaico :global(.mosaico__forma) {
+      transition: transform 0.25s ease-out;
+    }
+
+    .mosaico__quadrado:hover :global(.mosaico__forma) {
+      transform: rotate(-8deg) scale(1.08);
+    }
+  }
+</style>

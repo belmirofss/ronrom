@@ -1,11 +1,13 @@
 ---
+import TopoHome from '@/components/home/TopoHome.astro';
 import Container from '@/components/layout/Container.astro';
 import LayoutBase from '@/layouts/LayoutBase.astro';
-import { NOME_DO_SITE } from '@/lib/utils/site';
 ---
 
-<LayoutBase titulo="Em construção">
+{/* Home provisória: o resto (destaque, abas e barra lateral) entra na #44. */}
+<LayoutBase>
   <Container>
-    <h1>{NOME_DO_SITE} em construção</h1>
+    <TopoHome />
+    <p>Em construção.</p>
   </Container>
 </LayoutBase>
