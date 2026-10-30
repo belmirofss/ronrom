@@ -28,8 +28,7 @@ export default defineCliConfig({
   typegen: {
     path: '../web/src/lib/sanity/consultas.ts',
     schema: 'schema.json',
-    // .d.ts: o arquivo registra os tipos no @sanity/client, que o site ainda não instala (#33). Num
-    // .d.ts, a falta do pacote não vira erro de tipo.
+    // .d.ts: só tipos, sem código. O arquivo também registra as consultas no @sanity/client.
     generates: '../web/src/lib/sanity/tipos.gerados.d.ts',
   },
 });
