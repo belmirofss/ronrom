@@ -128,7 +128,7 @@ Toda imagem do conteúdo passa pelo [`<ImagemSanity>`](../../components/ui/Image
 - **`width` e `height`** da maior versão, para a tag reservar o espaço certo antes de a imagem chegar (sem CLS). As dimensões vêm do asset ou, se faltarem, do `_id` (`image-{id}-{largura}x{altura}-{ext}`).
 - **`null` sem asset** (arquivo apagado): o componente não renderiza nada.
 
-Projeto e dataset vêm do `config.ts`. No [modo fixtures](#modo-fixtures), não há CDN: o `src` é o `url` do asset (o placeholder em SVG) e não há `srcset`.
+O projeto e o dataset saem da URL do próprio asset (`https://cdn.sanity.io/images/{projeto}/{dataset}/...`), como no `ogImage` do `<Seo>`, sem depender das variáveis. Fora do CDN, como no [modo fixtures](#modo-fixtures), o `src` é o `url` do asset (o placeholder em SVG) e não há `srcset`.
 
 **Card** de post (listas, destaque, "Leia também", índice):
 

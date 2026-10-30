@@ -1,29 +1,44 @@
-import { createImageUrlBuilder } from '@sanity/image-url';
-import { fonteDoConteudo } from './config';
-import type { SanityImageCrop, SanityImageHotspot } from './tipos.gerados';
+import { createImageUrlBuilder, type SanityImageSource } from '@sanity/image-url';
 
-// URLs do CDN do Sanity para o <ImagemSanity> (#34): o `srcset` em larguras fixas, o `src` e as
-// dimensões da tag. O CDN redimensiona, recorta e escolhe o formato (AVIF/WebP) sozinho; o site
-// não processa imagem no build.
+// URLs do CDN do Sanity: o `srcset` do <ImagemSanity> (#34) e a imagem de compartilhamento do
+// <Seo> (#32). O CDN redimensiona, recorta e escolhe o formato sozinho; o site não processa imagem
+// no build.
+
+// O mínimo de uma imagem vinda das consultas (`IMAGEM_NO_GROQ`): o asset expandido, o recorte e o
+// hotspot. Capa, foto da autora, imagem de compartilhamento e imagens do texto têm esse formato.
+// Sem `largura` e `altura`, as dimensões saem do `_id`.
+export interface ImagemDoSanity {
+  asset: {
+    _id: string;
+    url: string;
+    largura?: number | null;
+    altura?: number | null;
+    lqip?: string | null;
+  } | null;
+  hotspot?: { x: number; y: number; height: number; width: number };
+  crop?: { top: number; bottom: number; left: number; right: number };
+  alt?: string;
+}
+
+type Asset = NonNullable<ImagemDoSanity['asset']>;
+
+// https://cdn.sanity.io/images/{projectId}/{dataset}/{arquivo}
+const URL_DO_CDN = /^https:\/\/cdn\.sanity\.io\/images\/([^/]+)\/([^/]+)\//;
+
+// O projeto e o dataset saem da URL do próprio asset, que já vem do Sanity, sem depender das
+// variáveis. Fora do CDN, como os placeholders `data:` das fixtures (#33), não há projeto.
+function projetoDoCdn(asset: Asset | null): { projectId: string; dataset: string } | null {
+  const [, projectId, dataset] = asset?.url.match(URL_DO_CDN) ?? [];
+  return projectId && dataset ? { projectId, dataset } : null;
+}
+
+// --- Imagem responsiva (<ImagemSanity>) ---
 
 /** Larguras do `srcset`, em pixels. Nenhuma passa da largura do recorte: o CDN não amplia. */
 export const LARGURAS = [320, 480, 640, 800, 1024, 1280, 1600, 1920] as const;
 
 /** Qualidade das imagens do CDN (`q`): ~75 já não mostra artefato no AVIF e no WebP. */
 export const QUALIDADE = 75;
-
-/** O formato que as consultas devolvem para uma imagem (`IMAGEM_NO_GROQ`, README desta pasta). */
-export interface ImagemDoSanity {
-  asset: {
-    _id: string;
-    url: string;
-    largura: number | null;
-    altura: number | null;
-    lqip: string | null;
-  } | null;
-  crop?: SanityImageCrop | undefined;
-  hotspot?: SanityImageHotspot | undefined;
-}
 
 /** O que vai na tag `<img>`. Sem `srcset` quando a imagem não está no CDN (modo fixtures). */
 export interface FontesDaImagem {
@@ -33,18 +48,10 @@ export interface FontesDaImagem {
   height: number;
 }
 
-/** Projeto e dataset do CDN; `null` no modo fixtures, em que o asset tem um data URI no `url`. */
-export type ProjetoDoCdn = { projectId: string; dataset: string } | null;
-
-const PROJETO: ProjetoDoCdn =
-  fonteDoConteudo.tipo === 'sanity'
-    ? { projectId: fonteDoConteudo.projectId, dataset: fonteDoConteudo.dataset }
-    : null;
-
 // O `_id` de um asset traz as dimensões do original: `image-{id}-{largura}x{altura}-{ext}`.
 const DIMENSOES_NO_ID = /-(\d+)x(\d+)-[a-z0-9]+$/;
 
-function dimensoesDoOriginal(asset: NonNullable<ImagemDoSanity['asset']>) {
+function dimensoesDoOriginal(asset: Asset) {
   if (asset.largura && asset.altura) return { largura: asset.largura, altura: asset.altura };
   const [, largura, altura] = DIMENSOES_NO_ID.exec(asset._id) ?? [];
   if (!largura || !altura) {
@@ -58,7 +65,7 @@ function dimensoesDoOriginal(asset: NonNullable<ImagemDoSanity['asset']>) {
  * `proporcao` (largura / altura, como `4 / 3`), o maior retângulo nessa proporção dentro dele.
  */
 export function tamanhoMaximo(
-  imagem: ImagemDoSanity & { asset: NonNullable<ImagemDoSanity['asset']> },
+  imagem: ImagemDoSanity & { asset: Asset },
   proporcao?: number,
 ): { largura: number; altura: number } {
   const original = dimensoesDoOriginal(imagem.asset);
@@ -86,11 +93,7 @@ export function larguras(maxima: number): number[] {
  * do Studio. Com `proporcao`, cada versão sai recortada nela, centrada no hotspot. `null` se o
  * asset foi apagado.
  */
-export function fontesDaImagem(
-  imagem: ImagemDoSanity,
-  proporcao?: number,
-  projeto: ProjetoDoCdn = PROJETO,
-): FontesDaImagem | null {
+export function fontesDaImagem(imagem: ImagemDoSanity, proporcao?: number): FontesDaImagem | null {
   const { asset } = imagem;
   if (!asset) return null;
 
@@ -101,6 +104,7 @@ export function fontesDaImagem(
   const tamanho = { width: maior, height: Math.round((maior * maximo.altura) / maximo.largura) };
 
   // Nas fixtures, o `url` é um placeholder em SVG: vai direto, e o CSS recorta na proporção.
+  const projeto = projetoDoCdn(asset);
   if (!projeto) return { src: asset.url, srcset: undefined, ...tamanho };
 
   const base = createImageUrlBuilder(projeto)
@@ -126,4 +130,27 @@ export function fontesDaImagem(
     srcset: versoes.map((largura) => `${url(largura)} ${largura}w`).join(', '),
     ...tamanho,
   };
+}
+
+// --- Imagem de compartilhamento (<Seo>) ---
+
+export const LARGURA_OG = 1200;
+export const ALTURA_OG = 630;
+
+// Imagem de compartilhamento (og:image) no CDN do Sanity: 1200×630, recortada no hotspot que a
+// autora marcou no Studio. JPG explícito porque alguns crawlers não aceitam WebP nem AVIF.
+// Sem asset (arquivo apagado) ou fora do CDN, devolve `null` e a página usa a imagem padrão.
+export function ogImage(imagem: ImagemDoSanity): string | null {
+  const projeto = projetoDoCdn(imagem.asset);
+  if (!projeto) {
+    return null;
+  }
+  return createImageUrlBuilder(projeto)
+    .image(imagem as SanityImageSource)
+    .width(LARGURA_OG)
+    .height(ALTURA_OG)
+    .fit('crop')
+    .format('jpg')
+    .quality(80)
+    .url();
 }

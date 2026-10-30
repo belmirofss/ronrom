@@ -1,0 +1,90 @@
+---
+import { canonicalUrl } from '@/lib/rotas';
+import {
+  imagemDeCompartilhamento,
+  LIMITE_DO_TITULO,
+  ROBOTS_INDEXAVEL,
+  ROBOTS_NOINDEX,
+  type Metadados,
+} from '@/lib/seo';
+import { DESCRICAO_DO_SITE, NOME_DO_SITE } from '@/lib/utils/site';
+import { tituloDaPagina } from '@/lib/utils/titulo';
+
+// Todas as meta tags da página, uma de cada. Quem renderiza é o LayoutBase, com a prop `seo`; o
+// slot recebe o JSON-LD da página (#50, #51), que chega pelo slot `head` do layout.
+type Props = Metadados;
+
+const {
+  title,
+  description,
+  canonical,
+  image,
+  imageAlt,
+  type = 'website',
+  noindex = false,
+  publishedTime,
+  modifiedTime,
+  tags = [],
+  section,
+} = Astro.props;
+
+const titulo = tituloDaPagina(title);
+const url = canonicalUrl(canonical);
+
+if (titulo.length > LIMITE_DO_TITULO) {
+  console.warn(
+    `[seo] Título com ${titulo.length} caracteres (acima de ${LIMITE_DO_TITULO}) em ${url}: "${titulo}". Use o "Título para o Google" do post para encurtar.`,
+  );
+}
+
+// Nas prévias de link, o nome do site já aparece no og:site_name: o título vai sem o " · Ronrom".
+const tituloSocial = title || titulo;
+const descricao = description.trim() || DESCRICAO_DO_SITE;
+const imagem = imagemDeCompartilhamento(image, imageAlt, tituloSocial);
+---
+
+<title>{titulo}</title>
+<meta name="description" content={descricao} />
+<link rel="canonical" href={url} />
+<meta name="robots" content={noindex ? ROBOTS_NOINDEX : ROBOTS_INDEXAVEL} />
+
+<meta property="og:title" content={tituloSocial} />
+<meta property="og:description" content={descricao} />
+<meta property="og:url" content={url} />
+<meta property="og:site_name" content={NOME_DO_SITE} />
+<meta property="og:locale" content="pt_BR" />
+<meta property="og:type" content={type} />
+<meta property="og:image" content={imagem.url} />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content={String(imagem.largura)} />
+<meta property="og:image:height" content={String(imagem.altura)} />
+<meta property="og:image:alt" content={imagem.alt} />
+{type === 'article' && (
+  <>
+    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+    {section && <meta property="article:section" content={section} />}
+    {tags.map((tag) => (
+      <meta property="article:tag" content={tag} />
+    ))}
+  </>
+)}
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={tituloSocial} />
+<meta name="twitter:description" content={descricao} />
+<meta name="twitter:image" content={imagem.url} />
+<meta name="twitter:image:alt" content={imagem.alt} />
+
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title={NOME_DO_SITE}
+  href={canonicalUrl('/rss.xml')}
+/>
+{/* O .ico fica para os navegadores sem SVG e para quem pede /favicon.ico direto (leitores de RSS). */}
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+<slot />

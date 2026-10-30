@@ -1,15 +1,6 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { fontesDaImagem, larguras, type ImagemDoSanity } from '@/lib/sanity/imagem';
 
-// O projeto do CDN vai explícito em cada chamada; o mock só evita ler o web/.env de quem roda.
-vi.mock('astro:env/server', () => ({
-  SANITY_FIXTURES: true,
-  SANITY_PROJECT_ID: undefined,
-  SANITY_DATASET: undefined,
-  SANITY_API_VERSION: '2025-02-19',
-}));
-
-const PROJETO = { projectId: 'teste', dataset: 'production' };
 const CDN = 'https://cdn.sanity.io/images/teste/production/abc-2400x1600.jpg';
 
 function imagem(
@@ -73,7 +64,7 @@ describe('larguras', () => {
 
 describe('fontesDaImagem', () => {
   it('gera o srcset com auto=format e qualidade 75 em cada largura', () => {
-    const fontes = fontesDaImagem(imagem(), undefined, PROJETO);
+    const fontes = fontesDaImagem(imagem(), undefined);
     const urls = urlsDoSrcset(fontes?.srcset);
 
     expect([...urls.keys()]).toEqual([320, 480, 640, 800, 1024, 1280, 1600, 1920]);
@@ -88,14 +79,14 @@ describe('fontesDaImagem', () => {
   });
 
   it('dá width e height da maior versão, na proporção do original', () => {
-    expect(fontesDaImagem(imagem(), undefined, PROJETO)).toMatchObject({
+    expect(fontesDaImagem(imagem(), undefined)).toMatchObject({
       width: 1920,
       height: 1280,
     });
   });
 
   it('recorta pela proporção pedida, com width e height nela', () => {
-    const fontes = fontesDaImagem(imagem(), 4 / 3, PROJETO);
+    const fontes = fontesDaImagem(imagem(), 4 / 3);
     const url = urlsDoSrcset(fontes?.srcset).get(800);
 
     expect(fontes).toMatchObject({ width: 1920, height: 1440 });
@@ -108,17 +99,17 @@ describe('fontesDaImagem', () => {
 
   it('não amplia: a proporção limita a maior versão', () => {
     // 21:9 dentro de 1200×900 é 1200×514; 4:3 dentro de 1200×1600 é 1200×900.
-    expect(fontesDaImagem(imagem({}, 1200, 900), 21 / 9, PROJETO)).toMatchObject({
+    expect(fontesDaImagem(imagem({}, 1200, 900), 21 / 9)).toMatchObject({
       width: 1200,
       height: 514,
     });
-    const retrato = fontesDaImagem(imagem({}, 1200, 1600), 4 / 3, PROJETO);
+    const retrato = fontesDaImagem(imagem({}, 1200, 1600), 4 / 3);
     expect([...urlsDoSrcset(retrato?.srcset).keys()]).toEqual([320, 480, 640, 800, 1024, 1200]);
   });
 
   it('respeita o hotspot ao recortar pela proporção', () => {
-    const naDireita = fontesDaImagem(imagem({ hotspot: hotspot(0.9) }), 4 / 3, PROJETO);
-    const naEsquerda = fontesDaImagem(imagem({ hotspot: hotspot(0.1) }), 4 / 3, PROJETO);
+    const naDireita = fontesDaImagem(imagem({ hotspot: hotspot(0.9) }), 4 / 3);
+    const naEsquerda = fontesDaImagem(imagem({ hotspot: hotspot(0.1) }), 4 / 3);
 
     expect(urlsDoSrcset(naDireita?.srcset).get(320)?.searchParams.get('rect')).toBe(
       '267,0,2133,1600',
@@ -130,7 +121,7 @@ describe('fontesDaImagem', () => {
 
   it('respeita o recorte do Studio nas URLs e nas dimensões', () => {
     // Tirar um quarto de cada lado deixa 1200×1600.
-    const fontes = fontesDaImagem(imagem({ crop: crop(0.25, 0.25) }), undefined, PROJETO);
+    const fontes = fontesDaImagem(imagem({ crop: crop(0.25, 0.25) }), undefined);
     const urls = urlsDoSrcset(fontes?.srcset);
 
     expect(fontes).toMatchObject({ width: 1200, height: 1600 });
@@ -142,22 +133,22 @@ describe('fontesDaImagem', () => {
     const base = imagem();
     const semDimensoes = { asset: base.asset && { ...base.asset, largura: null, altura: null } };
 
-    expect(fontesDaImagem(semDimensoes, undefined, PROJETO)).toMatchObject({
+    expect(fontesDaImagem(semDimensoes, undefined)).toMatchObject({
       width: 1920,
       height: 1280,
     });
   });
 
   it('devolve null se o asset foi apagado', () => {
-    expect(fontesDaImagem({ asset: null }, 4 / 3, PROJETO)).toBeNull();
+    expect(fontesDaImagem({ asset: null }, 4 / 3)).toBeNull();
   });
 
-  it('usa o url do asset direto, sem srcset, no modo fixtures', () => {
+  it('usa o url do asset direto, sem srcset, fora do CDN (modo fixtures)', () => {
     const placeholder = 'data:image/svg+xml,%3Csvg%3E%3C%2Fsvg%3E';
     const base = imagem();
     const fixture = { asset: base.asset && { ...base.asset, url: placeholder } };
 
-    expect(fontesDaImagem(fixture, 4 / 3, null)).toEqual({
+    expect(fontesDaImagem(fixture, 4 / 3)).toEqual({
       src: placeholder,
       srcset: undefined,
       width: 1920,
