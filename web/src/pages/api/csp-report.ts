@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { lerRelatorioDaCsp, TAMANHO_MAXIMO } from '@/lib/csp';
 
 // Recebe os relatórios da CSP (#41) e os escreve no log da função (Vercel → Logs), um por linha.
-// Não guarda nada: serve para achar o que a política bloquearia antes de ligar o modo enforce
+// Não guarda nada: serve para ver o que a política, em modo enforce, bloqueou de verdade
 // (docs/cabecalhos.md). Sob demanda, como o /api/health.
 export const prerender = false;
 

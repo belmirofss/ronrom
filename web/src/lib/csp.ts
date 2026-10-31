@@ -1,6 +1,5 @@
 // Relatórios de violação da CSP (#41), recebidos pelo /api/csp-report. A política fica no
-// web/vercel.json; por que assim e como passar do Report-Only para o modo enforce:
-// docs/cabecalhos.md.
+// web/vercel.json, em modo enforce; por que assim e como ler os relatórios: docs/cabecalhos.md.
 
 /** O que interessa de uma violação, igual para os dois formatos que os navegadores mandam. */
 export interface ViolacaoDaCsp {
