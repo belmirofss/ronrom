@@ -34,6 +34,9 @@ import type {
   CONSULTA_DO_SOBRE_RESULT,
 } from './tipos.gerados';
 
+// Prévia de rascunhos (#43): confere o segredo do Presentation com o cliente desta pasta.
+export { validarUrlDaPrevia } from './cliente';
+
 // Funções de acesso ao conteúdo: é daqui que páginas, componentes e endpoints leem o Sanity (ou
 // as fixtures), nunca do @sanity/client nem do cliente.ts. Uma função por consulta de
 // consultas.ts; o formato de cada resultado está no README desta pasta.

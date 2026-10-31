@@ -62,7 +62,15 @@ O [`cliente.ts`](cliente.ts) cria o `@sanity/client` com:
 - **`apiVersion` fixa**, da `SANITY_API_VERSION` (padrão `2025-02-19`): uma mudança da API não muda o site sem um PR.
 - **`useCdn: false`**: o build roda logo depois da publicação ([deploy hook](../../../../docs/deploy.md)) e precisa do conteúdo novo, que a API CDN pode levar alguns instantes para entregar. São poucas consultas por build.
 - **`perspective: 'published'`**: nunca rascunho nem versão de release, além do filtro que as próprias consultas já fazem.
-- **Sem token.** O conteúdo publicado é público; o token viewer (`SANITY_API_READ_TOKEN`) é só da pré-visualização de rascunhos (#43). O `cliente.ts` lê o `astro:env/server` (pelo `config.ts`), que o Astro recusa em código de navegador: o cliente, e qualquer token que ele venha a ter, roda só no build e nas rotas sob demanda.
+- **Sem token.** O conteúdo publicado é público; o token viewer (`SANITY_API_READ_TOKEN`) é só da [prévia de rascunhos](#prévia-de-rascunhos). O `cliente.ts` lê o `astro:env/server` (pelo `config.ts`), que o Astro recusa em código de navegador: o cliente, e o token da prévia, rodam só no servidor.
+
+### Prévia de rascunhos
+
+No build da prévia (`PUBLIC_SANITY_VISUAL_EDITING_ENABLED=true`, só no projeto `ronrom-previa` da Vercel; veja [`docs/ambientes.md`](../../../../docs/ambientes.md#prévia-de-rascunhos-ronrom-previa)), o mesmo cliente muda três coisas:
+
+- **`perspective: 'drafts'`**: o rascunho por cima do publicado. Nessa perspectiva o `_id` vem sem o `drafts.` (o original fica em `_originalId`), então o filtro "só conteúdo no ar" das consultas deixa o rascunho passar sem mudar nenhuma consulta. Um post nunca publicado aparece porque o Studio preenche a `dataDePublicacao` com a hora da criação.
+- **Token viewer**, que lê os rascunhos e o segredo do Presentation (`validarUrlDaPrevia`, reexportado pelo `conteudo.ts` para o `/api/previa/ativar`).
+- **Stega**: cada texto de [`CAMPOS_COM_STEGA`](stega.ts) leva, em caracteres invisíveis, o documento e o campo de onde veio, e o script da edição visual os torna clicáveis. Só texto corrido (título, subtítulo, spans do corpo, legendas, campos livres da ficha...): valores que o site compara (`tipo`, `modelo`, `provedor`, `rede`, `uf`...) quebrariam com a marca, e o `alt` ficaria estranho no leitor de tela. Campo novo de texto que deva ser clicável na prévia entra nessa lista.
 
 ## Modo fixtures
 

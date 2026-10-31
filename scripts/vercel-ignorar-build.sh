@@ -9,7 +9,17 @@ set -u
 # trazer conteúdo novo do Sanity, e a Vercel não diz ao script que o deploy veio do hook.
 # Comparar commits cancelaria esse build: sem commit novo, ou com só docs desde o último
 # deploy bom, o diff não acha nada que afete o site.
-if [ "${VERCEL_ENV:-}" = "production" ]; then
+#
+# O projeto da prévia de rascunhos (ronrom-previa, #43) usa este mesmo script, com
+# PUBLIC_SANITY_VISUAL_EDITING_ENABLED=true. Ele só publica a main: um deploy por branch dobraria
+# os builds (o Hobby faz um de cada vez) sem ninguém usar. E não recebe o deploy hook, porque lê
+# o conteúdo na hora; então, na main, compara commits como um preview.
+if [ "${PUBLIC_SANITY_VISUAL_EDITING_ENABLED:-}" = "true" ]; then
+  if [ "${VERCEL_ENV:-}" != "production" ]; then
+    echo "Prévia de rascunhos: só a main é publicada; build ignorado."
+    exit 0
+  fi
+elif [ "${VERCEL_ENV:-}" = "production" ]; then
   echo "Deploy de produção; segue com o build (pode ser conteúdo novo pelo deploy hook)."
   exit 1
 fi

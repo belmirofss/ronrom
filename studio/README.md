@@ -140,6 +140,15 @@ O destaque da home saiu do post (era o boolean `destaque`): com um só post esco
 | `texto` | Portable Text simples, um pedaço do `corpo`: parágrafo, subtítulo (`h2`), lista, negrito, itálico e o mesmo `link` externo |
 | `seo`   | `descricao` e `imagem`, opcionais; vazios, o site usa a bio e a foto                                                       |
 
+### Prévia (aba Apresentação)
+
+A aba **Apresentação** é o [Presentation](https://www.sanity.io/docs/visual-editing/configuring-the-presentation-tool) do Sanity, configurado no [`sanity.config.ts`](sanity.config.ts) com as regras de [`lib/previa.ts`](lib/previa.ts) (com testes). Ela abre o site da prévia num painel ao lado do editor, com o rascunho atual no layout do site; ao editar, a prévia recarrega. Clicar num texto da prévia (título, subtítulo, parágrafos, legendas, ficha) abre o campo dele no editor.
+
+- **Endereço:** `https://ronrom-previa.vercel.app`, um segundo projeto da Vercel ([`docs/ambientes.md`](../docs/ambientes.md#prévia-de-rascunhos-ronrom-previa), [ADR 0006](../docs/adr/0006-previa-de-rascunhos-em-projeto-separado.md)). Para o site local, `SANITY_STUDIO_PREVIEW_URL=http://localhost:4321` no `studio/.env`.
+- **Entrada:** o Presentation gera um segredo temporário e abre `/api/previa/ativar` com ele; o site confere o segredo e só então mostra rascunhos (`previewMode`).
+- **De documento para página** (`resolve.locations`): o post abre na página dele (o mesmo caminho do `caminhoDoPost`) e na home; sem tipo, categoria ou formato e slug, aparece um aviso. As Configurações abrem a home, e o Sobre mim, a página `/sobre` e a home.
+- **De página para documento** (`resolve.mainDocuments`): ao navegar na prévia, `/reviews/{categoria}/{slug}` e `/pensamentos/{formato}/{slug}` abrem o post, `/sobre` abre o Sobre mim e `/` abre as Configurações.
+
 ### Navegação
 
 A lista da esquerda é montada em [`estrutura.ts`](estrutura.ts), com os filtros e valores iniciais em [`lib/estrutura.ts`](lib/estrutura.ts) (com testes, os filtros conferidos com o `groq-js`):
@@ -221,10 +230,10 @@ Sem elas o Studio não abre e mostra qual variável falta.
 
 Tokens **nunca** entram no código nem em `.env` versionado. São criados em sanity.io/manage → projeto → API → Tokens e guardados nos Secrets do GitHub (Settings → Secrets and variables → Actions) e nas variáveis de ambiente da Vercel.
 
-| Nome do token        | Permissão     | Variável                | Onde fica       | Uso                                     |
-| -------------------- | ------------- | ----------------------- | --------------- | --------------------------------------- |
-| `viewer`             | Viewer        | `SANITY_API_READ_TOKEN` | GitHub e Vercel | Ler rascunhos no preview e fazer backup |
-| `studio-deploy-ci-5` | Deploy Studio | `SANITY_AUTH_TOKEN`     | GitHub          | `sanity deploy` no CI                   |
+| Nome do token        | Permissão     | Variável                | Onde fica                         | Uso                                    |
+| -------------------- | ------------- | ----------------------- | --------------------------------- | -------------------------------------- |
+| `viewer`             | Viewer        | `SANITY_API_READ_TOKEN` | GitHub e Vercel (`ronrom-previa`) | Ler rascunhos na prévia e fazer backup |
+| `studio-deploy-ci-5` | Deploy Studio | `SANITY_AUTH_TOKEN`     | GitHub                            | `sanity deploy` no CI                  |
 
 `SANITY_AUTH_TOKEN` é o nome que a CLI do Sanity lê para autenticar sem `sanity login`. Nenhum token grava conteúdo: seed e scripts como o da taxonomia rodam da máquina de quem mantém o projeto, com `sanity login`.
 
@@ -259,4 +268,4 @@ Num dataset público, qualquer pessoa lê os documentos publicados sem token, ma
 curl "https://<projectId>.apicdn.sanity.io/v2025-02-19/data/query/development?query=count(*%5B_id%20in%20path(%22drafts.**%22)%5D)"
 ```
 
-Por isso o preview de rascunhos no site usa o token `viewer`, e nada sensível deve ser guardado em documentos publicados.
+Por isso a prévia de rascunhos usa o token `viewer`, e nada sensível deve ser guardado em documentos publicados.
