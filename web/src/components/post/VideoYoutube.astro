@@ -1,0 +1,141 @@
+---
+import { miniaturaDoYoutube } from '../../../../studio/lib/video';
+
+interface Props {
+  /** O ID de 11 caracteres, tirado do link pelo `videoDoLink` (studio/lib/video.ts). */
+  idVideo: string;
+  /** Nome do vídeo no botão e no player, para o leitor de tela. */
+  titulo?: string | undefined;
+  /** Texto opcional embaixo do vídeo. */
+  legenda?: string | undefined;
+}
+
+const { idVideo, titulo, legenda } = Astro.props;
+
+// Fachada leve (padrão lite-youtube): só a miniatura, do CDN de imagens do YouTube, com o tamanho
+// declarado e lazy. Nada de youtube.com carrega antes do clique: sem JS, a fachada é um link para o
+// vídeo; com JS, o script abaixo a troca por um botão e, no clique, pelo player do
+// youtube-nocookie, que só grava cookie depois do play.
+const link = `https://www.youtube.com/watch?v=${idVideo}`;
+const player = `https://www.youtube-nocookie.com/embed/${idVideo}?autoplay=1`;
+const nome = titulo?.trim();
+---
+
+<figure class="video-youtube">
+  <a
+    class="video-youtube__quadro"
+    href={link}
+    rel="noopener noreferrer"
+    aria-label={nome ? `Assistir no YouTube: ${nome}` : 'Assistir ao vídeo no YouTube'}
+    data-video-youtube
+    data-player={player}
+    data-titulo={nome ?? 'Vídeo do YouTube'}
+    data-rotulo={nome ? `Reproduzir vídeo: ${nome}` : 'Reproduzir vídeo do YouTube'}
+  >
+    <img
+      class="video-youtube__miniatura"
+      src={miniaturaDoYoutube(idVideo)}
+      alt={nome ? `Miniatura do vídeo: ${nome}` : 'Miniatura do vídeo do YouTube'}
+      width="480"
+      height="360"
+      loading="lazy"
+      decoding="async"
+    />
+    <svg class="video-youtube__play" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="32"></circle>
+      <path d="M26 20.5v23L44 32z"></path>
+    </svg>
+  </a>
+  {legenda?.trim() && <figcaption class="video-youtube__legenda">{legenda.trim()}</figcaption>}
+</figure>
+
+<script>
+  // Ilha da fachada: o link vira um botão (Enter e Espaço) e, no clique, o player, com o foco nele.
+  for (const link of document.querySelectorAll<HTMLAnchorElement>('a[data-video-youtube]')) {
+    const { player = '', titulo = '', rotulo = '' } = link.dataset;
+    const botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = link.className;
+    botao.setAttribute('aria-label', rotulo);
+    botao.append(...link.childNodes);
+    botao.addEventListener(
+      'click',
+      () => {
+        const iframe = document.createElement('iframe');
+        iframe.className = link.className;
+        iframe.src = player;
+        iframe.title = titulo;
+        iframe.allow =
+          'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        iframe.allowFullscreen = true;
+        // O YouTube recusa o player sem a origem do site no Referer.
+        iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+        botao.replaceWith(iframe);
+        iframe.focus();
+      },
+      { once: true },
+    );
+    link.replaceWith(botao);
+  }
+</script>
+
+<style>
+  /* O link, o botão e o iframe que o script põe no lugar não têm o atributo de escopo do Astro:
+     o estilo chega a eles pela <figure>. */
+  .video-youtube > :global(.video-youtube__quadro) {
+    display: block;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: var(--raio-md);
+    background-color: var(--cor-texto);
+    cursor: pointer;
+  }
+
+  /* A hqdefault é 4:3 com faixas pretas; o recorte em 16:9 tira as faixas. */
+  .video-youtube__miniatura {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .video-youtube__play {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: clamp(48px, 14%, 72px);
+    translate: -50% -50%;
+    transition: scale 150ms ease;
+  }
+
+  .video-youtube__play circle {
+    fill: var(--cor-vinho);
+  }
+
+  .video-youtube__play path {
+    fill: var(--cor-fundo);
+  }
+
+  .video-youtube > :global(.video-youtube__quadro:hover) .video-youtube__play {
+    scale: 1.08;
+  }
+
+  .video-youtube > :global(.video-youtube__quadro:hover) .video-youtube__play circle {
+    fill: var(--cor-vinho-hover);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .video-youtube__play {
+      transition: none;
+    }
+  }
+
+  .video-youtube__legenda {
+    margin-block-start: var(--espaco-2);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+    line-height: var(--altura-linha-base);
+  }
+</style>

@@ -11,6 +11,13 @@ describe('videoDoLink', () => {
     ['https://youtu.be/dQw4w9WgXcQ?si=AbCdEf123', 'dQw4w9WgXcQ'],
     ['https://www.youtube.com/shorts/a-B_c1D2e3F', 'a-B_c1D2e3F'],
     ['https://youtube.com/shorts/a-B_c1D2e3F?feature=share', 'a-B_c1D2e3F'],
+    ['https://m.youtube.com/shorts/a-B_c1D2e3F', 'a-B_c1D2e3F'],
+    ['https://www.youtube.com/embed/dQw4w9WgXcQ', 'dQw4w9WgXcQ'],
+    ['https://www.youtube.com/embed/dQw4w9WgXcQ?si=AbCdEf123&start=42', 'dQw4w9WgXcQ'],
+    ['https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', 'dQw4w9WgXcQ'],
+    ['http://www.youtube.com/watch?v=dQw4w9WgXcQ', 'dQw4w9WgXcQ'],
+    ['https://www.youtube.com/watch?list=PL123&v=dQw4w9WgXcQ&index=2', 'dQw4w9WgXcQ'],
+    ['https://www.youtube.com/watch?v=dQw4w9WgXcQ#t=42', 'dQw4w9WgXcQ'],
     ['  https://youtu.be/dQw4w9WgXcQ  ', 'dQw4w9WgXcQ'],
   ])('reconhece o YouTube em %s', (url, idVideo) => {
     expect(videoDoLink(url)).toEqual({ provedor: 'youtube', idVideo });
@@ -32,6 +39,10 @@ describe('videoDoLink', () => {
     ['domínio parecido', 'https://notyoutube.com/watch?v=dQw4w9WgXcQ'],
     ['ID curto', 'https://youtu.be/dQw4w9WgXc'],
     ['ID longo', 'https://youtu.be/dQw4w9WgXcQQ'],
+    ['ID longo no watch', 'https://www.youtube.com/watch?v=dQw4w9WgXcQQ'],
+    ['embed sem ID', 'https://www.youtube.com/embed/'],
+    ['ID curto no embed', 'https://www.youtube-nocookie.com/embed/dQw4w9WgXc'],
+    ['nocookie fora do embed', 'https://www.youtube-nocookie.com/watch?v=dQw4w9WgXcQ'],
     ['página de canal', 'https://www.youtube.com/@ronrom'],
     ['watch sem v', 'https://www.youtube.com/watch?list=PL123'],
     ['parâmetro que termina em v', 'https://www.youtube.com/watch?dev=dQw4w9WgXcQ'],
@@ -49,7 +60,7 @@ describe('videoDoLink', () => {
 describe('miniaturaDoYoutube', () => {
   it('usa a miniatura que existe para todo vídeo', () => {
     expect(miniaturaDoYoutube('dQw4w9WgXcQ')).toBe(
-      'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+      'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
     );
   });
 });

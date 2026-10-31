@@ -196,9 +196,11 @@ As funções de [`web/src/lib/card.ts`](../web/src/lib/card.ts), usadas pelo Des
 
 ### ID de vídeo do YouTube (#40)
 
+O `videoDoLink` de [`studio/lib/video.ts`](../studio/lib/video.ts), o mesmo que valida o link no Studio e monta o player do site, com os testes em [`studio/lib/video.test.ts`](../studio/lib/video.test.ts):
+
 - [ ] Extrai o ID (11 caracteres) dos formatos `youtube.com/watch?v=ID`, `youtu.be/ID`, `youtube.com/shorts/ID`, `youtube.com/embed/ID` e `youtube-nocookie.com/embed/ID`.
 - [ ] Aceita `www.` e `m.`, `http` e `https`, e ignora parâmetros extras (`&t=42s`, `?si=…`, `&list=…`) em qualquer posição.
-- [ ] URL que não é do YouTube, URL sem ID ou ID com tamanho errado devolve `null` (ou lança erro, conforme a #40 decidir), nunca um ID errado.
+- [ ] URL que não é do YouTube, URL sem ID ou ID com tamanho errado devolve `null`, nunca um ID errado. O site não mostra o bloco nesse caso, e o Studio recusa o link.
 
 ### Texto do post: `prepararCorpo` e links (#39)
 
@@ -217,4 +219,4 @@ Teste de componente (Container API) existe só para estes quatro:
 - **`Seo.astro` (#32):** uma tag de cada (`<title>`, description, canonical, robots, `og:title`, `og:image`, `twitter:card`), canonical e `og:image` absolutos, a tagline na home, `noindex,follow` pela prop, as metas `article:*` só em `type="article"` e o aviso no build com título acima de 65 caracteres.
 - **`Coracoes.astro` (#35):** um único `role="img"` com o `aria-label` da nota, os SVGs internos com `aria-hidden="true"`, e o número de corações cheios, meios e vazios renderizados para `4.5` e `5`.
 - **`FichaDaReview.astro` (#42):** os rótulos certos para cada modelo de ficha (filme, série, livro, lugar, comida), campos vazios ocultos (sem `<dt>` sem `<dd>`), a nota em corações presente e nada renderizado para quem não é review.
-- **`CorpoDoPost.astro` (#39):** com o artigo das fixtures que tem todos os blocos, só elementos semânticos (nenhuma `<div>` além do invólucro), subtítulos h2/h3 com âncora e sem h1, a lista de subnível dentro do `<li>`, o `rel="noopener noreferrer"` no link externo, o link interno resolvido (e só texto fora do ar), toda imagem com `loading="lazy"` e `alt`, as aspas da citação em destaque com `aria-hidden` e um tipo de bloco desconhecido sem quebrar nem aparecer.
+- **`CorpoDoPost.astro` (#39):** com o artigo das fixtures que tem todos os blocos, só elementos semânticos (nenhuma `<div>` além do invólucro), subtítulos h2/h3 com âncora e sem h1, a lista de subnível dentro do `<li>`, o `rel="noopener noreferrer"` no link externo, o link interno resolvido (e só texto fora do ar), toda imagem com `loading="lazy"` e `alt`, as aspas da citação em destaque com `aria-hidden`, o vídeo do YouTube e o post do Instagram só como fachada (nenhum iframe nem `src` do YouTube ou do Instagram, com o link para o original e o rótulo "Reproduzir vídeo: …") e um tipo de bloco desconhecido sem quebrar nem aparecer.

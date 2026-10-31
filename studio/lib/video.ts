@@ -1,6 +1,7 @@
 // Regras do bloco de vídeo do texto do post que não dependem do Sanity: quais links são aceitos e
 // como tirar deles o provedor e o ID. Usadas pelo schema (schemaTypes/corpo.ts), pelo input que
-// grava `provedor` e `idVideo` (componentes/VideoInput.tsx) e pela prévia no editor.
+// grava `provedor` e `idVideo` (componentes/VideoInput.tsx), pela prévia no editor e pelo player
+// do site (web/src/components/post/corpo/Video.astro).
 
 export type Provedor = 'youtube' | 'instagram';
 
@@ -25,6 +26,11 @@ const PADROES: { provedor: Provedor; regex: RegExp }[] = [
     provedor: 'youtube',
     regex: /^https?:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/([\w-]{11})\/?(?:[?#]|$)/i,
   },
+  // O link do "Incorporar" do YouTube, com ou sem o modo de privacidade (youtube-nocookie).
+  {
+    provedor: 'youtube',
+    regex: /^https?:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([\w-]{11})\/?(?:[?#]|$)/i,
+  },
   {
     provedor: 'instagram',
     regex: /^https?:\/\/(?:www\.)?instagram\.com\/(?:p|reels?)\/([\w-]+)\/?(?:[?#]|$)/i,
@@ -46,7 +52,7 @@ export function videoDoLink(url: string | undefined): VideoDoLink | null {
 
 // A `hqdefault` existe para todo vídeo (a `maxresdefault`, só para os enviados em alta resolução).
 export function miniaturaDoYoutube(idVideo: string) {
-  return `https://img.youtube.com/vi/${idVideo}/hqdefault.jpg`;
+  return `https://i.ytimg.com/vi/${idVideo}/hqdefault.jpg`;
 }
 
 // Quando o vídeo não existe mais, o YouTube responde com uma imagem cinza de 120 px de largura no

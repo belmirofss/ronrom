@@ -78,6 +78,24 @@ describe('<CorpoDoPost>', () => {
     expect(html).toContain('Eu mesma, numa terça-feira');
   });
 
+  it('mostra o vídeo e o post do Instagram como fachada, sem carregar nada deles antes do clique', () => {
+    expect(html).not.toContain('<iframe');
+    expect(html).not.toMatch(/\bsrc="https?:\/\/(?:[\w-]+\.)*(?:youtube|instagram)\.com/);
+    expect(html).toContain('src="https://i.ytimg.com/vi/jNQXAC9IVRw/hqdefault.jpg"');
+    // Sem JS, as duas fachadas são links para o original.
+    expect(html).toMatch(
+      /<a class="video-youtube__quadro[^"]*" href="https:\/\/www\.youtube\.com\/watch\?v=jNQXAC9IVRw"/,
+    );
+    expect(html).toContain(
+      'data-player="https://www.youtube-nocookie.com/embed/jNQXAC9IVRw?autoplay=1"',
+    );
+    expect(html).toContain('data-rotulo="Reproduzir vídeo: O primeiro vídeo do YouTube, de 2005."');
+    expect(html).toMatch(
+      /<a[^>]*href="https:\/\/www\.instagram\.com\/p\/RonromFixture1\/"[^>]*>\s*Ver post no Instagram/,
+    );
+    expect(html).toMatch(/<button[^>]*hidden[^>]*>\s*Carregar post aqui/);
+  });
+
   it('ignora um tipo de bloco desconhecido sem quebrar', async () => {
     const corpo = [{ _type: 'enquete', _key: 'x1', pergunta: 'Café ou chá?' }] as unknown as Corpo;
     const vazio = await renderizar(corpo);
