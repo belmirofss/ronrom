@@ -23,7 +23,7 @@ Poucos testes, nos lugares certos:
 | Smoke E2E dos caminhos principais                   | Playwright                      | Contra o preview da Vercel e a produção      | sim (check do PR)        | #49      |
 | Acessibilidade automatizada (WCAG 2.1 AA)           | `@axe-core/playwright`          | Junto com o E2E                              | sim (serious/critical)   | #49      |
 | Performance, SEO e boas práticas                    | Lighthouse CI                   | Contra o preview da Vercel                   | sim (exceto Performance) | #60      |
-| Links externos quebrados nos posts                  | lychee contra o sitemap         | Cron semanal, abre issue                     | não                      | #62      |
+| Links externos quebrados nos posts                  | lychee contra o sitemap         | `links-externos`, toda segunda, abre issue   | não                      | #62      |
 | Dispositivos reais (iPhone/Safari, Android/Chrome)  | à mão                           | Antes do lançamento e em mudança visual      | —                        | #67      |
 | Leitor de tela (NVDA, VoiceOver, TalkBack)          | à mão                           | Auditoria (#48) e checklist de go-live (#67) | —                        | #48, #67 |
 | Revisão visual em 320, 768 e 1280px                 | à mão, prints no PR             | Em todo PR que muda algo visual              | —                        | —        |
@@ -54,7 +54,7 @@ O job `ci / links` roda o [lychee](https://lychee.cli.rs/) no HTML que o `ci / b
 - todo link absoluto para o próprio site (o canonical e o RSS, por exemplo) também, porque a `SITE_URL` é remapeada para a pasta do build;
 - toda âncora (`#conteudo`, `/sobre#autora`) existe como `id` na página de destino.
 
-Links externos ficam de fora: são checados toda semana na #62. O relatório sai no resumo da execução (Actions → a execução do `ci` → Summary).
+Links externos ficam de fora: são checados toda semana, em produção (veja [Links externos](#links-externos)). O relatório sai no resumo da execução (Actions → a execução do `ci` → Summary).
 
 **Ainda não bloqueia o merge.** O passo do lychee tem `continue-on-error: true`: com link quebrado, o check fica verde e a execução mostra um aviso. Quando o relatório estiver limpo por alguns PRs (páginas de post e RSS no ar), apague essa linha do [`ci.yml`](../.github/workflows/ci.yml) para o job passar a falhar.
 
@@ -64,6 +64,26 @@ Para rodar localmente, com o [lychee instalado](https://lychee.cli.rs/installati
 
 ```bash
 lychee --root-dir "$PWD/web/dist/client" --remap "^https://ronrom-blog\.vercel\.app(/.*)?$ file://$PWD/web/dist/client\${1}" web/dist/client
+```
+
+## Links externos
+
+O workflow [`links-externos`](../.github/workflows/links-externos.yml) roda toda segunda às 06:23 (Brasília) e pode ser rodado à mão em Actions → links-externos → Run workflow. Ele lista as páginas do sitemap de produção (`/sitemap-index.xml`) e passa ao lychee, que baixa cada uma e checa todos os links dela, externos e internos. A configuração é o [`lychee-externos.toml`](../lychee-externos.toml), com rede, tentativas repetidas e user agent de navegador.
+
+O resultado fica na issue **"Links quebrados"** (labels `area:qa` e `prioridade:media`):
+
+- **com link quebrado:** abre a issue ou, se já houver uma aberta, troca a lista e comenta. O relatório agrupa os erros pela página de origem, então dá para ir direto ao post;
+- **sem link quebrado:** fecha a issue aberta, com um comentário;
+- **erro na execução** (sitemap fora do ar, configuração inválida): o workflow falha e a issue não muda. O GitHub avisa por e-mail quem configurou o agendamento.
+
+Link quebrado de verdade se corrige no post, no Studio; a issue fecha sozinha na checagem seguinte (ou rode o workflow à mão). Não feche a issue à mão com o link ainda quebrado: a próxima execução abre outra.
+
+**Sites que bloqueiam robôs** (Instagram e Threads com 429 ou login, LinkedIn com 999, Facebook, X e TikTok) ficam nas exclusões do `lychee-externos.toml`, cada um com o motivo. Se um link aparece na issue mas abre normalmente no navegador, inclua o site lá. A resposta 429 (muitas requisições) é aceita para qualquer site, porque é limite de taxa, não link quebrado.
+
+Para rodar localmente, com o [lychee instalado](https://lychee.cli.rs/installation/), na raiz do repositório (Git Bash no Windows):
+
+```bash
+lychee --config lychee-externos.toml $(curl -fsS https://ronrom-blog.vercel.app/sitemap-0.xml | grep -o '<loc>[^<]*</loc>' | sed -e 's|<loc>||' -e 's|</loc>||')
 ```
 
 ## Como escrever um teste

@@ -63,6 +63,8 @@ O [`studio.yml`](.github/workflows/studio.yml) publica o Studio em `ronrom.sanit
 
 O [`rebuild-diario.yml`](.github/workflows/rebuild-diario.yml) chama o deploy hook da Vercel todo dia às 04:17 (Brasília) e pode ser rodado à mão em Actions → rebuild-diario → Run workflow. Ele precisa do secret `VERCEL_DEPLOY_HOOK_URL` (veja o [deploy](docs/deploy.md#conteúdo-rebuild-ao-publicar)).
 
+O [`links-externos.yml`](.github/workflows/links-externos.yml) checa toda segunda os links do site em produção, incluindo os externos dos posts, e mantém a issue "Links quebrados" com o que estiver quebrado (veja os [testes](docs/testes.md#links-externos)).
+
 ## Pull requests
 
 - Um PR por issue, com `Closes #<numero>` na descrição para fechar a issue no merge.
