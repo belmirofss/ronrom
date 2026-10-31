@@ -94,10 +94,11 @@ const grupos = [
     list-style: none;
   }
 
-  /* Cada link ocupa 44px de altura, o alvo de toque mínimo. */
+  /* Cada link ocupa pelo menos 44 × 44px, o alvo de toque mínimo ("Início" é mais estreito). */
   .rodape__links a {
     display: inline-flex;
     align-items: center;
+    min-width: 44px;
     min-height: 44px;
   }
 

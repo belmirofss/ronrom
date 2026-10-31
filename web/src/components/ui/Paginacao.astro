@@ -115,6 +115,13 @@ const proxima = atual < total ? urlDaPagina(base, atual + 1) : undefined;
     color: var(--cor-creme);
   }
 
+  /* No alto contraste do Windows o fundo vinho some: a página atual ganha uma borda. */
+  @media (forced-colors: active) {
+    .paginacao__link[aria-current='page'] {
+      border: 2px solid CanvasText;
+    }
+  }
+
   .paginacao__link[aria-current='page']:hover {
     background-color: var(--cor-vinho-hover);
     color: var(--cor-creme);
