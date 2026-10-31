@@ -122,10 +122,12 @@ O [`<Seo>`](src/components/seo/Seo.astro) concentra o `<head>` de todas as pági
 | `noindex`                       | `noindex,follow` no lugar do padrão `index,follow,max-image-preview:large`                                                  |
 | `publishedTime`, `modifiedTime` | Datas ISO 8601 do post (`dataDePublicacao` e `_updatedAt`)                                                                  |
 | `tags`, `section`               | Nomes das tags e da categoria (review) ou do formato (pensamento)                                                           |
+| `prev`, `next`                  | Caminhos das páginas vizinhas de uma listagem paginada; viram `<link rel="prev">` e `<link rel="next">` absolutos           |
 
 Regras:
 
 - **Post:** a página do post (#42) monta as props com o `seoDoPost(post, urlDoPost(post))`, de [`src/lib/seo.ts`](src/lib/seo.ts). O título é o `seo.titulo` ou o título do post; a description é a `seo.descricao`, depois o subtítulo, depois os primeiros ~155 caracteres do texto, sem quebrar palavra; a imagem é a `seo.imagem` ou a capa.
+- **Listagem:** canonical, `prev` e `next` vêm do `seoDaPaginacao(base, pagina, paginas)`, de [`src/lib/listagem.ts`](src/lib/listagem.ts); o título da página 2 em diante termina em " — página N" (veja [Listagens](#listagens)).
 - **Imagem de compartilhamento:** o `ogImage(imagem)` ([`src/lib/sanity/imagem.ts`](src/lib/sanity/imagem.ts)) pede ao CDN do Sanity um JPG de 1200×630 recortado no hotspot (JPG porque alguns crawlers não aceitam WebP nem AVIF). O `og:title` e o `twitter:title` vão sem o " · Ronrom", que já aparece no `og:site_name`.
 - **Título longo:** acima de 65 caracteres (com o " · Ronrom"), o build mostra um aviso `[seo]` com a página. Não quebra o build: a autora encurta pelo "Título para o Google" do post.
 - **Prévia de link:** depois do deploy, confira a URL no [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/), no [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) e mandando o link no WhatsApp.
@@ -192,6 +194,15 @@ Regras:
 ### Vitrine
 
 Com o `pnpm dev` rodando, http://localhost:4321/vitrine/corpo mostra o [texto do post](#texto-do-post-portable-text) com todos os blocos, e http://localhost:4321/vitrine mostra todos os estados desses componentes: as 10 notas, os 3 tamanhos, os chips nos dois tons (link, estático e sobre a miniatura), trilhas de review, pensamento, categoria e formato, a paginação na primeira, no meio e na última página, os cards de post com o conteúdo do Sanity (ou das fixtures), inclusive título e categoria longos e pensamento sem subtítulo em 320px, o estado vazio, a frase da semana (com e sem autoria, longa e vazia) e a barra lateral com o conteúdo das fixtures. A página ([`src/vitrine/Componentes.astro`](src/vitrine/Componentes.astro)) fica fora de `src/pages`: uma integração no `astro.config.mjs` injeta a rota só no `astro dev`, então ela não existe no build. Componente novo em `ui/` entra na vitrine no mesmo PR.
+
+## Listagens
+
+As listagens paginadas (#46) ficam em `src/pages`: `/posts`, `/reviews`, `/reviews/[categoria]`, `/pensamentos`, `/pensamentos/[formato]` e `/tags/[tag]`, cada uma com um `index.astro` (a página 1) e um `pagina/[n].astro` (da 2 em diante). As páginas só buscam os dados em `@/lib/sanity/conteudo` e passam para a [`Listagem.astro`](src/components/listagem/Listagem.astro), que desenha trilha, h1, descrição do CMS (quando há), total de posts, os `ItemDeLista` com a `Paginacao` e a barra lateral à direita no desktop. Sem post, mostra o `EstadoVazio`, com link para `/posts`.
+
+- **Páginas geradas:** o `getStaticPaths` de cada `pagina/[n].astro` parte do total de posts (da consulta da listagem ou das contagens do `buscarTaxonomia`) e gera só da 2 até a última (`paginasExtras(totalDePaginas(total))`, de [`src/lib/listagem.ts`](src/lib/listagem.ts)). `/pagina/1` e páginas além da última não existem. São 12 posts por página (`POSTS_POR_PAGINA`).
+- **Quais categorias, formatos e tags:** toda categoria e todo formato publicados, mesmo sem post (é o que a barra lateral lista); tag só com post, porque não há índice de tags.
+- **Textos:** o h1 é "Todos os posts", "Reviews", "Pensamentos", "Reviews de {categoria}", o nome do formato ou "#{tag}" (`TEXTOS_DAS_SECOES`, `textosDaCategoria`, `textosDoFormato` e `textosDaTag`). Da página 2 em diante, o título e o h1 terminam em " — página N" e a trilha ganha o item "Página N".
+- **Fixtures:** os 10 posts cabem numa página. Para ver a paginação em local, baixe o `POSTS_POR_PAGINA` temporariamente (com 2, saem `/posts/pagina/2` a `/posts/pagina/5`).
 
 ## Imagens, datas e tempo de leitura
 

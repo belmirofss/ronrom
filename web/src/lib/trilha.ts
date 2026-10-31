@@ -1,5 +1,13 @@
+import { tituloDaTag } from '@/lib/listagem';
 import { SECOES, type LinkDeNavegacao } from '@/lib/navegacao';
-import { urlDaCategoria, urlDoFormato, urlDoPost, type PostComRota } from '@/lib/rotas';
+import {
+  urlDaCategoria,
+  urlDaPagina,
+  urlDaTag,
+  urlDoFormato,
+  urlDoPost,
+  type PostComRota,
+} from '@/lib/rotas';
 
 // Os itens da trilha de navegação (breadcrumb). O `Breadcrumb.astro` desenha a trilha e o
 // BreadcrumbList do JSON-LD (#50) usa os mesmos itens, com `canonicalUrl(href)` em cada um, para
@@ -23,6 +31,24 @@ function secaoDoCabecalho(href: string): ItemDaTrilha {
 function nomeDa(secao: Secao, onde: string): string {
   if (!secao.nome) throw new Error(`Nome ausente em ${onde} (slug "${secao.slug}").`);
   return secao.nome;
+}
+
+/** Início › Todos os posts (/posts, que não está no cabeçalho). */
+export function trilhaDeTodosOsPosts(): ItemDaTrilha[] {
+  return [secaoDoCabecalho('/'), { rotulo: 'Todos os posts', href: '/posts' }];
+}
+
+/** Início › Reviews ou Início › Pensamentos */
+export function trilhaDoTipo(tipo: 'review' | 'pensamento'): ItemDaTrilha[] {
+  return [secaoDoCabecalho('/'), secaoDoCabecalho(tipo === 'review' ? '/reviews' : '/pensamentos')];
+}
+
+/** Início › #{tag}. Não existe índice de tags (docs/seo-urls.md), então a tag vem logo depois. */
+export function trilhaDaTag(tag: Secao): ItemDaTrilha[] {
+  return [
+    secaoDoCabecalho('/'),
+    { rotulo: tituloDaTag(nomeDa(tag, 'trilhaDaTag')), href: urlDaTag(tag.slug ?? '') },
+  ];
 }
 
 /** Início › Reviews › {categoria} */
@@ -62,4 +88,16 @@ export function trilhaDoPost(
       ? trilhaDaCategoria(post.categoria ?? {})
       : trilhaDoFormato(post.formato ?? {});
   return [...secao, { rotulo: post.titulo, href }];
+}
+
+/**
+ * A trilha da página `n` de uma listagem: a da página 1 e, da 2 em diante, "Página n" no fim. O
+ * último item da trilha é sempre a página aberta.
+ */
+export function trilhaDaPagina(trilha: readonly ItemDaTrilha[], n: number): ItemDaTrilha[] {
+  const listagem = trilha.at(-1);
+  if (!listagem) throw new Error('Trilha vazia em trilhaDaPagina.');
+  return n > 1
+    ? [...trilha, { rotulo: `Página ${n}`, href: urlDaPagina(listagem.href, n) }]
+    : [...trilha];
 }

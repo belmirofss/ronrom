@@ -1,0 +1,28 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Listagem from '@/components/listagem/Listagem.astro';
+import { textosDaTag } from '@/lib/listagem';
+import { urlDaTag } from '@/lib/rotas';
+import { buscarPostsDaTag, buscarTaxonomia } from '@/lib/sanity/conteudo';
+import { trilhaDaTag } from '@/lib/trilha';
+
+// Só as tags com post (a taxonomia já filtra): não há índice de tags que leve a uma vazia. Se a
+// contagem e a listagem divergirem, a página mostra o estado vazio em vez de quebrar.
+export const getStaticPaths = (async () => {
+  const taxonomia = await buscarTaxonomia();
+  return (taxonomia?.tags ?? []).map(({ slug }) => ({ params: { tag: slug } }));
+}) satisfies GetStaticPaths;
+
+const { tag: slug } = Astro.params;
+const { tag, posts, total } = await buscarPostsDaTag(slug);
+if (!tag) throw new Error(`Tag "${slug}" não encontrada na listagem.`);
+---
+
+<Listagem
+  {...textosDaTag(tag)}
+  trilha={trilhaDaTag(tag)}
+  base={urlDaTag(slug)}
+  pagina={1}
+  posts={posts}
+  total={total}
+/>

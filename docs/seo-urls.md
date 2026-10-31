@@ -81,7 +81,7 @@ Os nomes de arquivo são a sugestão para as issues de cada página; o que não 
 - Listagens paginadas: `/posts`, `/reviews`, `/reviews/[categoria]`, `/pensamentos`, `/pensamentos/[formato]` e `/tags/[tag]`, com 12 itens por página (#1).
 - A página 1 é a própria listagem. A página 2 em diante fica em `{listagem}/pagina/[n]`, por exemplo `/reviews/filmes/pagina/2` e `/tags/cafe/pagina/3`.
 - `/pagina/1`, `/pagina/0` e páginas além da última não são geradas e dão 404 (critério da #46).
-- Cada página tem canonical para ela mesma e fica indexável (#52); `prev`/`next` saem da camada de dados da listagem.
+- Cada página tem canonical para ela mesma e fica indexável (#52); `canonical`, `prev` e `next` saem do `seoDaPaginacao` ([`web/src/lib/listagem.ts`](../web/src/lib/listagem.ts)) e viram `<link rel="prev">` e `<link rel="next">` no `<Seo>`.
 
 ### Busca
 

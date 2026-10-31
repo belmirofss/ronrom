@@ -10,6 +10,9 @@ export type Metadados = {
   description: string;
   // Caminho da página (`/sobre`); o <Seo> monta a URL absoluta com o `canonicalUrl`.
   canonical: string;
+  // Páginas vizinhas de uma listagem paginada (`seoDaPaginacao`, de @/lib/listagem), em caminho.
+  prev?: string | undefined;
+  next?: string | undefined;
   // Imagem do Sanity; sem ela (ou com o asset apagado), vale a imagem padrão do site.
   image?: ImagemDoSanity | null | undefined;
   imageAlt?: string | undefined;

@@ -1,0 +1,28 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Listagem from '@/components/listagem/Listagem.astro';
+import { textosDaCategoria } from '@/lib/listagem';
+import { urlDaCategoria } from '@/lib/rotas';
+import { buscarPostsDaCategoria, buscarTaxonomia } from '@/lib/sanity/conteudo';
+import { trilhaDaCategoria } from '@/lib/trilha';
+
+// Toda categoria publicada, com post ou não: a barra lateral lista todas, e a sem post mostra o
+// estado vazio.
+export const getStaticPaths = (async () => {
+  const taxonomia = await buscarTaxonomia();
+  return (taxonomia?.categorias ?? []).map(({ slug }) => ({ params: { categoria: slug } }));
+}) satisfies GetStaticPaths;
+
+const { categoria: slug } = Astro.params;
+const { categoria, posts, total } = await buscarPostsDaCategoria(slug);
+if (!categoria) throw new Error(`Categoria "${slug}" não encontrada na listagem.`);
+---
+
+<Listagem
+  {...textosDaCategoria(categoria)}
+  trilha={trilhaDaCategoria(categoria)}
+  base={urlDaCategoria(slug)}
+  pagina={1}
+  posts={posts}
+  total={total}
+/>

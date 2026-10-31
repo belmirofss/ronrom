@@ -1,0 +1,17 @@
+---
+import Listagem from '@/components/listagem/Listagem.astro';
+import { TEXTOS_DAS_SECOES } from '@/lib/listagem';
+import { buscarPostsDoTipo } from '@/lib/sanity/conteudo';
+import { trilhaDoTipo } from '@/lib/trilha';
+
+const { posts, total } = await buscarPostsDoTipo('review');
+---
+
+<Listagem
+  {...TEXTOS_DAS_SECOES.review}
+  trilha={trilhaDoTipo('review')}
+  base="/reviews"
+  pagina={1}
+  posts={posts}
+  total={total}
+/>

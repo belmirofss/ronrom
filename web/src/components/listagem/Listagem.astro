@@ -1,0 +1,130 @@
+---
+import BarraLateral from '@/components/barra-lateral/BarraLateral.astro';
+import ItemDeLista from '@/components/post/ItemDeLista.astro';
+import Breadcrumb from '@/components/ui/Breadcrumb.astro';
+import EstadoVazio from '@/components/ui/EstadoVazio.astro';
+import Paginacao from '@/components/ui/Paginacao.astro';
+import LayoutComBarraLateral from '@/layouts/LayoutComBarraLateral.astro';
+import { rotuloDoTotal } from '@/lib/barra-lateral';
+import type { CardComLeitura } from '@/lib/card';
+import { seoDaPaginacao, tituloComPagina } from '@/lib/listagem';
+import { totalDePaginas } from '@/lib/sanity/conteudo';
+import { trilhaDaPagina, type ItemDaTrilha } from '@/lib/trilha';
+
+// Uma página de listagem paginada (#46): trilha, h1, descrição e total no topo, os posts com a
+// paginação embaixo e a barra lateral à direita no desktop. As páginas em src/pages só buscam os
+// dados e escolhem os textos.
+
+interface Props {
+  /** O h1 da listagem, sem a página: "Reviews de filmes", "Frases soltas", "#café". */
+  titulo: string;
+  /** A descrição da categoria ou do formato no CMS; sem ela, o topo fica só com o total. */
+  descricao?: string | null | undefined;
+  /** Description da página para o <Seo> quando não há `descricao`. */
+  descricaoPadrao: string;
+  /** A trilha da página 1, terminando na própria listagem (@/lib/trilha). */
+  trilha: readonly ItemDaTrilha[];
+  /** A URL da página 1 da listagem (`urlDaCategoria('filmes')`, `/posts`...). */
+  base: string;
+  /** A página aberta, a partir de 1. */
+  pagina: number;
+  /** Os posts desta página e o total de posts da listagem, como a consulta devolve. */
+  posts: readonly CardComLeitura[];
+  total: number;
+  /** O que falta, no estado vazio. */
+  mensagemVazia?: string | undefined;
+}
+
+const { titulo, descricao, descricaoPadrao, trilha, base, pagina, posts, total, mensagemVazia } =
+  Astro.props;
+
+const paginas = totalDePaginas(total);
+const textoDaDescricao = descricao?.trim();
+---
+
+<LayoutComBarraLateral
+  seo={{
+    ...seoDaPaginacao(base, pagina, paginas),
+    title: tituloComPagina(titulo, pagina),
+    description: textoDaDescricao || descricaoPadrao,
+  }}
+>
+  <div class="listagem">
+    <header class="listagem__topo">
+      <Breadcrumb itens={trilhaDaPagina(trilha, pagina)} />
+      <h1 class="listagem__titulo">
+        {titulo}
+        {pagina > 1 && <span class="listagem__pagina">{` — página ${pagina}`}</span>}
+      </h1>
+      {textoDaDescricao && <p class="listagem__descricao">{textoDaDescricao}</p>}
+      <p class="listagem__total">{rotuloDoTotal(total)}</p>
+    </header>
+
+    {posts.length > 0 ? (
+      <>
+        <ul class="listagem__posts">
+          {posts.map((post) => (
+            <li>
+              <ItemDeLista post={post} />
+            </li>
+          ))}
+        </ul>
+        <Paginacao base={base} atual={pagina} total={paginas} />
+      </>
+    ) : (
+      <EstadoVazio {...(mensagemVazia ? { mensagem: mensagemVazia } : {})} />
+    )}
+  </div>
+
+  <BarraLateral slot="barra-lateral" />
+</LayoutComBarraLateral>
+
+<style>
+  .listagem {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-7);
+  }
+
+  .listagem__topo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-3);
+  }
+
+  .listagem__titulo {
+    font-size: var(--texto-3xl);
+  }
+
+  .listagem__pagina {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-xl);
+    font-weight: var(--peso-regular);
+  }
+
+  .listagem__descricao {
+    max-width: var(--coluna-leitura);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-lg);
+  }
+
+  /* "nenhum post" vem em minúsculas do rotuloDoTotal, feito para o meio da frase. */
+  .listagem__total {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+    font-weight: var(--peso-medio);
+  }
+
+  .listagem__total::first-letter {
+    text-transform: uppercase;
+  }
+
+  .listagem__posts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-7);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

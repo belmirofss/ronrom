@@ -1,0 +1,30 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import Listagem from '@/components/listagem/Listagem.astro';
+import { paginasExtras, TEXTOS_DAS_SECOES } from '@/lib/listagem';
+import { buscarUltimos, totalDePaginas } from '@/lib/sanity/conteudo';
+import { trilhaDeTodosOsPosts } from '@/lib/trilha';
+
+// Da página 2 em diante: a 1 é a própria /posts (docs/seo-urls.md#paginação).
+export const getStaticPaths = (async () => {
+  const { total } = await buscarUltimos();
+  return paginasExtras(totalDePaginas(total)).map((pagina) => ({
+    params: { n: String(pagina) },
+    props: { pagina },
+  }));
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { pagina } = Astro.props;
+const { posts, total } = await buscarUltimos(pagina);
+---
+
+<Listagem
+  {...TEXTOS_DAS_SECOES.posts}
+  trilha={trilhaDeTodosOsPosts()}
+  base="/posts"
+  pagina={pagina}
+  posts={posts}
+  total={total}
+/>
