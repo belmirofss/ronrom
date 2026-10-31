@@ -16,11 +16,11 @@ O `site` do [`astro.config.mjs`](../web/astro.config.mjs) vem da variável `SITE
 
 1. `SITE_URL`, quando definida (obrigatória em produção);
 2. nos previews da Vercel, `https://` + `VERCEL_URL` (a URL do próprio deploy);
-3. no resto (local e CI), `https://ronrom-blog.vercel.app`, o domínio de lançamento (#1, #10).
+3. no resto (local e CI), `https://ronrom.blog`, o domínio próprio (#63).
 
 Onde cada valor é cadastrado: [`docs/ambientes.md`](ambientes.md#variáveis-de-ambiente). O domínio padrão aparece só no `astro.config.mjs` e no `web/.env.example`; qualquer outro lugar que precise da URL base usa `URL_DO_SITE` ou `canonicalUrl`.
 
-**Troca para `ronrom.com.br` (#63):** mudar `SITE_URL` em Production na Vercel e redeployar já atualiza canonical, sitemap, RSS e JSON-LD. O domínio antigo passa a redirecionar para o novo (308, em Settings → Domains), e o Search Console recebe a mudança de endereço (#64). Os caminhos não mudam.
+**Domínio próprio (#63):** o site foi lançado em `ronrom-blog.vercel.app` e passou para `ronrom.blog`. A `SITE_URL` de Production aponta para ele, o que atualiza canonical, sitemap, RSS e JSON-LD. O domínio antigo redireciona com 308 para o novo, preservando o caminho (regra de host no `web/vercel.json`), e o Search Console recebe a mudança de endereço (#64). Os caminhos não mudaram.
 
 ## Barra no final e formato do build
 
@@ -42,7 +42,7 @@ Consequências:
 Para conferir num deploy (preview logado no navegador ou produção):
 
 ```bash
-curl -sI https://ronrom-blog.vercel.app/sobre/
+curl -sI https://ronrom.blog/sobre/
 ```
 
 A resposta esperada é `308` com `location: /sobre`.
@@ -117,7 +117,7 @@ Quem decide é o `VERCEL_ENV` do build (variável de sistema da Vercel, lida pel
 
 - O `/robots.txt` sai do endpoint prerenderizado [`robots.txt.ts`](../web/src/pages/robots.txt.ts) (`robotsTxt`); a meta, do `<Seo>` (`robotsDaPagina`).
 - **Previews da Vercel:** além disso, ficam atrás do Vercel Authentication, e a Vercel responde com `X-Robots-Tag: noindex` (conferido em 31/10/2026 num preview da #45, com `curl -sI`). Produção não recebe o cabeçalho. O `vercel.json` não precisa tratar isso.
-- **Domínio antigo:** depois da troca para `ronrom.com.br` (#63), `ronrom-blog.vercel.app` redireciona com 308 e deixa de servir páginas; sitemap e canonical seguem a `SITE_URL`.
+- **Domínio antigo:** depois da troca para `ronrom.blog` (#63), `ronrom-blog.vercel.app` redireciona com 308 e deixa de servir páginas; sitemap e canonical seguem a `SITE_URL`.
 - **Todas as listagens são indexáveis** (decidido na #1), inclusive categorias com poucos posts e o formato de frases curtas. Cada página da paginação tem canonical para ela mesma e não leva `noindex` ([Paginação](#paginação)).
 
 ### Sitemap
@@ -148,11 +148,11 @@ Quem decide é o `VERCEL_ENV` do build (variável de sistema da Vercel, lida pel
 Para conferir num deploy de produção:
 
 ```bash
-curl -s https://ronrom-blog.vercel.app/robots.txt
+curl -s https://ronrom.blog/robots.txt
 ```
 
 ```bash
-curl -s https://ronrom-blog.vercel.app/sitemap-0.xml
+curl -s https://ronrom.blog/sitemap-0.xml
 ```
 
 ## Slugs
@@ -267,21 +267,21 @@ O ESLint recusa, fora do `rotas.ts`, template literal ou concatenação que come
 
 ### Exemplos (viram casos de teste)
 
-Com `SITE_URL=https://ronrom-blog.vercel.app`:
+Com `SITE_URL=https://ronrom.blog`:
 
-| Chamada                                                                                | Resultado                                                      |
-| -------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `urlDoPost({ tipo: 'review', slug: 'dias-perfeitos', categoria: { slug: 'filmes' } })` | `/reviews/filmes/dias-perfeitos`                               |
-| `urlDoPost({ tipo: 'pensamento', slug: 'sobre-gatos', formato: { slug: 'frases' } })`  | `/pensamentos/frases/sobre-gatos`                              |
-| `urlDoPost({ tipo: 'review', slug: 'x' })` (sem categoria)                             | erro                                                           |
-| `urlDaCategoria('restaurantes-e-cafes')`                                               | `/reviews/restaurantes-e-cafes`                                |
-| `urlDaPagina('/reviews/filmes', 1)`                                                    | `/reviews/filmes`                                              |
-| `urlDaPagina('/reviews/filmes', 2)`                                                    | `/reviews/filmes/pagina/2`                                     |
-| `urlDaPagina('/posts', 0)`                                                             | erro                                                           |
-| `canonicalUrl('/')`                                                                    | `https://ronrom-blog.vercel.app/`                              |
-| `canonicalUrl('/reviews/filmes/dias-perfeitos/')`                                      | `https://ronrom-blog.vercel.app/reviews/filmes/dias-perfeitos` |
-| `canonicalUrl('/busca?q=cafe')`                                                        | `https://ronrom-blog.vercel.app/busca`                         |
-| `canonicalUrl('https://outro.site/x')`                                                 | erro                                                           |
+| Chamada                                                                                | Resultado                                           |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `urlDoPost({ tipo: 'review', slug: 'dias-perfeitos', categoria: { slug: 'filmes' } })` | `/reviews/filmes/dias-perfeitos`                    |
+| `urlDoPost({ tipo: 'pensamento', slug: 'sobre-gatos', formato: { slug: 'frases' } })`  | `/pensamentos/frases/sobre-gatos`                   |
+| `urlDoPost({ tipo: 'review', slug: 'x' })` (sem categoria)                             | erro                                                |
+| `urlDaCategoria('restaurantes-e-cafes')`                                               | `/reviews/restaurantes-e-cafes`                     |
+| `urlDaPagina('/reviews/filmes', 1)`                                                    | `/reviews/filmes`                                   |
+| `urlDaPagina('/reviews/filmes', 2)`                                                    | `/reviews/filmes/pagina/2`                          |
+| `urlDaPagina('/posts', 0)`                                                             | erro                                                |
+| `canonicalUrl('/')`                                                                    | `https://ronrom.blog/`                              |
+| `canonicalUrl('/reviews/filmes/dias-perfeitos/')`                                      | `https://ronrom.blog/reviews/filmes/dias-perfeitos` |
+| `canonicalUrl('/busca?q=cafe')`                                                        | `https://ronrom.blog/busca`                         |
+| `canonicalUrl('https://outro.site/x')`                                                 | erro                                                |
 
 ## Campos do Sanity usados pela área de SEO
 

@@ -10,13 +10,13 @@ describe('configurarUmami', () => {
         websiteId: ID,
         ambiente: 'production',
         previa: false,
-        urlDoSite: 'https://ronrom-blog.vercel.app',
+        urlDoSite: 'https://ronrom.blog',
       }),
-    ).toEqual({ websiteId: ID, dominio: 'ronrom-blog.vercel.app' });
+    ).toEqual({ websiteId: ID, dominio: 'ronrom.blog' });
   });
 
   it('não liga fora de produção, na prévia nem sem o website-id', () => {
-    const urlDoSite = 'https://ronrom-blog.vercel.app';
+    const urlDoSite = 'https://ronrom.blog';
 
     expect(
       configurarUmami({ websiteId: ID, ambiente: 'preview', previa: false, urlDoSite }),

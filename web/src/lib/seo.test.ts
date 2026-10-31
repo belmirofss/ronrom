@@ -9,7 +9,7 @@ import {
   seoDoPost,
 } from '@/lib/seo';
 
-vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
+vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom.blog' }));
 
 const URL_DO_ASSET = 'https://cdn.sanity.io/images/abc123/production/f00-2400x1600.jpg';
 
@@ -157,7 +157,7 @@ describe('ogImage', () => {
 describe('imagemDeCompartilhamento', () => {
   it('usa a imagem padrão do site sem imagem', () => {
     expect(imagemDeCompartilhamento(undefined, undefined, 'Sobre')).toEqual({
-      url: 'https://ronrom-blog.vercel.app/og-padrao.jpg',
+      url: 'https://ronrom.blog/og-padrao.jpg',
       largura: 1200,
       altura: 630,
       alt: expect.stringContaining('gato'),
@@ -184,7 +184,7 @@ describe('robotsDaPagina', () => {
 });
 
 describe('robotsTxt', () => {
-  const sitemap = 'https://ronrom-blog.vercel.app/sitemap-index.xml';
+  const sitemap = 'https://ronrom.blog/sitemap-index.xml';
 
   it('em produção, libera tudo e aponta o sitemap', () => {
     expect(robotsTxt(true, sitemap)).toBe(`User-agent: *\nAllow: /\n\nSitemap: ${sitemap}\n`);

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import Seo from '@/components/seo/Seo.astro';
 import type { Metadados } from '@/lib/seo';
 
-vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
+vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom.blog' }));
 // Como no build de produção: fora dele, toda página sai com noindex,nofollow (robotsDaPagina,
 // testado em seo.test.ts).
 vi.mock('astro:env/server', async (original) => ({
@@ -38,8 +38,8 @@ describe('<Seo>', () => {
       expect(contar(html, trecho), trecho).toBe(1);
     }
     expect(html).toContain('<title>Sobre · Ronrom</title>');
-    expect(html).toContain('<link rel="canonical" href="https://ronrom-blog.vercel.app/sobre">');
-    expect(html).toContain('content="https://ronrom-blog.vercel.app/og-padrao.jpg"');
+    expect(html).toContain('<link rel="canonical" href="https://ronrom.blog/sobre">');
+    expect(html).toContain('content="https://ronrom.blog/og-padrao.jpg"');
     expect(html).toContain('content="index,follow,max-image-preview:large"');
   });
 
@@ -83,10 +83,8 @@ describe('<Seo>', () => {
       next: '/reviews/pagina/3',
     });
 
-    expect(pagina2).toContain('<link rel="prev" href="https://ronrom-blog.vercel.app/reviews">');
-    expect(pagina2).toContain(
-      '<link rel="next" href="https://ronrom-blog.vercel.app/reviews/pagina/3">',
-    );
+    expect(pagina2).toContain('<link rel="prev" href="https://ronrom.blog/reviews">');
+    expect(pagina2).toContain('<link rel="next" href="https://ronrom.blog/reviews/pagina/3">');
     expect(await renderizar({ description: 'Sobre.', canonical: '/sobre' })).not.toMatch(
       /rel="(prev|next)"/,
     );

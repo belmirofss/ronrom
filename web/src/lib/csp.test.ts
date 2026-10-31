@@ -6,22 +6,22 @@ describe('lerRelatorioDaCsp', () => {
   it('lê o formato do report-uri (Firefox e Safari)', () => {
     const corpo = JSON.stringify({
       'csp-report': {
-        'document-uri': 'https://ronrom-blog.vercel.app/sobre',
+        'document-uri': 'https://ronrom.blog/sobre',
         'blocked-uri': 'https://exemplo.com/x.js',
         'violated-directive': 'script-src-elem',
         'effective-directive': 'script-src-elem',
         disposition: 'report',
-        'source-file': 'https://ronrom-blog.vercel.app/_astro/a.js',
+        'source-file': 'https://ronrom.blog/_astro/a.js',
         'line-number': 3,
       },
     });
     expect(lerRelatorioDaCsp(corpo)).toEqual([
       {
-        pagina: 'https://ronrom-blog.vercel.app/sobre',
+        pagina: 'https://ronrom.blog/sobre',
         bloqueado: 'https://exemplo.com/x.js',
         diretiva: 'script-src-elem',
         modo: 'report',
-        arquivo: 'https://ronrom-blog.vercel.app/_astro/a.js',
+        arquivo: 'https://ronrom.blog/_astro/a.js',
         linha: 3,
       },
     ]);
@@ -32,7 +32,7 @@ describe('lerRelatorioDaCsp', () => {
       {
         type: 'csp-violation',
         body: {
-          documentURL: 'https://ronrom-blog.vercel.app/',
+          documentURL: 'https://ronrom.blog/',
           blockedURL: 'inline',
           effectiveDirective: 'script-src-elem',
           disposition: 'report',
@@ -42,7 +42,7 @@ describe('lerRelatorioDaCsp', () => {
     ]);
     expect(lerRelatorioDaCsp(corpo)).toEqual([
       {
-        pagina: 'https://ronrom-blog.vercel.app/',
+        pagina: 'https://ronrom.blog/',
         bloqueado: 'inline',
         diretiva: 'script-src-elem',
         modo: 'report',
@@ -111,9 +111,10 @@ describe('CSP do vercel.json', () => {
   it('a regra de produção casa com os domínios de produção e não com os previews', () => {
     const host = new RegExp(producao?.regra.has?.[0]?.value ?? '$^');
     expect(host.test('ronrom-blog.vercel.app')).toBe(true);
-    expect(host.test('ronrom.com.br')).toBe(true);
-    expect(host.test('www.ronrom.com.br')).toBe(true);
+    expect(host.test('ronrom.blog')).toBe(true);
+    expect(host.test('www.ronrom.blog')).toBe(true);
     expect(host.test('ronrom-blog-git-feat-x-belmirofss.vercel.app')).toBe(false);
     expect(host.test('ronrom-blog.vercel.app.exemplo.com')).toBe(false);
+    expect(host.test('ronrom.blog.exemplo.com')).toBe(false);
   });
 });

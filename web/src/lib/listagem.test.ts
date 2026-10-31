@@ -7,7 +7,7 @@ import {
   tituloComPagina,
 } from '@/lib/listagem';
 
-vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
+vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom.blog' }));
 
 describe('paginasExtras', () => {
   it('gera da página 2 até a última, nunca a 1', () => {

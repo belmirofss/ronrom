@@ -12,7 +12,7 @@ vi.mock('astro:env/server', () => ({
   STUDIO_URL: 'https://ronrom.sanity.studio',
   PUBLIC_SANITY_VISUAL_EDITING_ENABLED: false,
 }));
-vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
+vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom.blog' }));
 
 // O documento preenchido, como nas fixtures: com nome, bio, foto e texto.
 type Sobre = Extract<NonNullable<CONSULTA_DO_SOBRE_RESULT>, { bio: string }>;

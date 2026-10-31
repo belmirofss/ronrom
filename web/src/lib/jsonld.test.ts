@@ -26,9 +26,9 @@ vi.mock('astro:env/server', () => ({
   // Lido pelo robotsDaPagina (seo.ts, #52); o JSON-LD não depende dele.
   VERCEL_ENV: undefined,
 }));
-vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
+vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom.blog' }));
 
-const SITE = 'https://ronrom-blog.vercel.app';
+const SITE = 'https://ronrom.blog';
 
 // Os documentos de verdade das fixtures, pelas mesmas funções das páginas.
 async function buscarPost(tipo: 'review' | 'pensamento', secao: string, slug: string) {
@@ -165,9 +165,9 @@ describe('grafoDaPagina', () => {
 
     expect(tipos(grafo)).toEqual(['WebSite', 'Person', 'CollectionPage', 'BreadcrumbList']);
     expect(grafo['@graph'][2]).toMatchObject({
-      '@id': 'https://ronrom-blog.vercel.app/reviews/filmes/pagina/2',
+      '@id': 'https://ronrom.blog/reviews/filmes/pagina/2',
       name: 'Reviews de filmes — página 2',
-      breadcrumb: { '@id': 'https://ronrom-blog.vercel.app/reviews/filmes/pagina/2#trilha' },
+      breadcrumb: { '@id': 'https://ronrom.blog/reviews/filmes/pagina/2#trilha' },
     });
   });
 });
@@ -175,8 +175,7 @@ describe('grafoDaPagina', () => {
 describe('blogPosting', () => {
   it('preenche os campos do artigo, com as datas no fuso de Brasília', async () => {
     const post = await buscarPost('pensamento', 'textos', 'por-que-eu-anoto-tudo-num-caderno');
-    const url =
-      'https://ronrom-blog.vercel.app/pensamentos/textos/por-que-eu-anoto-tudo-num-caderno';
+    const url = 'https://ronrom.blog/pensamentos/textos/por-que-eu-anoto-tudo-num-caderno';
 
     expect(blogPosting(post, true)).toMatchObject({
       '@type': 'BlogPosting',
@@ -398,7 +397,7 @@ describe('itemAvaliado', () => {
 describe('review', () => {
   it('preenche a Review com a autora, as datas e o item avaliado, sem AggregateRating', async () => {
     const post = await buscarPost('review', 'filmes', 'dias-perfeitos');
-    const url = 'https://ronrom-blog.vercel.app/reviews/filmes/dias-perfeitos';
+    const url = 'https://ronrom.blog/reviews/filmes/dias-perfeitos';
     const entidade = review(post);
 
     expect(entidade).toMatchObject({
@@ -453,7 +452,7 @@ describe('breadcrumbList', () => {
 
     expect(breadcrumbList(trilha)).toEqual({
       '@type': 'BreadcrumbList',
-      '@id': 'https://ronrom-blog.vercel.app/reviews/filmes/dias-perfeitos#trilha',
+      '@id': 'https://ronrom.blog/reviews/filmes/dias-perfeitos#trilha',
       itemListElement: trilha.map(({ rotulo, href }, i) => ({
         '@type': 'ListItem',
         position: i + 1,

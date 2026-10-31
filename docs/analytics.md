@@ -27,7 +27,7 @@ O [`Umami.astro`](../web/src/components/layout/Umami.astro) fica no `<head>` do 
   defer
   src="https://cloud.umami.is/script.js"
   data-website-id="…"
-  data-domains="ronrom-blog.vercel.app"
+  data-domains="ronrom.blog"
   data-do-not-track="true"
   data-exclude-search="true"
   data-exclude-hash="true"
@@ -66,7 +66,7 @@ Na `/busca`, o evento `busca` só sai 1 s depois do último resultado, então di
 
 ## Configurar o Umami (dono do repositório)
 
-1. Crie a conta em [cloud.umami.is](https://cloud.umami.is) no plano Hobby e adicione o site com o domínio de produção (`ronrom-blog.vercel.app`; troque pelo da #63 quando ele entrar).
+1. Crie a conta em [cloud.umami.is](https://cloud.umami.is) no plano Hobby e adicione o site com o domínio de produção (`ronrom.blog`, da #63).
 2. Copie o **Website ID** (em Settings → Websites → Edit).
 3. Na Vercel, projeto `ronrom` → **Settings → Environment Variables**, cadastre `PUBLIC_UMAMI_ID` só em **Production**. Não é segredo: o valor aparece no HTML.
 4. Faça um redeploy da produção.

@@ -23,7 +23,7 @@ concurrency:
 
 env:
   # A URL de produção, a mesma do build: o padrão vem do astro.config.mjs.
-  SITE_URL: ${{ vars.SITE_URL || 'https://ronrom-blog.vercel.app' }}
+  SITE_URL: ${{ vars.SITE_URL || 'https://ronrom.blog' }}
   TITULO_DA_ISSUE: Links quebrados
 
 jobs:

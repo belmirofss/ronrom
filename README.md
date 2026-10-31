@@ -6,7 +6,7 @@ O **Ronrom** é um blog de reviews (filmes, séries, documentários, livros, res
 
 | O quê        | Onde                                                                                 |
 | ------------ | ------------------------------------------------------------------------------------ |
-| Site         | https://ronrom-blog.vercel.app                                                       |
+| Site         | https://ronrom.blog                                                                  |
 | Studio       | https://ronrom.sanity.studio (publicado pela #12)                                    |
 | Vercel       | projeto `ronrom` no [painel da Vercel](https://vercel.com/dashboard), conta do dono  |
 | Sanity       | projeto "Ronrom" (`fq2685cq`) em [sanity.io/manage](https://www.sanity.io/manage)    |
