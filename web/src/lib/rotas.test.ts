@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { canonicalUrl, urlDaCategoria, urlDaPagina, urlDoFormato, urlDoPost } from '@/lib/rotas';
+import {
+  canonicalUrl,
+  urlDaCategoria,
+  urlDaListaDoAno,
+  urlDaPagina,
+  urlDoFormato,
+  urlDoPost,
+} from '@/lib/rotas';
 
 // A URL base não pode depender do web/.env de quem roda o teste (docs/testes.md).
 vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
@@ -104,6 +111,16 @@ describe('urlDoFormato e urlDaCategoria', () => {
     expect(() => helper('Café')).toThrow();
     expect(() => helper('')).toThrow();
     expect(() => helper('pagina')).toThrow();
+  });
+});
+
+describe('urlDaListaDoAno', () => {
+  it('/listas/{ano}', () => {
+    expect(urlDaListaDoAno(2026)).toBe('/listas/2026');
+  });
+
+  it.each([0, 26, 2026.5, 20260, Number.NaN])('lança erro com o ano %s', (ano) => {
+    expect(() => urlDaListaDoAno(ano)).toThrow(/Ano inválido/);
   });
 });
 

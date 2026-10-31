@@ -3,6 +3,7 @@ import { consultar } from './cliente';
 import {
   CONSULTA_DA_TAXONOMIA,
   CONSULTA_DAS_CONFIGURACOES,
+  CONSULTA_DAS_LISTAS_DO_ANO,
   CONSULTA_DAS_ROTAS_DOS_POSTS,
   CONSULTA_DO_DESTAQUE,
   CONSULTA_DO_FEED,
@@ -19,6 +20,7 @@ import {
 } from './consultas';
 import type {
   CONSULTA_DAS_CONFIGURACOES_RESULT,
+  CONSULTA_DAS_LISTAS_DO_ANO_RESULT,
   CONSULTA_DAS_ROTAS_DOS_POSTS_RESULT,
   CONSULTA_DA_TAXONOMIA_RESULT,
   CONSULTA_DOS_POSTS_DA_CATEGORIA_RESULT,
@@ -85,6 +87,10 @@ export const buscarPostsDoFormato = (formato: string, pagina = 1) =>
 
 /** Categorias e formatos, com o total de posts no ar de cada um. */
 export const buscarTaxonomia = () => consultar<CONSULTA_DA_TAXONOMIA_RESULT>(CONSULTA_DA_TAXONOMIA);
+
+/** Reviews de livros, filmes e séries, com o modelo de ficha, para as listas do ano (#137). */
+export const buscarListasDoAno = () =>
+  consultar<CONSULTA_DAS_LISTAS_DO_ANO_RESULT>(CONSULTA_DAS_LISTAS_DO_ANO);
 
 // --- Post ---
 

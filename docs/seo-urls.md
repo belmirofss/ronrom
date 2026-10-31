@@ -49,30 +49,31 @@ A resposta esperada é `308` com `location: /sobre`.
 
 ## Mapa de rotas
 
-| Rota                                   | Arquivo em `src/pages`               | Conteúdo                                   | Indexável                | Issue |
-| -------------------------------------- | ------------------------------------ | ------------------------------------------ | ------------------------ | ----- |
-| `/`                                    | `index.astro`                        | Home                                       | sim                      | #44   |
-| `/posts`                               | `posts/index.astro`                  | Todos os posts, mais recentes primeiro     | sim                      | #46   |
-| `/reviews`                             | `reviews/index.astro`                | Todas as reviews                           | sim                      | #46   |
-| `/reviews/[categoria]`                 | `reviews/[categoria]/index.astro`    | Reviews de uma categoria                   | sim                      | #46   |
-| `/reviews/[categoria]/[slug]`          | `reviews/[categoria]/[slug].astro`   | Post do tipo review                        | sim, salvo `seo.noindex` | #42   |
-| `/pensamentos`                         | `pensamentos/index.astro`            | Todos os pensamentos                       | sim                      | #46   |
-| `/pensamentos/[formato]`               | `pensamentos/[formato]/index.astro`  | Pensamentos de um formato                  | sim                      | #46   |
-| `/pensamentos/[formato]/[slug]`        | `pensamentos/[formato]/[slug].astro` | Post do tipo pensamento                    | sim, salvo `seo.noindex` | #42   |
-| `{listagem}/pagina/[n]`                | `{listagem}/pagina/[n].astro`        | Página `n` (a partir de 2) de uma listagem | sim, canonical para si   | #46   |
-| `/sobre`                               | `sobre.astro`                        | Autora (texto do CMS)                      | sim                      | #47   |
-| `/busca`                               | `busca.astro`                        | Busca do Pagefind (`/busca?q=termo`)       | não: `noindex,follow`    | #55   |
-| `/privacidade`                         | `privacidade.astro`                  | Política de privacidade                    | sim                      | #59   |
-| qualquer URL inexistente               | `404.astro` (gera `404.html`)        | Página não encontrada, com status 404      | não                      | #47   |
-| `/rss.xml`                             | `rss.xml.ts`                         | Feed dos últimos 30 posts                  | —                        | #52   |
-| `/sitemap-index.xml`, `/sitemap-*.xml` | gerados pelo `@astrojs/sitemap`      | Sitemap só com URLs canônicas              | —                        | #52   |
-| `/robots.txt`                          | `robots.txt.ts`                      | Libera produção, bloqueia o resto          | —                        | #52   |
-| `/posts-index.json`                    | `posts-index.json.ts`                | Dados dos cards para "Mais lidos"          | —                        | #57   |
-| `/pagefind/*`                          | gerado no build                      | Índice da busca                            | —                        | #54   |
-| `/api/health`                          | `api/health.ts` (sob demanda)        | Fumaça do deploy                           | —                        | #9    |
-| `/api/csp-report`                      | `api/csp-report.ts` (sob demanda)    | Recebe os relatórios da CSP                | —                        | #41   |
-| `/api/views`                           | `api/views.ts` (sob demanda)         | Registra visualização (`POST {id}`)        | —                        | #56   |
-| `/api/mais-lidos`                      | `api/mais-lidos.ts` (sob demanda)    | Ranking (`?limite=10`)                     | —                        | #57   |
+| Rota                                   | Arquivo em `src/pages`               | Conteúdo                                                    | Indexável                | Issue |
+| -------------------------------------- | ------------------------------------ | ----------------------------------------------------------- | ------------------------ | ----- |
+| `/`                                    | `index.astro`                        | Home                                                        | sim                      | #44   |
+| `/posts`                               | `posts/index.astro`                  | Todos os posts, mais recentes primeiro                      | sim                      | #46   |
+| `/reviews`                             | `reviews/index.astro`                | Todas as reviews                                            | sim                      | #46   |
+| `/reviews/[categoria]`                 | `reviews/[categoria]/index.astro`    | Reviews de uma categoria                                    | sim                      | #46   |
+| `/reviews/[categoria]/[slug]`          | `reviews/[categoria]/[slug].astro`   | Post do tipo review                                         | sim, salvo `seo.noindex` | #42   |
+| `/pensamentos`                         | `pensamentos/index.astro`            | Todos os pensamentos                                        | sim                      | #46   |
+| `/pensamentos/[formato]`               | `pensamentos/[formato]/index.astro`  | Pensamentos de um formato                                   | sim                      | #46   |
+| `/pensamentos/[formato]/[slug]`        | `pensamentos/[formato]/[slug].astro` | Post do tipo pensamento                                     | sim, salvo `seo.noindex` | #42   |
+| `{listagem}/pagina/[n]`                | `{listagem}/pagina/[n].astro`        | Página `n` (a partir de 2) de uma listagem                  | sim, canonical para si   | #46   |
+| `/listas/[ano]`                        | `listas/[ano].astro`                 | Lidos e assistidos no ano ([listas do ano](#listas-do-ano)) | só a partir de 5 reviews | #137  |
+| `/sobre`                               | `sobre.astro`                        | Autora (texto do CMS)                                       | sim                      | #47   |
+| `/busca`                               | `busca.astro`                        | Busca do Pagefind (`/busca?q=termo`)                        | não: `noindex,follow`    | #55   |
+| `/privacidade`                         | `privacidade.astro`                  | Política de privacidade                                     | sim                      | #59   |
+| qualquer URL inexistente               | `404.astro` (gera `404.html`)        | Página não encontrada, com status 404                       | não                      | #47   |
+| `/rss.xml`                             | `rss.xml.ts`                         | Feed dos últimos 30 posts                                   | —                        | #52   |
+| `/sitemap-index.xml`, `/sitemap-*.xml` | gerados pelo `@astrojs/sitemap`      | Sitemap só com URLs canônicas                               | —                        | #52   |
+| `/robots.txt`                          | `robots.txt.ts`                      | Libera produção, bloqueia o resto                           | —                        | #52   |
+| `/posts-index.json`                    | `posts-index.json.ts`                | Dados dos cards para "Mais lidos"                           | —                        | #57   |
+| `/pagefind/*`                          | gerado no build                      | Índice da busca                                             | —                        | #54   |
+| `/api/health`                          | `api/health.ts` (sob demanda)        | Fumaça do deploy                                            | —                        | #9    |
+| `/api/csp-report`                      | `api/csp-report.ts` (sob demanda)    | Recebe os relatórios da CSP                                 | —                        | #41   |
+| `/api/views`                           | `api/views.ts` (sob demanda)         | Registra visualização (`POST {id}`)                         | —                        | #56   |
+| `/api/mais-lidos`                      | `api/mais-lidos.ts` (sob demanda)    | Ranking (`?limite=10`)                                      | —                        | #57   |
 
 Os nomes de arquivo são a sugestão para as issues de cada página; o que não pode mudar sem PR neste doc é a **rota pública**. O site não tem tags desde a #145: `/tags/*`, que existiu, responde `301` para `/busca` ([redirects](cabecalhos.md#redirects)). Não existem `/reviews/[categoria]/[slug]/` com barra nem rota com `.html`. A home não é paginada.
 
@@ -82,6 +83,15 @@ Os nomes de arquivo são a sugestão para as issues de cada página; o que não 
 - A página 1 é a própria listagem. A página 2 em diante fica em `{listagem}/pagina/[n]`, por exemplo `/reviews/filmes/pagina/2` e `/pensamentos/frases/pagina/3`.
 - `/pagina/1`, `/pagina/0` e páginas além da última não são geradas e dão 404 (critério da #46).
 - Cada página tem canonical para ela mesma e fica indexável ([Indexação](#indexação)); `canonical`, `prev` e `next` saem do `seoDaPaginacao` ([`web/src/lib/listagem.ts`](../web/src/lib/listagem.ts)) e viram `<link rel="prev">` e `<link rel="next">` no `<Seo>`.
+
+### Listas do ano
+
+`/listas/[ano]` reúne as reviews de livros ("Lidos") e de filmes e séries ("Assistidos") de um ano, geradas no build a partir das reviews, sem documento próprio no CMS (#137). Cada ano com pelo menos uma review dessas ganha a página; o agrupamento fica em [`web/src/lib/listas.ts`](../web/src/lib/listas.ts) e a URL sai do `urlDaListaDoAno`.
+
+- **O ano é o da `dataDePublicacao`, no fuso de Brasília** (uma review das 22h de 31/12 fica no ano que termina). Uma review publicada em janeiro sobre algo lido ou visto em dezembro cai no ano seguinte: se isso incomodar, o próximo passo é um campo "quando li/vi" na ficha.
+- O que entra vem do modelo de ficha da categoria (`livro`, `filme` ou `serie`), não do slug: uma categoria nova com um desses modelos entra sozinha.
+- **Página fina fica fora do Google:** com menos de 5 reviews (`MINIMO_PARA_INDEXAR`), a página sai com `noindex,follow` e fora do sitemap, mas continua no site. Fora isso, o `lastmod` é o da review mais recente da lista.
+- Não é paginada: um ano cabe numa página.
 
 ### Busca
 
@@ -113,11 +123,12 @@ Quem decide é o `VERCEL_ENV` do build (variável de sistema da Vercel, lida pel
 
 `/sitemap-index.xml` (e `/sitemap-0.xml`), gerados pelo `@astrojs/sitemap` a partir das páginas do build e configurados em [`web/sitemap.mjs`](../web/sitemap.mjs):
 
-- **Só URLs canônicas e indexáveis.** O `filter` tira `/busca`, `/404`, `/api/*`, qualquer arquivo (`/rss.xml`, `/robots.txt`) e as páginas `noindex` (posts com `seo.noindex`). As URLs saem sem barra no final, como o canonical.
+- **Só URLs canônicas e indexáveis.** O `filter` tira `/busca`, `/404`, `/api/*`, qualquer arquivo (`/rss.xml`, `/robots.txt`) e as páginas `noindex` (posts com `seo.noindex` e [listas do ano](#listas-do-ano) com poucas reviews). As URLs saem sem barra no final, como o canonical.
 - **`lastmod` em toda URL**, a partir do `_updatedAt` do Sanity. Os caminhos saem dos helpers de rota, que dependem do `astro:env` e não rodam no `astro.config.mjs`, então o endpoint prerenderizado [`sitemap-dados.json.ts`](../web/src/pages/sitemap-dados.json.ts) monta o mapa caminho → data com o `dadosDoSitemap` ([`web/src/lib/sitemap.ts`](../web/src/lib/sitemap.ts)), e a integração `ronrom:sitemap-dados` lê o arquivo no fim do build e o apaga antes do deploy. Sem o arquivo, o build quebra.
 - **A data de cada página:**
   - post: a mais recente entre a última edição e a entrada no ar (`dataDePublicacao`);
   - página `n` de uma listagem: o post mais recente entre os que aparecem nela ou antes dela (um post novo empurra os outros) e o documento da categoria ou do formato, cuja descrição a página mostra;
+  - lista do ano: a review mais recente da lista;
   - home: a data mais recente de tudo; `/sobre`: a do documento `sobre`; `/privacidade`: a `PRIVACIDADE_ATUALIZADA_EM` ou a do documento `sobre`, a mais recente;
   - sem data própria (listagem ainda vazia, Sobre não publicado): a da home.
 - **Página nova** (como foi a `/privacidade` da #59) entra sozinha no sitemap, mas sem `lastmod` e com o aviso `[sitemap] … sem lastmod` no build: inclua-a no `dadosDoSitemap`.
@@ -214,6 +225,7 @@ Regras:
 function urlDoPost(post: PostComRota): string;
 function urlDaCategoria(slug: string): string; // /reviews/{slug}
 function urlDoFormato(slug: string): string; // /pensamentos/{slug}
+function urlDaListaDoAno(ano: number): string; // /listas/{ano}
 function urlDaPagina(base: string, n: number): string;
 
 // URL absoluta e canônica, a partir de um caminho.
