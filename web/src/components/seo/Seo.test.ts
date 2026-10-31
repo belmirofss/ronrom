@@ -69,6 +69,24 @@ describe('<Seo>', () => {
     expect(contar(html, 'property="article:tag"')).toBe(2);
   });
 
+  it('liga as páginas vizinhas de uma listagem com prev e next absolutos', async () => {
+    const pagina2 = await renderizar({
+      title: 'Reviews — página 2',
+      description: 'Reviews.',
+      canonical: '/reviews/pagina/2',
+      prev: '/reviews',
+      next: '/reviews/pagina/3',
+    });
+
+    expect(pagina2).toContain('<link rel="prev" href="https://ronrom-blog.vercel.app/reviews">');
+    expect(pagina2).toContain(
+      '<link rel="next" href="https://ronrom-blog.vercel.app/reviews/pagina/3">',
+    );
+    expect(await renderizar({ description: 'Sobre.', canonical: '/sobre' })).not.toMatch(
+      /rel="(prev|next)"/,
+    );
+  });
+
   it('avisa no build quando o título passa de 65 caracteres', async () => {
     const aviso = vi.spyOn(console, 'warn').mockImplementation(() => {});
 

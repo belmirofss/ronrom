@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { trilhaDaCategoria, trilhaDoFormato, trilhaDoPost } from '@/lib/trilha';
+import {
+  trilhaDaCategoria,
+  trilhaDaPagina,
+  trilhaDaTag,
+  trilhaDeTodosOsPosts,
+  trilhaDoFormato,
+  trilhaDoPost,
+  trilhaDoTipo,
+} from '@/lib/trilha';
 
 vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
 
@@ -80,5 +88,33 @@ describe('trilhaDoPost', () => {
     expect(() => trilhaDoPost({ ...review, titulo: 'X', categoria: { slug: 'filmes' } })).toThrow(
       /Nome ausente/,
     );
+  });
+});
+
+describe('trilhas das listagens', () => {
+  it('monta Início › Todos os posts e Início › Reviews/Pensamentos', () => {
+    expect(trilhaDeTodosOsPosts().map((item) => item.href)).toEqual(['/', '/posts']);
+    expect(trilhaDoTipo('review').at(-1)).toEqual({ rotulo: 'Reviews', href: '/reviews' });
+    expect(trilhaDoTipo('pensamento').at(-1)).toEqual({
+      rotulo: 'Pensamentos',
+      href: '/pensamentos',
+    });
+  });
+
+  it('põe a tag com # logo depois do Início', () => {
+    expect(trilhaDaTag({ nome: 'café', slug: 'cafe' })).toEqual([
+      { rotulo: 'Início', href: '/' },
+      { rotulo: '#café', href: '/tags/cafe' },
+    ]);
+  });
+
+  it('acrescenta "Página n" só da 2 em diante', () => {
+    const trilha = trilhaDaCategoria(FILMES);
+
+    expect(trilhaDaPagina(trilha, 1)).toEqual(trilha);
+    expect(trilhaDaPagina(trilha, 3).at(-1)).toEqual({
+      rotulo: 'Página 3',
+      href: '/reviews/filmes/pagina/3',
+    });
   });
 });
