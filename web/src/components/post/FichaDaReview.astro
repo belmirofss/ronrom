@@ -1,0 +1,98 @@
+---
+import Coracoes from '@/components/ui/Coracoes.astro';
+import { itensDaFicha } from '@/lib/ficha';
+import type { CONSULTA_DO_POST_RESULT } from '@/lib/sanity/tipos.gerados';
+
+type Post = NonNullable<CONSULTA_DO_POST_RESULT>;
+
+interface Props {
+  /** O post da `CONSULTA_DO_POST`. Em pensamento, a ficha não aparece. */
+  post: Pick<Post, 'tipo' | 'nota' | 'ficha'>;
+  class?: string;
+}
+
+const { post, class: classe } = Astro.props;
+const ehReview = post.tipo === 'review';
+const itens = ehReview ? itensDaFicha(post.ficha) : [];
+---
+
+{/* A nota é obrigatória em review: a ficha aparece mesmo sem nenhum campo preenchido. */}
+{ehReview && (
+  <section class:list={['ficha', classe]} aria-labelledby="ficha-titulo">
+    <h2 id="ficha-titulo" class="ficha__titulo">
+      Ficha
+    </h2>
+    <Coracoes class="ficha__nota" nota={post.nota} tamanho="grande" />
+    {itens.length > 0 && (
+      <dl class="ficha__campos">
+        {itens.map(({ rotulo, valor, href }) => (
+          <div class="ficha__campo">
+            <dt class="ficha__rotulo">{rotulo}</dt>
+            <dd class="ficha__valor">
+              {href ? (
+                <a href={href} rel="noopener noreferrer">
+                  {valor}
+                </a>
+              ) : (
+                valor
+              )}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    )}
+  </section>
+)}
+
+<style>
+  .ficha {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-4);
+    padding: var(--espaco-5);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-lg);
+    background-color: var(--cor-superficie);
+    box-shadow: var(--sombra-sm);
+  }
+
+  .ficha__titulo {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+    font-weight: var(--peso-medio);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* Rótulo e valor lado a lado a partir de ~480px; no celular, o valor fica embaixo. */
+  .ficha__campos {
+    display: grid;
+    gap: var(--espaco-3);
+    margin: 0;
+  }
+
+  .ficha__campo {
+    display: grid;
+    gap: var(--espaco-1);
+    padding-block-start: var(--espaco-3);
+    border-block-start: 1px solid var(--cor-borda);
+  }
+
+  @media (min-width: 30em) {
+    .ficha__campo {
+      grid-template-columns: 11rem minmax(0, 1fr);
+      gap: var(--espaco-4);
+    }
+  }
+
+  .ficha__rotulo {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+    font-weight: var(--peso-medio);
+  }
+
+  .ficha__valor {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+</style>
