@@ -1,0 +1,316 @@
+---
+import Container from '@/components/layout/Container.astro';
+import Data from '@/components/ui/Data.astro';
+import LayoutBase from '@/layouts/LayoutBase.astro';
+import {
+  controladora,
+  PRIVACIDADE_ATUALIZADA_EM,
+  SERVICOS_DE_TERCEIROS,
+  seoDaPrivacidade,
+  TITULO_DA_PRIVACIDADE,
+} from '@/lib/privacidade';
+import { buscarSobre } from '@/lib/sanity/conteudo';
+import { CAMINHO_DO_SOBRE } from '@/lib/sobre';
+
+// Política de privacidade (#59), em linguagem simples, para a LGPD: transparência (art. 9º), base
+// legal (art. 7º, IX), direitos do titular (art. 18) e transferência internacional (art. 33). O texto
+// é fixo; o nome e o e-mail da controladora vêm do Sobre. Mudou o texto, mude a data em
+// PRIVACIDADE_ATUALIZADA_EM (@/lib/privacidade), que também vai para o sitemap.
+const { nome, email } = controladora(await buscarSobre());
+---
+
+<LayoutBase seo={seoDaPrivacidade()}>
+  <Container as="article" largura="leitura" class="privacidade">
+    <header class="privacidade__topo">
+      <h1 class="privacidade__titulo">{TITULO_DA_PRIVACIDADE}</h1>
+      <p class="privacidade__data">
+        Atualizada em <Data iso={PRIVACIDADE_ATUALIZADA_EM} />
+      </p>
+    </header>
+
+    <section aria-labelledby="privacidade-resumo">
+      <h2 id="privacidade-resumo">Em poucas palavras</h2>
+      <ul>
+        <li>O Ronrom não usa cookies e não segue você por outros sites.</li>
+        <li>Não há cadastro, comentários, formulários nem anúncios.</li>
+        <li>
+          As métricas de audiência são agregadas: mostram quantas pessoas leram, não quem leu.
+        </li>
+        <li>
+          O contador do "Mais lidos" é anônimo: o endereço IP só entra num código embaralhado (hash)
+          que é apagado em 30 minutos.
+        </li>
+        <li>Vídeos do YouTube e posts do Instagram só carregam de verdade quando você clica.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="privacidade-controladora">
+      <h2 id="privacidade-controladora">Quem cuida dos dados</h2>
+      <p>
+        O Ronrom é um blog pessoal. Quem decide como os dados são tratados (a controladora, nas
+        palavras da LGPD) é {nome}, a autora.{' '}
+        {email ? (
+          <>
+            Para qualquer dúvida ou pedido sobre os seus dados, escreva para{' '}
+            <a href={`mailto:${email}`}>{email}</a>.
+          </>
+        ) : (
+          <>
+            Para qualquer dúvida ou pedido sobre os seus dados, fale com ela pelas redes da página{' '}
+            <a href={CAMINHO_DO_SOBRE}>Sobre</a>.
+          </>
+        )}
+      </p>
+    </section>
+
+    <section aria-labelledby="privacidade-coletado">
+      <h2 id="privacidade-coletado">O que é coletado</h2>
+      <h3>Métricas de audiência</h3>
+      <p>
+        O site usa o Umami, um serviço de métricas que não grava cookies nem nada no seu navegador.
+        Ele registra a página visitada (sem o que vem depois do "?" no endereço, então o que você
+        digita na busca não vai junto), o site de onde você veio, o país, o tipo de aparelho, o
+        navegador e alguns cliques, como a troca de aba na página inicial e o link do RSS. A autora
+        vê só os totais. Com o "Não rastrear" (Do Not Track) ligado no navegador, nada é enviado.
+      </p>
+      <h3>Contador de visualizações</h3>
+      <p>
+        Depois de 5 segundos lendo um post, o navegador avisa o servidor do site, que soma uma
+        leitura. Para não contar a mesma pessoa duas vezes, o servidor junta o endereço IP, o
+        navegador e o post num hash, um código que não pode ser revertido, e o guarda por 30
+        minutos. O IP em si nunca é gravado. O que fica é só o total de leituras de cada post.
+        Acessos de robôs não contam.
+      </p>
+      <h3>Registros técnicos da hospedagem</h3>
+      <p>
+        Como todo site, o Ronrom roda num servidor que recebe o endereço IP, o navegador e a página
+        pedida a cada acesso. A hospedagem (Vercel) guarda esses registros para manter o site no ar
+        e protegê-lo de abusos.
+      </p>
+      <h3>O que fica no seu navegador</h3>
+      <p>
+        Para não mandar o mesmo post duas vezes ao contador, o site anota no armazenamento da aba
+        (sessionStorage) quais posts já foram contados. A anotação não sai do seu aparelho e some
+        quando a aba é fechada.
+      </p>
+    </section>
+
+    <section aria-labelledby="privacidade-nao-coletado">
+      <h2 id="privacidade-nao-coletado">O que não é coletado</h2>
+      <ul>
+        <li>
+          Nome, e-mail, telefone ou qualquer dado que você precise digitar: não há onde digitar.
+        </li>
+        <li>
+          O que você procura na busca: ela roda inteira no seu navegador, sem mandar o texto para
+          nenhum servidor.
+        </li>
+        <li>
+          Cookies, identificadores de publicidade ou "impressões digitais" do navegador para
+          reconhecer você entre visitas ou entre sites.
+        </li>
+        <li>Dados sensíveis, como saúde, religião ou opinião política.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="privacidade-cookies">
+      <h2 id="privacidade-cookies">Por que não há aviso de cookies</h2>
+      <p>
+        Aquele aviso existe para pedir permissão para gravar cookies e rastrear a navegação. O
+        Ronrom não grava cookies em nenhuma página, nem usa ferramentas que sigam você de um site
+        para outro, então não há o que aceitar ou recusar. A exceção é sua: se você clicar para
+        assistir a um vídeo do YouTube ou carregar um post do Instagram, aquele serviço pode gravar
+        os próprios cookies, dentro do quadro dele, conforme a política dele.
+      </p>
+    </section>
+
+    <section aria-labelledby="privacidade-base-legal">
+      <h2 id="privacidade-base-legal">Por que esses dados são tratados</h2>
+      <p>
+        A base legal é o legítimo interesse (art. 7º, IX, da LGPD): manter o site no ar e seguro,
+        saber quais textos são lidos e montar a lista de mais lidos. Para isso, o site usa o mínimo
+        de dados possível, sem identificar ninguém, e nada é vendido, cedido para publicidade ou
+        usado para traçar o seu perfil.
+      </p>
+    </section>
+
+    <section aria-labelledby="privacidade-terceiros">
+      <h2 id="privacidade-terceiros">Serviços usados e onde ficam</h2>
+      <p>
+        O site depende dos serviços abaixo (os operadores, na LGPD). As empresas ficam fora do
+        Brasil, então há transferência internacional de dados (art. 33), feita com empresas que
+        publicam as próprias regras de proteção de dados.
+      </p>
+      <ul class="privacidade__servicos">
+        {SERVICOS_DE_TERCEIROS.map(({ nome: servico, uso, quando, pais, politica }) => (
+          <li class="privacidade__servico">
+            <h3>{servico}</h3>
+            <p>{uso}</p>
+            <dl class="privacidade__detalhes">
+              <div>
+                <dt>Quando</dt>
+                <dd>{quando}</dd>
+              </div>
+              <div>
+                <dt>Onde</dt>
+                <dd>{pais}</dd>
+              </div>
+            </dl>
+            <a href={politica} rel="noopener noreferrer">
+              Política de privacidade de {servico}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p>
+        As fontes, os ícones e a busca são servidos pelo próprio site, sem chamar nenhum outro
+        serviço.
+      </p>
+    </section>
+
+    <section aria-labelledby="privacidade-retencao">
+      <h2 id="privacidade-retencao">Por quanto tempo</h2>
+      <ul>
+        <li>Hash do contador de visualizações: 30 minutos.</li>
+        <li>Total de leituras de cada post: enquanto o site existir (não identifica ninguém).</li>
+        <li>Métricas do Umami: cerca de 6 meses, só em totais.</li>
+        <li>
+          Registros técnicos da hospedagem: os que a autora consegue ver somem em 1 hora; a Vercel
+          pode guardar os dela por mais tempo, conforme a política da empresa.
+        </li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="privacidade-direitos">
+      <h2 id="privacidade-direitos">Os seus direitos</h2>
+      <p>Pela LGPD (art. 18), você pode pedir a qualquer momento:</p>
+      <ul>
+        <li>a confirmação de que algum dado seu é tratado e o acesso a ele;</li>
+        <li>a correção de dados incompletos, inexatos ou desatualizados;</li>
+        <li>a anonimização, o bloqueio ou a eliminação de dados desnecessários ou excessivos;</li>
+        <li>a portabilidade dos dados;</li>
+        <li>a informação sobre com quem os dados são compartilhados;</li>
+        <li>a oposição ao tratamento feito com base no legítimo interesse.</li>
+      </ul>
+      <p>
+        {email ? (
+          <>
+            Para exercer qualquer um deles, escreva para <a href={`mailto:${email}`}>{email}</a>.
+          </>
+        ) : (
+          <>
+            Para exercer qualquer um deles, fale com a autora pelas redes da página{' '}
+            <a href={CAMINHO_DO_SOBRE}>Sobre</a>.
+          </>
+        )}{' '}
+        A resposta sai em até 15 dias. Como o site não guarda nada que identifique você, na maioria
+        dos casos a resposta vai ser que não há dado seu para mostrar ou apagar. Se achar que o
+        pedido não foi atendido, você também pode reclamar na{' '}
+        <a href="https://www.gov.br/anpd/pt-br" rel="noopener noreferrer">
+          Autoridade Nacional de Proteção de Dados (ANPD)
+        </a>
+        .
+      </p>
+    </section>
+
+    <section aria-labelledby="privacidade-mudancas">
+      <h2 id="privacidade-mudancas">Mudanças nesta política</h2>
+      <p>
+        Quando o site passar a usar outro serviço ou a tratar dados de outro jeito, esta página muda
+        antes, e a data no topo é atualizada.
+      </p>
+    </section>
+  </Container>
+</LayoutBase>
+
+<style>
+  :global(.privacidade) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-6);
+    padding-block: var(--espaco-7) var(--espaco-8);
+    line-height: var(--altura-linha-base);
+  }
+
+  .privacidade__titulo {
+    font-size: var(--texto-3xl);
+  }
+
+  .privacidade__data {
+    margin-block-start: var(--espaco-2);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+  }
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-3);
+  }
+
+  h2 {
+    font-size: var(--texto-2xl);
+  }
+
+  h3 {
+    margin-block-start: var(--espaco-2);
+    font-size: var(--texto-lg);
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-2);
+    margin: 0;
+    padding-inline-start: var(--espaco-5);
+  }
+
+  .privacidade__servicos {
+    gap: var(--espaco-4);
+    padding: 0;
+    list-style: none;
+  }
+
+  .privacidade__servico {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-2);
+    padding: var(--espaco-4);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-md);
+  }
+
+  .privacidade__servico h3 {
+    margin: 0;
+  }
+
+  .privacidade__detalhes {
+    display: grid;
+    gap: var(--espaco-1);
+    margin: 0;
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+  }
+
+  .privacidade__detalhes dt {
+    display: inline;
+    font-weight: var(--peso-medio);
+  }
+
+  .privacidade__detalhes dt::after {
+    content: ': ';
+  }
+
+  .privacidade__detalhes dd {
+    display: inline;
+    margin: 0;
+  }
+
+  /* O link da política ocupa pelo menos 44px de altura, o alvo de toque mínimo. */
+  .privacidade__servico a {
+    display: inline-flex;
+    align-items: center;
+    align-self: start;
+    min-height: 44px;
+  }
+</style>

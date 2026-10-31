@@ -86,4 +86,4 @@ O Lighthouse Best Practices (#60) precisa seguir em 95 ou mais com o script: ele
 
 ## Política de privacidade
 
-A `/privacidade` (#59) precisa explicar: o analytics é o Umami Cloud, sem cookies e sem dados pessoais; respeita o Do Not Track; a URL vai sem a query string; o contador de visualizações é separado, anônimo (o IP só entra num hash que expira em 30 minutos) e conta todas as leituras, menos as de bots.
+A [`/privacidade`](../web/src/pages/privacidade.astro) (#59) explica: o analytics é o Umami Cloud, sem cookies e sem dados pessoais; respeita o Do Not Track; a URL vai sem a query string; o contador de visualizações é separado, anônimo (o IP só entra num hash que expira em 30 minutos) e conta todas as leituras, menos as de bots. Mudou um desses pontos (outro evento com dados novos, outro serviço, outra retenção), mude o texto da página e a `PRIVACIDADE_ATUALIZADA_EM` de [`privacidade.ts`](../web/src/lib/privacidade.ts) no mesmo PR.

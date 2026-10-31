@@ -57,7 +57,7 @@ frame-ancestors …; report-uri /api/csp-report; report-to csp
 - **WebAssembly:** `'wasm-unsafe-eval'` no `script-src` deixa a busca (Pagefind, #54) compilar o WASM dela. Libera só WebAssembly, não `eval` de JavaScript. Detalhes em [`busca.md`](busca.md#csp).
 - **Estilos:** `'unsafe-inline'` é necessário porque o Astro põe no HTML o `@font-face` da DM Sans e o CSS pequeno de cada página, e o `ImagemSanity` usa `style=` para o `aspect-ratio` e a cor de fundo. CSS injetado não executa código, então o risco é baixo.
 - **Política dupla:** a CSP está duas vezes no `vercel.json` (previews e produção), que não aceita variável. Ao mudar uma, mude a outra: o [`csp.test.ts`](../web/src/lib/csp.test.ts) falha se elas diferirem em algo além do `frame-ancestors`.
-- **Serviço novo** (outro embed, outro analytics): acrescente a origem na diretiva certa nas duas cópias e na tabela acima, no mesmo PR.
+- **Serviço novo** (outro embed, outro analytics): acrescente a origem na diretiva certa nas duas cópias, na tabela acima e em `SERVICOS_DE_TERCEIROS` ([`privacidade.ts`](../web/src/lib/privacidade.ts)), que a página `/privacidade` (#59) lista, no mesmo PR. O [`privacidade.test.ts`](../web/src/lib/privacidade.test.ts) falha se uma origem da CSP não estiver lá.
 
 ### Report-Only e a passagem para enforce
 

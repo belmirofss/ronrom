@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { CONSULTA_DO_SITEMAP_RESULT } from '@/lib/sanity/tipos.gerados';
+import { PRIVACIDADE_ATUALIZADA_EM } from '@/lib/privacidade';
 import { dadosDoSitemap } from '@/lib/sitemap';
 
 vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
@@ -111,5 +112,13 @@ describe('dadosDoSitemap', () => {
 
     expect(lastmod['/']).toBe('2026-06-01T00:00:00.000Z');
     expect(lastmod['/sobre']).toBe('2026-02-02T00:00:00.000Z');
+  });
+
+  it('dá à privacidade a última mudança no texto ou no Sobre', () => {
+    expect(dadosDoSitemap(vazio).lastmod['/privacidade']).toBe(
+      new Date(PRIVACIDADE_ATUALIZADA_EM).toISOString(),
+    );
+    const depois = '2099-01-01T00:00:00.000Z';
+    expect(dadosDoSitemap({ ...vazio, sobre: depois }).lastmod['/privacidade']).toBe(depois);
   });
 });
