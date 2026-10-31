@@ -3,20 +3,24 @@ import Container from '@/components/layout/Container.astro';
 import Data from '@/components/ui/Data.astro';
 import LayoutBase from '@/layouts/LayoutBase.astro';
 import {
+  canaisDeContato,
   controladora,
   PRIVACIDADE_ATUALIZADA_EM,
   SERVICOS_DE_TERCEIROS,
   seoDaPrivacidade,
   TITULO_DA_PRIVACIDADE,
 } from '@/lib/privacidade';
-import { buscarSobre } from '@/lib/sanity/conteudo';
+import { buscarConfiguracoes, buscarSobre } from '@/lib/sanity/conteudo';
 import { CAMINHO_DO_SOBRE } from '@/lib/sobre';
 
 // Política de privacidade (#59), em linguagem simples, para a LGPD: transparência (art. 9º), base
 // legal (art. 7º, IX), direitos do titular (art. 18) e transferência internacional (art. 33). O texto
-// é fixo; o nome e o e-mail da controladora vêm do Sobre. Mudou o texto, mude a data em
-// PRIVACIDADE_ATUALIZADA_EM (@/lib/privacidade), que também vai para o sitemap.
-const { nome, email } = controladora(await buscarSobre());
+// é fixo; o nome da controladora vem do Sobre e o canal de contato, das redes de Configurações do
+// site. Mudou o texto, mude a data em PRIVACIDADE_ATUALIZADA_EM (@/lib/privacidade), que também vai
+// para o sitemap.
+const [sobre, configuracoes] = await Promise.all([buscarSobre(), buscarConfiguracoes()]);
+const nome = controladora(sobre);
+const canais = canaisDeContato(configuracoes);
 ---
 
 <LayoutBase seo={seoDaPrivacidade()}>
@@ -48,16 +52,24 @@ const { nome, email } = controladora(await buscarSobre());
       <h2 id="privacidade-controladora">Quem cuida dos dados</h2>
       <p>
         O Ronrom é um blog pessoal. Quem decide como os dados são tratados (a controladora, nas
-        palavras da LGPD) é {nome}, a autora.{' '}
-        {email ? (
+        palavras da LGPD) é {nome}, a autora. Para qualquer dúvida ou pedido sobre os seus dados,
+        fale com ela{' '}
+        {canais.length > 0 ? (
           <>
-            Para qualquer dúvida ou pedido sobre os seus dados, escreva para{' '}
-            <a href={`mailto:${email}`}>{email}</a>.
+            por mensagem no{' '}
+            {canais.map(({ nome: rede, url }, i) => (
+              <>
+                {i > 0 && (i === canais.length - 1 ? ' ou ' : ', ')}
+                <a href={url} rel="noopener noreferrer">
+                  {rede}
+                </a>
+              </>
+            ))}
+            .
           </>
         ) : (
           <>
-            Para qualquer dúvida ou pedido sobre os seus dados, fale com ela pelas redes da página{' '}
-            <a href={CAMINHO_DO_SOBRE}>Sobre</a>.
+            pela página <a href={CAMINHO_DO_SOBRE}>Sobre</a>.
           </>
         )}
       </p>
@@ -193,19 +205,11 @@ const { nome, email } = controladora(await buscarSobre());
         <li>a oposição ao tratamento feito com base no legítimo interesse.</li>
       </ul>
       <p>
-        {email ? (
-          <>
-            Para exercer qualquer um deles, escreva para <a href={`mailto:${email}`}>{email}</a>.
-          </>
-        ) : (
-          <>
-            Para exercer qualquer um deles, fale com a autora pelas redes da página{' '}
-            <a href={CAMINHO_DO_SOBRE}>Sobre</a>.
-          </>
-        )}{' '}
-        A resposta sai em até 15 dias. Como o site não guarda nada que identifique você, na maioria
-        dos casos a resposta vai ser que não há dado seu para mostrar ou apagar. Se achar que o
-        pedido não foi atendido, você também pode reclamar na{' '}
+        Para exercer qualquer um deles, fale com a autora pelos canais indicados em{' '}
+        <a href="#privacidade-controladora">Quem cuida dos dados</a>. A resposta sai em até 15 dias.
+        Como o site não guarda nada que identifique você, na maioria dos casos a resposta vai ser
+        que não há dado seu para mostrar ou apagar. Se achar que o pedido não foi atendido, você
+        também pode reclamar na{' '}
         <a href="https://www.gov.br/anpd/pt-br" rel="noopener noreferrer">
           Autoridade Nacional de Proteção de Dados (ANPD)
         </a>

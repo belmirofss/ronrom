@@ -67,12 +67,11 @@ export const CONSULTA_DAS_CONFIGURACOES = defineQuery(`*[_id == "configuracoes"]
   redes[]{ rede, url }
 }`);
 
-// Singleton `sobre`: barra lateral, páginas /sobre e /privacidade (o e-mail) e o `Person` do
+// Singleton `sobre`: barra lateral, páginas /sobre e /privacidade (o nome) e o `Person` do
 // JSON-LD. O texto só tem links externos, que não precisam ser resolvidos.
 export const CONSULTA_DO_SOBRE = defineQuery(`*[_id == "sobre"][0]{
   _updatedAt,
   nome,
-  email,
   bio,
   "foto": foto${IMAGEM_NO_GROQ},
   texto,
