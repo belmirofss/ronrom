@@ -14,6 +14,7 @@ describe('<FraseDaSemana>', () => {
     expect(html).toMatch(/<blockquote[^>]*>\s*<p[^>]*>Devagar também chega\.<\/p>/);
     expect(html).toMatch(/<figcaption[^>]*>— Ditado de avó<\/figcaption>/);
     expect(html).toContain('superficie-vinho');
+    expect(html).toMatch(/<h2[^>]*>Frase em destaque<\/h2>/);
   });
 
   it('não tem <figcaption> sem autoria', async () => {

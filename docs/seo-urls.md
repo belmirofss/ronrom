@@ -296,9 +296,8 @@ Os nomes finais dos campos saem dos schemas (#18, #19, #21, #24); os do post já
 | `corpo` (Portable Text)                               | post                          | Fallback da description (~155 caracteres), `wordCount`, busca       |
 | `texto` (Portable Text)                               | sobre                         | Conteúdo de `/sobre` (#47)                                          |
 | `nome`, `bio`, `foto{asset, alt, hotspot, crop}`      | sobre                         | `Person` e `ProfilePage` (#50), barra lateral (#38)                 |
-| `email`                                               | sobre                         | Contato da controladora em `/privacidade` (#59)                     |
 | `seo{descricao, imagem{asset, alt}}`                  | sobre, configuracoes          | Description e `og:image` de `/sobre` e o padrão do site             |
-| `redes[]{rede, url}`                                  | configuracoes                 | `sameAs` do `Person` (#50)                                          |
+| `redes[]{rede, url}`                                  | configuracoes                 | `sameAs` do `Person` (#50), contato da `/privacidade` (#146)        |
 | `fraseDaSemana{texto, autoria, data}`                 | configuracoes                 | Barra lateral (#38)                                                 |
 | `postEmDestaque->`                                    | configuracoes                 | Destaque da home (#44); vazio usa o post mais recente               |
 

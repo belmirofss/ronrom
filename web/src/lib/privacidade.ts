@@ -1,5 +1,8 @@
 import type { Metadados } from '@/lib/seo';
-import type { CONSULTA_DO_SOBRE_RESULT } from '@/lib/sanity/tipos.gerados';
+import type {
+  CONSULTA_DAS_CONFIGURACOES_RESULT,
+  CONSULTA_DO_SOBRE_RESULT,
+} from '@/lib/sanity/tipos.gerados';
 
 // Regras da página /privacidade (#59). O texto fica na página; aqui ficam os dados que o build e os
 // testes também usam: a data da última atualização (sitemap) e os serviços de terceiros, que o
@@ -64,7 +67,7 @@ export const SERVICOS_DE_TERCEIROS: readonly ServicoDeTerceiro[] = [
     quando: 'Em toda página, menos com o "Não rastrear" (Do Not Track) ligado no navegador',
     pais: 'Estados Unidos',
     politica: 'https://umami.is/privacy',
-    origens: ['https://cloud.umami.is', 'https://api-gateway.umami.dev'],
+    origens: ['https://cloud.umami.is', 'https://gateway.umami.is'],
   },
   {
     nome: 'YouTube (Google)',
@@ -85,19 +88,40 @@ export const SERVICOS_DE_TERCEIROS: readonly ServicoDeTerceiro[] = [
 ];
 
 type Sobre = CONSULTA_DO_SOBRE_RESULT;
+type Rede = NonNullable<NonNullable<CONSULTA_DAS_CONFIGURACOES_RESULT>['redes']>[number];
 
-export interface Controladora {
-  nome: string;
-  /** `null` enquanto o e-mail não foi preenchido no Studio. */
-  email: string | null;
+/** Quem responde pelos dados: a autora, com o nome do singleton Sobre. */
+export function controladora(sobre: Sobre): string {
+  return sobre?.nome?.trim() || 'a autora do Ronrom';
 }
 
-/** Quem responde pelos dados: a autora, com o nome e o e-mail do singleton Sobre. */
-export function controladora(sobre: Sobre): Controladora {
-  return {
-    nome: sobre?.nome?.trim() || 'a autora do Ronrom',
-    email: sobre?.email?.trim() || null,
-  };
+// Os mesmos nomes da lista de redes do Studio (studio/schemaTypes/configuracoes.ts).
+const NOMES_DAS_REDES: Record<Rede['rede'], string> = {
+  instagram: 'Instagram',
+  tiktok: 'TikTok',
+  youtube: 'YouTube',
+  letterboxd: 'Letterboxd',
+  goodreads: 'Goodreads',
+  skoob: 'Skoob',
+  pinterest: 'Pinterest',
+  outra: 'outra rede',
+};
+
+export interface CanalDeContato {
+  nome: string;
+  url: string;
+}
+
+/**
+ * O canal para os pedidos do titular (a LGPD pede um): as redes de Configurações do site, que não
+ * aparecem em outra página. Vazio: a página manda para o Sobre.
+ */
+export function canaisDeContato(
+  configuracoes: CONSULTA_DAS_CONFIGURACOES_RESULT,
+): CanalDeContato[] {
+  return (configuracoes?.redes ?? []).flatMap(({ rede, url }) =>
+    url ? [{ nome: NOMES_DAS_REDES[rede] ?? NOMES_DAS_REDES.outra, url }] : [],
+  );
 }
 
 export function seoDaPrivacidade(): Metadados {

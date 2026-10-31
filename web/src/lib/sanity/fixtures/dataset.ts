@@ -464,7 +464,6 @@ const sobre = {
   _type: 'sobre',
   ...sistema('2026-01-01T12:00:00Z', '2026-09-01T10:00:00Z'),
   nome: 'Ana Ronrom',
-  email: 'contato@example.com',
   bio: 'Escrevo sobre o que vejo, leio, como e penso, sempre com um caderno por perto.',
   foto: imagem(img.autora, 'Retrato desenhado da autora com um gato no colo'),
   texto: [

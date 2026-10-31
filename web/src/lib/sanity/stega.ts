@@ -17,7 +17,7 @@ export const CAMPOS_COM_STEGA = new Set([
   'descricao',
   // Spans do Portable Text (corpo do post e texto do Sobre).
   'text',
-  // Blocos do corpo e frase da semana.
+  // Blocos do corpo e frase em destaque.
   'legenda',
   'texto',
   'fonte',
