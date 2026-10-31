@@ -110,4 +110,4 @@ Onde acompanhar, uma vez por mês e depois de mudança grande de layout:
 
 ## Pendências conhecidas
 
-- **CLS da `/busca`:** na medição da #60, com as fixtures, a `/busca` teve CLS de 0,34. O campo de busca só aparece quando o script roda (`hidden` sai no fim do carregamento) e empurra o rodapé para baixo. No preview isso é aviso; em produção, o status `lighthouse (producao)` fica vermelho até a correção, prevista junto com o visual definitivo da busca (#61).
+- **CLS da `/busca`:** na medição da #60, com as fixtures e já com o visual da #61, a `/busca` teve CLS de 0,34 e Performance 83. O app de busca só aparece quando o script roda (o `hidden` sai depois do carregamento) e empurra o rodapé para baixo. No preview isso é aviso; em produção, o status `lighthouse (producao)` fica vermelho até a correção.
