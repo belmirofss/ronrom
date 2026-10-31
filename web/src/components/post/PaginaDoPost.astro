@@ -39,7 +39,7 @@ const indice = indiceDoPost(post, url);
 ---
 
 <LayoutBase seo={seoDoPost(post, url)}>
-  {/* JSON-LD do post (#50; a Review das reviews vem na #51). */}
+  {/* JSON-LD do post: BlogPosting no pensamento (#50) e Review na review (#51). */}
   <JsonLd slot="head" pagina={{ tipo: 'post', post }} />
 
   {/* Só o <article> entra no índice da busca (#54): cabeçalho, rodapé e "Leia também" ficam de
