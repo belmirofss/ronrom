@@ -263,7 +263,7 @@ A [`src/pages/index.astro`](src/pages/index.astro) usa o `LayoutComBarraLateral`
 2. **Destaque:** o post escolhido em Configurações do site ou, sem escolha, o mais recente (`buscarDestaque()`). A capa dele é a imagem do LCP (`prioridade`).
 3. **Abas** "Últimos posts" e "Mais lidos", com o lugar do campo de busca ao lado (vazio até a WEB-15, #61; só a partir de 640px).
    - **Últimos posts:** os `POSTS_NA_HOME` (6) mais recentes, sem o destaque (`ultimosSemODestaque`, em [`src/lib/home.ts`](src/lib/home.ts), com teste), com título h3 embaixo do h2 da aba.
-   - **Mais lidos:** o [`MaisLidos.astro`](src/components/home/MaisLidos.astro). Por enquanto mostra o estado vazio ("Ainda estamos contando as leituras."); o ranking entra na #57 e o visual final (carregando, erro) na WEB-15. **Contrato:** prop `posts`, a lista dos posts no ar do mais lido para o menos lido, sem repetir, no formato das listagens (`CardComLeitura`); vazia, o painel mostra o estado vazio.
+   - **Mais lidos:** o [`MaisLidos.astro`](src/components/home/MaisLidos.astro), montado no navegador na primeira vez que a aba abre (#57): junta o ranking da `/api/mais-lidos` com os cards do `/posts-index.json` e, com menos de 10 posts lidos, completa com os mais recentes. Os cards são cópias de um `ItemDeLista` de modelo num `<template>`, então ficam iguais aos dos "Últimos posts". Sem JS, o painel avisa e aponta para `/posts`. O visual final dos estados (carregando, erro, vazio) é da WEB-15. Detalhes em [`docs/visualizacoes.md`](../docs/visualizacoes.md#mais-lidos).
 4. **"Ver todos os posts"**, para `/posts`.
 5. **Barra lateral** (slot `barra-lateral`), que cai para baixo de tudo abaixo de 960px.
 
