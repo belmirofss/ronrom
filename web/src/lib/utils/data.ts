@@ -40,6 +40,16 @@ export function isoNoFuso(iso: string): string {
   return `${year}-${month}-${day}T${hour}:${minute}:${second}${deslocamento}`;
 }
 
+const ANO = new Intl.DateTimeFormat('en-US', { timeZone: FUSO, year: 'numeric' });
+
+/**
+ * O ano no fuso de Brasília: um post publicado às 22h de 31/12 em Brasília (01h de 01/01 em UTC)
+ * ainda é do ano anterior. Lança erro com data inválida.
+ */
+export function anoNoFuso(iso: string): number {
+  return Number(ANO.format(lerData(iso)));
+}
+
 function lerData(iso: string): Date {
   const data = new Date(iso);
   if (!iso || Number.isNaN(data.getTime())) {

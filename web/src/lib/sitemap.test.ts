@@ -14,6 +14,7 @@ const review = (slug: string, atualizado: string, extra: Partial<Post> = {}): Po
   formato: null,
   _updatedAt: atualizado,
   dataDePublicacao: '2026-01-01T12:00:00Z',
+  modelo: 'filme',
   noindex: false,
   ...extra,
 });
@@ -23,6 +24,7 @@ const pensamento = (slug: string, atualizado: string): Post => ({
   tipo: 'pensamento',
   categoria: null,
   formato: { slug: 'frases' },
+  modelo: null,
 });
 
 const vazio: CONSULTA_DO_SITEMAP_RESULT = {
@@ -46,7 +48,8 @@ describe('dadosDoSitemap', () => {
 
     expect(lastmod['/reviews/filmes/dias-perfeitos']).toBe('2026-03-20T10:00:00.000Z');
     expect(lastmod['/pensamentos/frases/sobre-gatos']).toBe('2026-02-01T10:00:00.000Z');
-    expect(noindex).toEqual(['/reviews/filmes/antigo']);
+    // A lista de 2026, com só duas reviews, também fica fora.
+    expect(noindex).toEqual(['/reviews/filmes/antigo', '/listas/2026']);
   });
 
   it('usa a data de publicação quando o post entrou no ar depois da última edição', () => {
@@ -103,6 +106,26 @@ describe('dadosDoSitemap', () => {
 
     expect(lastmod['/']).toBe('2026-06-01T00:00:00.000Z');
     expect(lastmod['/sobre']).toBe('2026-02-02T00:00:00.000Z');
+  });
+
+  it('dá a cada lista do ano a review mais recente dela e indexa só a lista cheia', () => {
+    const filmes = Array.from({ length: 5 }, (_, i) =>
+      review(`filme-${i}`, `2025-0${i + 1}-10T00:00:00Z`, {
+        dataDePublicacao: `2025-0${i + 1}-01T12:00:00Z`,
+      }),
+    );
+    const { lastmod, noindex } = dadosDoSitemap({
+      ...vazio,
+      posts: [
+        review('livro-novo', '2026-02-01T00:00:00Z', { modelo: 'livro' }),
+        review('cafe', '2026-09-01T00:00:00Z', { modelo: 'lugar' }),
+        ...filmes,
+      ],
+    });
+
+    expect(lastmod['/listas/2026']).toBe('2026-02-01T00:00:00.000Z');
+    expect(lastmod['/listas/2025']).toBe('2025-05-10T00:00:00.000Z');
+    expect(noindex).toEqual(['/listas/2026']);
   });
 
   it('dá à privacidade a última mudança no texto ou no Sobre', () => {

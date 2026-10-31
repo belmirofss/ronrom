@@ -55,6 +55,14 @@ export function urlDoFormato(slug: string): string {
   return `/pensamentos/${validarSlug(slug, 'urlDoFormato')}`;
 }
 
+/** `/listas/{ano}`: os lidos e assistidos no ano (#137). */
+export function urlDaListaDoAno(ano: number): string {
+  if (!Number.isInteger(ano) || ano < 1000 || ano > 9999) {
+    throw new Error(`Ano inválido em urlDaListaDoAno: ${ano} (precisa ter quatro dígitos).`);
+  }
+  return `/listas/${ano}`;
+}
+
 /** Página `n` de uma listagem: a própria `base` na página 1 e `{base}/pagina/{n}` da 2 em diante. */
 export function urlDaPagina(base: string, n: number): string {
   if (!FORMATO_DA_BASE.test(base)) {
