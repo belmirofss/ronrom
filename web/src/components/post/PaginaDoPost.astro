@@ -3,6 +3,7 @@ import Container from '@/components/layout/Container.astro';
 import CardDePost from '@/components/post/CardDePost.astro';
 import CorpoDoPost from '@/components/post/CorpoDoPost.astro';
 import FichaDaReview from '@/components/post/FichaDaReview.astro';
+import RegistroDeVisualizacao from '@/components/post/RegistroDeVisualizacao.astro';
 import Breadcrumb from '@/components/ui/Breadcrumb.astro';
 import ChipCategoria from '@/components/ui/ChipCategoria.astro';
 import Data from '@/components/ui/Data.astro';
@@ -53,9 +54,7 @@ const tags = post.tags ?? [];
         <span aria-hidden="true"> · </span>
         <span>{tempoDeLeitura(post.corpo)}</span>
       </p>
-      {/* Ponto de inserção do contador de visualizações (#56): o script dele acha o post por aqui.
-          Sem estilo nem conteúdo, não ocupa espaço. */}
-      <div data-visualizacoes={post._id}></div>
+      <RegistroDeVisualizacao id={post._id} />
     </Container>
 
     {/* A capa é o LCP da página: carrega logo, com prioridade alta e proporção fixa (sem CLS). */}
