@@ -42,7 +42,7 @@ O [`Umami.astro`](../web/src/components/layout/Umami.astro) fica no `<head>` do 
 | `data-exclude-search` | A URL vai sem a query string, então nenhum texto digitado (como o de uma busca) chega ao painel |
 | `data-exclude-hash`   | A URL vai sem o `#…`                                                                            |
 
-O script vem de `cloud.umami.is` e manda os eventos para `api-gateway.umami.dev` (ou para o próprio `cloud.umami.is`), as duas origens liberadas na [CSP](cabecalhos.md#csp). A tag usa `is:inline` só para o Astro não tentar empacotar um arquivo de outra origem; o código vem do `src`, então a regra de não ter script inline continua valendo.
+O script vem de `cloud.umami.is` e manda os eventos para `gateway.umami.is` (visto em produção em 31/10/2026; o `cloud.umami.is` fica liberado também, caso o script volte a mandar para lá). As duas origens estão liberadas no `connect-src` da [CSP](cabecalhos.md#csp); se o Umami trocar de endereço de novo, o console e os logs `[csp]` mostram a violação. A tag usa `is:inline` só para o Astro não tentar empacotar um arquivo de outra origem; o código vem do `src`, então a regra de não ter script inline continua valendo.
 
 Não há proxy pela Vercel (o item opcional da #58): um rewrite para o `script.js` reduziria o bloqueio por adblock, mas os eventos passariam pela nossa borda e o Umami veria o IP da Vercel em vez do visitante, o que estraga o país e a cidade no painel. Fica para reavaliar se o bloqueio for grande.
 
@@ -76,7 +76,7 @@ Quando o domínio próprio entrar (#63), o `data-domains` segue o `SITE_URL` soz
 
 ## Conferir em produção
 
-1. Abra o site numa aba anônima, com o DevTools aberto. Na aba Network, aparecem o `script.js` de `cloud.umami.is` e um `POST` para `/api/send` em `api-gateway.umami.dev` (ou `cloud.umami.is`).
+1. Abra o site numa aba anônima, com o DevTools aberto. Na aba Network, aparecem o `script.js` de `cloud.umami.is` e um `POST` para `gateway.umami.is/api/send` com `200`, sem aviso de CSP no console.
 2. Em Application → Cookies e Local Storage, nada do Umami (nem do site, além do `sessionStorage` do [contador](visualizacoes.md)).
 3. Troque de aba na home, clique no RSS do rodapé, faça uma busca e troque um filtro na `/busca`: os eventos aparecem em **Events** no painel em até alguns minutos.
 4. Com o Do Not Track ligado (Firefox: Configurações → Privacidade → "Enviar sinal de Não rastrear"), recarregue: o `script.js` carrega, mas não sai nenhum `POST`.
