@@ -211,4 +211,16 @@ const temAoLado = Astro.slots.has('ao-lado');
     border-block-end-color: var(--cor-vinho);
     color: var(--cor-texto);
   }
+
+  /* No alto contraste do Windows a borda transparente vira a cor do texto, e as duas abas
+     ficariam com o mesmo traço: a não selecionada some no fundo e a selecionada usa Highlight. */
+  @media (forced-colors: active) {
+    .abas__aba {
+      border-block-end-color: Canvas;
+    }
+
+    .abas__aba[aria-selected='true'] {
+      border-block-end-color: Highlight;
+    }
+  }
 </style>

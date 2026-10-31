@@ -28,7 +28,8 @@
     "groq-js": "^2.0.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "styled-components": "^6.6.0"
+    "styled-components": "^6.6.0",
+    "isbot": "^5.2.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",

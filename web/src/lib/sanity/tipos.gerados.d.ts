@@ -1278,6 +1278,11 @@ export type CONSULTA_DO_INDICE_DE_POSTS_RESULT = Array<{
 }>;
 
 // Source: ../web/src/lib/sanity/consultas.ts
+// Variable: CONSULTA_DOS_IDS_PUBLICADOS
+// Query: *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())]._id
+export type CONSULTA_DOS_IDS_PUBLICADOS_RESULT = Array<string>;
+
+// Source: ../web/src/lib/sanity/consultas.ts
 // Variable: CONSULTA_DOS_REDIRECTS
 // Query: *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && count(slugsAnteriores) > 0]{ "anteriores": slugsAnteriores, tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current } }
 export type CONSULTA_DOS_REDIRECTS_RESULT = Array<{
@@ -1324,6 +1329,7 @@ declare global {
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())]{ tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current } }': CONSULTA_DAS_ROTAS_DOS_POSTS_RESULT;
     'coalesce(*[_type == "post" && _id == $id][0]{\n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && _id != ^._id]{\n    ...,\n    "prioridade": select(\n      tipo == ^.tipo && coalesce(categoria._ref, formato._ref) == coalesce(^.categoria._ref, ^.formato._ref) => 2,\n      tipo == ^.tipo => 1,\n      0\n    )\n  } | order(prioridade desc, dataDePublicacao desc, _id asc) [0...3]{\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n}\n}.posts, [])': CONSULTA_DO_LEIA_TAMBEM_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n}': CONSULTA_DO_INDICE_DE_POSTS_RESULT;
+    '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())]._id': CONSULTA_DOS_IDS_PUBLICADOS_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && count(slugsAnteriores) > 0]{ "anteriores": slugsAnteriores, tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current } }': CONSULTA_DOS_REDIRECTS_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) { tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current }, _updatedAt, "noindex": coalesce(seo.noindex, false) }': CONSULTA_DO_SITEMAP_RESULT;
   }

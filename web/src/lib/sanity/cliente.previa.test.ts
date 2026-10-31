@@ -5,11 +5,9 @@ import { filtroDoStega } from './stega';
 // O cliente no build da prévia de rascunhos (#43), com o @sanity/client e o
 // @sanity/preview-url-secret trocados por dublês: confere que a prévia lê os rascunhos com o token
 // e o stega, e que o segredo do Presentation é conferido sem stega.
-const { createClient, withConfig, validatePreviewUrl } = vi.hoisted(() => {
-  const withConfig = vi.fn(() => ({ semStega: true }));
+const { createClient, validatePreviewUrl } = vi.hoisted(() => {
   return {
-    withConfig,
-    createClient: vi.fn(() => ({ fetch: vi.fn(), withConfig })),
+    createClient: vi.fn((config: object) => ({ fetch: vi.fn(), config })),
     validatePreviewUrl: vi.fn(async () => ({ isValid: true, redirectTo: '/sobre' })),
   };
 });
@@ -46,7 +44,15 @@ describe('cliente do Sanity na prévia', () => {
     const url = 'https://ronrom-previa.vercel.app/api/previa/ativar?sanity-preview-secret=x';
 
     expect(await validarUrlDaPrevia(url)).toEqual({ isValid: true, redirectTo: '/sobre' });
-    expect(withConfig).toHaveBeenCalledWith({ stega: false });
-    expect(validatePreviewUrl).toHaveBeenCalledExactlyOnceWith({ semStega: true }, url);
+    expect(validatePreviewUrl).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        config: expect.objectContaining({
+          perspective: 'drafts',
+          token: 'token-secreto',
+          stega: false,
+        }),
+      }),
+      url,
+    );
   });
 });

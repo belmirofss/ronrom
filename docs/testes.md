@@ -46,6 +46,26 @@ pnpm test:watch
 
 O `pnpm test` roda o `test` de todo workspace que tiver o script (hoje, `web` e `studio`) e precisa passar em menos de 1 minuto, localmente e no CI. O `pnpm test:watch` roda os testes do site de novo a cada arquivo salvo. Para rodar um arquivo só, de dentro de `web/` ou `studio/`: `pnpm exec vitest run src/lib/rotas.test.ts`.
 
+## Links internos
+
+O job `ci / links` roda o [lychee](https://lychee.cli.rs/) no HTML que o `ci / build` publicou como artifact (`web-dist`), sem buildar de novo e sem rede. Ele confere:
+
+- todo link que começa com `/` (navegação, cards, paginação, CSS, fontes e ícones) aponta para um arquivo do build ou para uma pasta com `index.html`;
+- todo link absoluto para o próprio site (o canonical e o RSS, por exemplo) também, porque a `SITE_URL` é remapeada para a pasta do build;
+- toda âncora (`#conteudo`, `/sobre#autora`) existe como `id` na página de destino.
+
+Links externos ficam de fora: são checados toda semana na #62. O relatório sai no resumo da execução (Actions → a execução do `ci` → Summary).
+
+**Ainda não bloqueia o merge.** O passo do lychee tem `continue-on-error: true`: com link quebrado, o check fica verde e a execução mostra um aviso. Quando o relatório estiver limpo por alguns PRs (páginas de post e RSS no ar), apague essa linha do [`ci.yml`](../.github/workflows/ci.yml) para o job passar a falhar.
+
+**Exclusões** ficam no [`lychee.toml`](../lychee.toml), cada uma com o motivo e, se temporária, a issue que a remove. Página que ainda não existe não entra na lista: ela é exatamente o que o relatório deve mostrar.
+
+Para rodar localmente, com o [lychee instalado](https://lychee.cli.rs/installation/), depois do `pnpm build`, na raiz do repositório (Git Bash no Windows):
+
+```bash
+lychee --root-dir "$PWD/web/dist/client" --remap "^https://ronrom-blog\.vercel\.app(/.*)?$ file://$PWD/web/dist/client\${1}" web/dist/client
+```
+
 ## Como escrever um teste
 
 - **Onde:** em `web/src/**/*.test.ts` (site) ou `studio/lib/**/*.test.ts` (funções puras do Studio, como o `slugify`), ao lado do arquivo testado (`rotas.ts` e `rotas.test.ts`). Arquivos fora desse padrão não rodam.
@@ -227,6 +247,17 @@ As regras de [`web/src/lib/sobre.ts`](../web/src/lib/sobre.ts), com o documento 
 - [ ] Sem o documento, ou com o texto só de blocos vazios, a página mostra o estado vazio.
 - [ ] O alt da foto é o do Studio; sem ele, "Foto de {nome}".
 - [ ] Os metadados usam a description e a imagem do SEO; vazios, a bio e a foto (com o alt da foto); sem documento, os padrões do site.
+
+### Contador de visualizações (#56)
+
+[`registrar.test.ts`](../web/src/lib/views/registrar.test.ts), com um Redis em memória no lugar do Upstash:
+
+- uma visualização nova grava com dois comandos (`SET … NX EX 1800` e `ZINCRBY views:all`); a mesma pessoa no mesmo post grava só o `SET` e não sobe o ranking;
+- fora de produção, sem `User-Agent`, com `User-Agent` de bot (inclui `curl`), com `id` que não está publicado ou com corpo inválido, nenhum comando é mandado;
+- a chave `seen:` é um sha256 sem o IP em claro, igual no mesmo dia de São Paulo e diferente no dia seguinte, com outro IP, navegador, post ou segredo;
+- o cliente REST manda o comando com o token e lança o erro do Upstash.
+
+O script do navegador (5 s de leitura com a aba visível, `sendBeacon` e `sessionStorage`) é conferido à mão em produção ([`visualizacoes.md`](visualizacoes.md#conferir-em-produção)).
 
 ### Componentes
 

@@ -99,7 +99,7 @@ O build gera `web/.vercel/output`, que a Vercel publica como está:
 - `static/`: as páginas e os assets (as mesmas páginas ficam em `web/dist/client`, que o CI guarda como artifact).
 - `functions/_render.func`: **uma única função** com todas as rotas sob demanda. Uma rota nova não cria outra função, só entra nas `routes` do `config.json`, apontando para `_render`.
 
-Hoje há duas rotas sob demanda. A [`/api/health`](../web/src/pages/api/health.ts) é a rota de fumaça: responde `{ "ok": true, "commit": "<sha>" }` com `Cache-Control: no-store`. O `commit` vem da variável de sistema `VERCEL_GIT_COMMIT_SHA`, fixada no build; fora da Vercel, é `null`. A [`/api/csp-report`](../web/src/pages/api/csp-report.ts) recebe os relatórios de violação da CSP e os escreve no log ([`cabecalhos.md`](cabecalhos.md#report-only-e-a-passagem-para-enforce)). Cabeçalhos de segurança e de cache de todas as respostas: [`cabecalhos.md`](cabecalhos.md).
+Hoje há três rotas sob demanda. A [`/api/health`](../web/src/pages/api/health.ts) é a rota de fumaça: responde `{ "ok": true, "commit": "<sha>" }` com `Cache-Control: no-store`. O `commit` vem da variável de sistema `VERCEL_GIT_COMMIT_SHA`, fixada no build; fora da Vercel, é `null`. A [`/api/csp-report`](../web/src/pages/api/csp-report.ts) recebe os relatórios de violação da CSP e os escreve no log ([`cabecalhos.md`](cabecalhos.md#report-only-e-a-passagem-para-enforce)). A [`/api/views`](../web/src/pages/api/views.ts) registra as visualizações dos posts no Upstash Redis ([`visualizacoes.md`](visualizacoes.md)). Cabeçalhos de segurança e de cache de todas as respostas: [`cabecalhos.md`](cabecalhos.md).
 
 ### Como adicionar uma rota sob demanda
 
@@ -192,19 +192,20 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 
 ### Onde vive cada variável
 
-| Variável                               | Tipo    | Obrigatória     | Local (`web/.env*`) | Vercel Production                           | Vercel Preview e Development | GitHub Actions           | Dona         |
-| -------------------------------------- | ------- | --------------- | ------------------- | ------------------------------------------- | ---------------------------- | ------------------------ | ------------ |
-| `SITE_URL`                             | pública | em produção     | opcional            | `https://ronrom-blog.vercel.app`            | não definida (\*)            | variável, não cadastrada | `area:infra` |
-| `STUDIO_URL`                           | pública | não (padrão)    | opcional            | não definida                                | não definida                 | não usada                | `area:cms`   |
-| `SANITY_PROJECT_ID`                    | pública | em produção     | opcional            | `fq2685cq`                                  | `fq2685cq`                   | não usada (fixtures)     | `area:cms`   |
-| `SANITY_DATASET`                       | pública | em produção     | opcional            | `production`                                | `development`                | não usada (fixtures)     | `area:cms`   |
-| `SANITY_API_VERSION`                   | pública | não (padrão)    | opcional            | não definida                                | não definida                 | não usada                | `area:cms`   |
-| `SANITY_FIXTURES`                      | pública | não (`false`)   | opcional            | proibida (`true` derruba o build)           | não definida                 | não usada                | `area:cms`   |
-| `SANITY_API_READ_TOKEN`                | segredo | só na prévia    | opcional            | Secret (dispensável)                        | Secret (dispensável)         | Secret, já cadastrado    | `area:cms`   |
-| `PUBLIC_SANITY_VISUAL_EDITING_ENABLED` | pública | não (`false`)   | opcional            | não definida (só `true` no `ronrom-previa`) | não definida                 | não usada                | `area:cms`   |
-| `KV_REST_API_URL`                      | segredo | não (até a #56) | opcional            | injetada pelo Marketplace (#56)             | injetada pelo Marketplace    | não usada                | `area:dados` |
-| `KV_REST_API_TOKEN`                    | segredo | não (até a #56) | opcional            | injetada pelo Marketplace (#56)             | injetada pelo Marketplace    | não usada                | `area:dados` |
-| `VERCEL_GIT_COMMIT_SHA`                | pública | não             | não definida        | sistema da Vercel                           | sistema da Vercel            | não usada                | `area:infra` |
+| Variável                               | Tipo    | Obrigatória   | Local (`web/.env*`) | Vercel Production                           | Vercel Preview e Development | GitHub Actions           | Dona         |
+| -------------------------------------- | ------- | ------------- | ------------------- | ------------------------------------------- | ---------------------------- | ------------------------ | ------------ |
+| `SITE_URL`                             | pública | em produção   | opcional            | `https://ronrom-blog.vercel.app`            | não definida (\*)            | variável, não cadastrada | `area:infra` |
+| `STUDIO_URL`                           | pública | não (padrão)  | opcional            | não definida                                | não definida                 | não usada                | `area:cms`   |
+| `SANITY_PROJECT_ID`                    | pública | em produção   | opcional            | `fq2685cq`                                  | `fq2685cq`                   | não usada (fixtures)     | `area:cms`   |
+| `SANITY_DATASET`                       | pública | em produção   | opcional            | `production`                                | `development`                | não usada (fixtures)     | `area:cms`   |
+| `SANITY_API_VERSION`                   | pública | não (padrão)  | opcional            | não definida                                | não definida                 | não usada                | `area:cms`   |
+| `SANITY_FIXTURES`                      | pública | não (`false`) | opcional            | proibida (`true` derruba o build)           | não definida                 | não usada                | `area:cms`   |
+| `SANITY_API_READ_TOKEN`                | segredo | só na prévia  | opcional            | Secret (dispensável)                        | Secret (dispensável)         | Secret, já cadastrado    | `area:cms`   |
+| `PUBLIC_SANITY_VISUAL_EDITING_ENABLED` | pública | não (`false`) | opcional            | não definida (só `true` no `ronrom-previa`) | não definida                 | não usada                | `area:cms`   |
+| `KV_REST_API_URL`                      | segredo | não           | opcional            | injetada pelo Marketplace (#56)             | não definida                 | não usada                | `area:dados` |
+| `KV_REST_API_TOKEN`                    | segredo | não           | opcional            | injetada pelo Marketplace (#56)             | não definida                 | não usada                | `area:dados` |
+| `VERCEL_ENV`                           | pública | não           | não definida        | sistema da Vercel                           | sistema da Vercel            | não usada                | `area:infra` |
+| `VERCEL_GIT_COMMIT_SHA`                | pública | não           | não definida        | sistema da Vercel                           | sistema da Vercel            | não usada                | `area:infra` |
 
 (\*) Sem `SITE_URL`, o `astro.config.mjs` usa `https://` + `VERCEL_URL` nos previews (a URL do próprio deploy) e `https://ronrom-blog.vercel.app` no resto (local e CI). `VERCEL_ENV` e `VERCEL_URL` são variáveis de sistema da Vercel, expostas no build sem cadastro.
 
@@ -213,7 +214,8 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 - **`STUDIO_URL`** é o link "Área da autora" do rodapé (#15). O padrão (`https://ronrom.sanity.studio`) é o Studio publicado; só precisa ser cadastrada se o Studio mudar de endereço.
 - **`SANITY_API_READ_TOKEN`** é o token `viewer` do Sanity, só para a [prévia de rascunhos](#prévia-de-rascunhos-ronrom-previa) (#43), onde é obrigatório. O site não o usa: sem a prévia ligada, o cliente lê só o conteúdo publicado, sem token. Foi cadastrado como **Secret** em Production e Preview do projeto `ronrom` (29/10/2026), antes de a prévia ir para o projeto `ronrom-previa`, e pode sair de lá.
 - **`PUBLIC_SANITY_VISUAL_EDITING_ENABLED`** liga o modo prévia no build: `true` só no projeto `ronrom-previa`. O build recusa a prévia com o `SITE_URL` do site.
-- **`KV_REST_API_URL` e `KV_REST_API_TOKEN`** são os nomes que o `Redis.fromEnv()` do `@upstash/redis` lê. A #56 confere, ao instalar o Upstash Redis pelo Marketplace, se a integração injeta exatamente esses nomes; se não, renomeia no schema, no `.env.example` e aqui.
+- **`KV_REST_API_URL` e `KV_REST_API_TOKEN`** são o endereço e o token da API REST do Upstash Redis do contador de visualizações (#56), injetados pela integração do Marketplace só em Production. Sem eles, a `/api/views` não grava nada. Ao provisionar, confira se a integração usa exatamente esses nomes ([`visualizacoes.md`](visualizacoes.md#provisionar-o-upstash-dono-do-repositório)).
+- **`VERCEL_ENV`** é variável de sistema da Vercel, sem cadastro. Entra no schema para a `/api/views` só contar visualizações em `production`; o `astro.config.mjs` também a lê, direto do ambiente.
 - **`VERCEL_GIT_COMMIT_SHA`** é variável de sistema da Vercel, sem cadastro. Entra no schema só para o `/api/health` ler o commit pelo `astro:env`.
 - **Os tokens do Studio** (`SANITY_AUTH_TOKEN`) e as variáveis `SANITY_STUDIO_*` não são do site: veja [`studio/README.md`](../studio/README.md).
 
