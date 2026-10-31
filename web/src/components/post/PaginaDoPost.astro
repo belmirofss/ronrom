@@ -141,13 +141,20 @@ const tags = post.tags ?? [];
     padding-block: var(--espaco-7);
   }
 
+  /* Cada linha tem 44px, a área de toque do chip-link: as áreas não se sobrepõem ao quebrar. */
   .post__tags {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--espaco-2);
+    column-gap: var(--espaco-2);
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+
+  .post__tags li {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
   }
 
   :global(.leia-tambem) {
