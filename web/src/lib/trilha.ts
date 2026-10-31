@@ -1,9 +1,7 @@
-import { tituloDaTag } from '@/lib/listagem';
 import { SECOES, type LinkDeNavegacao } from '@/lib/navegacao';
 import {
   urlDaCategoria,
   urlDaPagina,
-  urlDaTag,
   urlDoFormato,
   urlDoPost,
   type PostComRota,
@@ -41,14 +39,6 @@ export function trilhaDeTodosOsPosts(): ItemDaTrilha[] {
 /** Início › Reviews ou Início › Pensamentos */
 export function trilhaDoTipo(tipo: 'review' | 'pensamento'): ItemDaTrilha[] {
   return [secaoDoCabecalho('/'), secaoDoCabecalho(tipo === 'review' ? '/reviews' : '/pensamentos')];
-}
-
-/** Início › #{tag}. Não existe índice de tags (docs/seo-urls.md), então a tag vem logo depois. */
-export function trilhaDaTag(tag: Secao): ItemDaTrilha[] {
-  return [
-    secaoDoCabecalho('/'),
-    { rotulo: tituloDaTag(nomeDa(tag, 'trilhaDaTag')), href: urlDaTag(tag.slug ?? '') },
-  ];
 }
 
 /** Início › Reviews › {categoria} */

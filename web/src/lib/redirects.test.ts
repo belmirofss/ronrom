@@ -23,7 +23,7 @@ function dados(parcial: Partial<DadosDosRedirects>): DadosDosRedirects {
     fixos: {},
     posts,
     rotasDosPosts: posts,
-    taxonomia: { categorias: [{ slug: 'filmes' }], formatos: [], tags: [{ slug: 'cafe' }] },
+    taxonomia: { categorias: [{ slug: 'filmes' }], formatos: [{ slug: 'frases' }] },
     paginas: ['/', '/sobre', '/reviews'],
     ...parcial,
   };
@@ -90,7 +90,12 @@ describe('montarRedirects', () => {
   });
 
   it('falha com redirect fixo por cima de uma página, um post ou uma listagem', () => {
-    for (const origem of ['/sobre', '/reviews/filmes/novo', '/reviews/filmes', '/tags/cafe']) {
+    for (const origem of [
+      '/sobre',
+      '/reviews/filmes/novo',
+      '/reviews/filmes',
+      '/pensamentos/frases',
+    ]) {
       expect(() =>
         montarRedirects(dados({ fixos: { [origem]: '/' }, posts: [filme('novo')] })),
       ).toThrow(`${origem} (web/redirects.mjs)`);

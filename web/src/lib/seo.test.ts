@@ -45,10 +45,6 @@ const post = {
   formato: null,
   capa,
   corpo: [bloco('Um filme sobre o agora.')],
-  tags: [
-    { nome: 'Japão', slug: 'japao' },
-    { nome: 'Cinema', slug: 'cinema' },
-  ],
   seo: null,
 };
 
@@ -107,7 +103,6 @@ describe('seoDoPost', () => {
       noindex: false,
       publishedTime: '2026-03-14T12:00:00-03:00',
       modifiedTime: '2026-03-20T10:00:00Z',
-      tags: ['Japão', 'Cinema'],
       section: 'Filmes',
     });
   });

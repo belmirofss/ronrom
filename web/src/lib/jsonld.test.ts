@@ -194,15 +194,12 @@ describe('blogPosting', () => {
     });
   });
 
-  it('usa as tags como palavras-chave e omite o que está vazio', async () => {
+  it('omite o que está vazio, sem palavras-chave', async () => {
     const post = await buscarPost('pensamento', 'artigos', 'por-que-eu-anoto-tudo-num-caderno');
 
-    expect(blogPosting({ ...post, tags: [{ nome: 'Café', slug: 'cafe' }] }, true).keywords).toEqual(
-      ['Café'],
-    );
-    const semTags = blogPosting({ ...post, tags: [] }, false);
-    expect(semTags).not.toHaveProperty('keywords');
-    expect(semTags).not.toHaveProperty('author');
+    const semAutora = blogPosting(post, false);
+    expect(semAutora).not.toHaveProperty('keywords');
+    expect(semAutora).not.toHaveProperty('author');
   });
 
   it('pede a capa do CDN em 1200×630, 1200×900 e 1200×1200', async () => {

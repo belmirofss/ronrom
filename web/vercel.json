@@ -6,6 +6,7 @@
   "ignoreCommand": "bash ../scripts/vercel-ignorar-build.sh",
   "trailingSlash": false,
   "regions": ["gru1"],
+  "redirects": [{ "source": "/tags/:caminho*", "destination": "/busca", "statusCode": 301 }],
   "headers": [
     {
       "source": "/(.*)",

@@ -191,10 +191,10 @@ function imagensDoPost(post: Post): string[] {
     : [imagemDeCompartilhamento(null, undefined, post.titulo ?? '').url];
 }
 
-/** Um pensamento. Datas no fuso de Brasília; a seção é o formato e as palavras-chave, as tags. */
+/** Um pensamento. Datas no fuso de Brasília; a seção é o formato. */
 export function blogPosting(post: Post, comAutora: boolean): BlogPosting {
   const url = canonicalUrl(urlDoPost(post));
-  const tags = (post.tags ?? []).flatMap(({ nome }) => (nome ? [nome] : []));
+
   return {
     '@type': 'BlogPosting',
     '@id': idDoPost(url),
@@ -208,7 +208,7 @@ export function blogPosting(post: Post, comAutora: boolean): BlogPosting {
     mainEntityOfPage: ref(url),
     isPartOf: ref(ID_DO_SITE),
     inLanguage: IDIOMA,
-    ...(tags.length > 0 ? { keywords: tags } : {}),
+
     ...(post.formato?.nome ? { articleSection: post.formato.nome } : {}),
     wordCount: contarPalavras(post.corpo),
   };

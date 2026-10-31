@@ -1,5 +1,5 @@
 // Conteúdo de exemplo do dataset development, gravado pelo scripts/seed.ts: 12 posts (uma review
-// por categoria e pensamentos de todos os formatos), tags, Configurações do site e Sobre mim.
+// por categoria e pensamentos de todos os formatos), Configurações do site e Sobre mim.
 // Cobre os casos que o site precisa mostrar: frase bem curta, texto longo, post sem subtítulo e
 // um post com todos os blocos do texto. Os textos e as pessoas são de exemplo; as imagens são
 // ilustrações próprias, em seed/imagens.
@@ -39,26 +39,6 @@ export type NomeDaImagem = (typeof IMAGENS)[number];
 // `_id` do asset de cada imagem, depois de enviada.
 export type Assets = Record<NomeDaImagem, string>;
 
-const TAGS = [
-  'Café',
-  'Cinema',
-  'Cinema japonês',
-  'São Paulo',
-  'Leitura',
-  'Literatura brasileira',
-  'Séries',
-  'Domingo',
-  'Rotina',
-  'Treino',
-  'Comida de rua',
-  'Escrita',
-  'Internet',
-] as const;
-
-type NomeDaTag = (typeof TAGS)[number];
-
-const idDaTag = (nome: NomeDaTag) => `seed-tag-${slugify(nome)}`;
-
 export const POSTS = {
   diasPerfeitos: 'seed-post-01',
   theBear: 'seed-post-02',
@@ -83,7 +63,6 @@ interface DadosComuns {
   // Fixa, e não "agora": rodar o seed de novo grava o mesmo documento.
   dataDePublicacao: string;
   capa: { imagem: NomeDaImagem; alt: string; legenda?: string };
-  tags: NomeDaTag[];
   corpo: (Bloco | Bloco[])[];
   seo?: { titulo?: string; descricao?: string };
 }
@@ -95,7 +74,7 @@ type DadosDoPost = DadosComuns &
   );
 
 function post(assets: Assets, dados: DadosDoPost): Documento {
-  const { capa, tags, corpo, ...resto } = dados;
+  const { capa, corpo, ...resto } = dados;
   return {
     ...resto,
     _type: 'post',
@@ -108,7 +87,6 @@ function post(assets: Assets, dados: DadosDoPost): Documento {
       ...(capa.legenda && { legenda: capa.legenda }),
     }),
     corpo: corpo.flat(),
-    tags: tags.map((nome) => referencia(idDaTag(nome))),
   };
 }
 
@@ -123,7 +101,6 @@ function posts(assets: Assets): DadosDoPost[] {
       subtitulo: 'O filme mais calmo do ano é também o que mais ficou comigo',
       dataDePublicacao: '2026-10-28T12:30:00.000Z',
       capa: { imagem: 'cinema', alt: 'Ilustração de uma sala de cinema com a tela acesa' },
-      tags: ['Cinema', 'Cinema japonês', 'Rotina'],
       ficha: {
         direcao: 'Wim Wenders',
         ano: 2023,
@@ -213,7 +190,6 @@ function posts(assets: Assets): DadosDoPost[] {
       subtitulo: 'Uma cozinha barulhenta e, no meio dela, uma série sobre luto',
       dataDePublicacao: '2026-10-21T22:00:00.000Z',
       capa: { imagem: 'serie', alt: 'Ilustração de uma televisão com o botão de play' },
-      tags: ['Séries'],
       ficha: {
         criacao: 'Christopher Storer',
         anoDeEstreia: 2022,
@@ -239,7 +215,6 @@ function posts(assets: Assets): DadosDoPost[] {
       subtitulo: 'Duas irmãs, uma faca e a terra que nunca foi delas',
       dataDePublicacao: '2026-10-14T13:00:00.000Z',
       capa: { imagem: 'livro', alt: 'Ilustração de um livro aberto' },
-      tags: ['Leitura', 'Literatura brasileira'],
       ficha: {
         autoria: 'Itamar Vieira Junior',
         editora: 'Todavia',
@@ -273,7 +248,6 @@ function posts(assets: Assets): DadosDoPost[] {
         alt: 'Ilustração de uma xícara de café fumegante sobre a mesa',
         legenda: 'Ilustração de exemplo',
       },
-      tags: ['Café', 'São Paulo'],
       ficha: {
         endereco: {
           rua: 'Rua das Laranjeiras, 120',
@@ -311,7 +285,6 @@ function posts(assets: Assets): DadosDoPost[] {
       titulo: 'Parque Ibirapuera num domingo de manhã',
       dataDePublicacao: '2026-09-30T11:00:00.000Z',
       capa: { imagem: 'parque', alt: 'Ilustração de um parque com lago e árvores' },
-      tags: ['São Paulo', 'Domingo'],
       ficha: {
         endereco: {
           rua: 'Av. Pedro Álvares Cabral, s/n',
@@ -341,7 +314,6 @@ function posts(assets: Assets): DadosDoPost[] {
       subtitulo: 'Crocante por fora, mas o recheio de goiabada não convenceu',
       dataDePublicacao: '2026-09-23T15:30:00.000Z',
       capa: { imagem: 'pao-de-queijo', alt: 'Ilustração de uma cesta com pães de queijo' },
-      tags: ['Comida de rua'],
       ficha: {
         marca: 'Barraca da Dona Lúcia, feira de sábado',
         preco: 18.5,
@@ -362,7 +334,6 @@ function posts(assets: Assets): DadosDoPost[] {
       titulo: 'Café primeiro.',
       dataDePublicacao: '2026-10-26T10:00:00.000Z',
       capa: { imagem: 'frase', alt: 'Ilustração de aspas grandes sobre fundo vinho' },
-      tags: ['Café'],
       corpo: [paragrafo('Café primeiro. O resto depois.')],
     },
     {
@@ -373,7 +344,6 @@ function posts(assets: Assets): DadosDoPost[] {
       subtitulo: 'Um lembrete que mora em casa',
       dataDePublicacao: '2026-10-12T19:45:00.000Z',
       capa: { imagem: 'gato', alt: 'Ilustração de um gato sentado' },
-      tags: ['Rotina'],
       corpo: [
         paragrafo(
           'Todo gato dormindo no sol é um lembrete de que quase nada é tão urgente quanto parece.',
@@ -388,7 +358,6 @@ function posts(assets: Assets): DadosDoPost[] {
       subtitulo: 'Mas voltei todas as segundas, e isso diz alguma coisa',
       dataDePublicacao: '2026-10-19T23:10:00.000Z',
       capa: { imagem: 'treino', alt: 'Ilustração de um kettlebell no chão do box' },
-      tags: ['Treino', 'Rotina'],
       corpo: [
         paragrafo(
           'Entrei no box em abril achando que ia durar um mês. A primeira aula terminou comigo sentada no chão, contando quantos burpees faltavam e negociando com o universo.',
@@ -418,7 +387,6 @@ function posts(assets: Assets): DadosDoPost[] {
         imagem: 'caderno',
         alt: 'Ilustração de um caderno pautado aberto com uma caneta ao lado',
       },
-      tags: ['Escrita', 'Rotina'],
       seo: {
         descricao:
           'Escrever à mão é mais lento, e é exatamente por isso que eu continuo. Sobre cadernos, memória e o tempo de pensar antes de publicar.',
@@ -508,7 +476,6 @@ function posts(assets: Assets): DadosDoPost[] {
       titulo: 'Ninguém precisa ter opinião sobre tudo',
       dataDePublicacao: '2026-09-16T21:00:00.000Z',
       capa: { imagem: 'frase', alt: 'Ilustração de aspas grandes sobre fundo vinho' },
-      tags: ['Internet'],
       corpo: [
         paragrafo(
           'Toda semana a internet escolhe um assunto e espera que a gente tenha uma posição até sexta. Eu cansei. Algumas coisas eu não li, outras eu não entendi, e várias eu simplesmente não me importo.',
@@ -530,7 +497,6 @@ function posts(assets: Assets): DadosDoPost[] {
         alt: 'Ilustração de um parque com lago e árvores',
         legenda: 'Ilustração de exemplo',
       },
-      tags: ['Domingo', 'Rotina', 'São Paulo'],
       corpo: [
         paragrafo(
           'Deixei o celular na gaveta às oito da manhã e só voltei a pegar às oito da noite. Nas primeiras duas horas, a mão procurava o bolso sozinha.',
@@ -601,15 +567,7 @@ function sobre(assets: Assets): Documento {
 
 // Tudo que o seed grava, menos a taxonomia (lib/taxonomia.ts), já com as `_key` dos arrays.
 export function documentosDoSeed(assets: Assets): Documento[] {
-  const tags = TAGS.map((nome) => ({
-    _id: idDaTag(nome),
-    _type: 'tag',
-    nome,
-    slug: { _type: 'slug', current: slugify(nome) },
-  }));
-
   return numerarChaves([
-    ...tags,
     ...posts(assets).map((dados) => post(assets, dados)),
     configuracoes(assets),
     sobre(assets),

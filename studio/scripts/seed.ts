@@ -1,5 +1,5 @@
 // Popula o dataset development com o conteúdo de exemplo de seed/conteudo.ts: a taxonomia inicial
-// (lib/taxonomia.ts), tags, 12 posts, Configurações do site e Sobre mim. Idempotente: os `_id` são
+// (lib/taxonomia.ts), 12 posts, Configurações do site e Sobre mim. Idempotente: os `_id` são
 // fixos (`seed-post-01`…) e tudo é gravado com createOrReplace, e as imagens, que o Sanity
 // identifica pelo conteúdo, não duplicam ao enviar de novo. Com --reset, apaga antes os
 // documentos `seed-*` (publicados e rascunhos), inclusive os que o seed não cria mais.

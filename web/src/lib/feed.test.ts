@@ -12,7 +12,6 @@ const post: CONSULTA_DO_FEED_RESULT[number] = {
   dataDePublicacao: '2026-03-14T12:00:00-03:00',
   categoria: { nome: 'Restaurantes e cafés', slug: 'restaurantes-e-cafes' },
   formato: null,
-  tags: [{ nome: 'Café' }, { nome: 'São Paulo' }],
   capa: {
     _type: 'image',
     alt: 'Xícara "grande" & pão',
@@ -35,7 +34,7 @@ describe('itemDoFeed', () => {
       description: 'Pão de queijo & café coado',
       link: 'https://ronrom-blog.vercel.app/reviews/restaurantes-e-cafes/cafe-do-bairro',
       pubDate: new Date('2026-03-14T15:00:00Z'),
-      categories: ['Review', 'Restaurantes e cafés', 'Café', 'São Paulo'],
+      categories: ['Review', 'Restaurantes e cafés'],
     });
   });
 

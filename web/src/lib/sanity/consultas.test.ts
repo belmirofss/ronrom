@@ -9,7 +9,6 @@ import type {
   CONSULTA_DO_POST_RESULT,
   CONSULTA_DO_SITEMAP_RESULT,
   CONSULTA_DOS_POSTS_DA_CATEGORIA_RESULT,
-  CONSULTA_DOS_POSTS_DA_TAG_RESULT,
   CONSULTA_DOS_REDIRECTS_RESULT,
   CONSULTA_DOS_ULTIMOS_POSTS_RESULT,
 } from './tipos.gerados';
@@ -74,10 +73,6 @@ const dataset = [
     slug: { current: 'frases' },
     ordem: 1,
   },
-  { _id: 'tag-cafe', _type: 'tag', nome: 'Café', slug: { current: 'cafe' } },
-  { _id: 'tag-cinema', _type: 'tag', nome: 'Cinema', slug: { current: 'cinema' } },
-  { _id: 'tag-sem-post', _type: 'tag', nome: 'Sem post', slug: { current: 'sem-post' } },
-  { _id: 'drafts.tag-nova', _type: 'tag', nome: 'PROIBIDO tag', slug: { current: 'nova' } },
   {
     _id: 'configuracoes',
     _type: 'configuracoes',
@@ -100,7 +95,6 @@ const dataset = [
 
   review('dias-perfeitos', 'categoria-filmes', '2026-03-10T15:00:00-03:00', {
     nota: 4.5,
-    tags: [referencia('tag-cinema'), referencia('tag-nova')],
     // Sobrou um campo de lugar de quando a review era de outra categoria.
     ficha: { direcao: 'Wim Wenders', ano: 2023, tipoDeCozinha: 'japonesa' },
     corpo: [
@@ -112,11 +106,8 @@ const dataset = [
       },
     ],
   }),
-  review('cafe-do-bairro', 'categoria-lugares', '2026-03-12T09:00:00-03:00', {
-    tags: [referencia('tag-cafe')],
-  }),
+  review('cafe-do-bairro', 'categoria-lugares', '2026-03-12T09:00:00-03:00', {}),
   pensamento('sobre-gatos', 'formato-frases', '2026-03-11T20:00:00-03:00', {
-    tags: [referencia('tag-cafe')],
     slugsAnteriores: ['/pensamentos/frases/gatos'],
   }),
   review('antigo', 'categoria-filmes', '2026-01-01T12:00:00-03:00', {
@@ -132,7 +123,6 @@ const dataset = [
   review('drafts.so-rascunho', 'categoria-filmes', '2026-03-20T12:00:00-03:00', {
     slug: { current: 'so-rascunho' },
     titulo: 'PROIBIDO rascunho',
-    tags: [referencia('tag-sem-post')],
   }),
   review('versions.r1.cafe-do-bairro', 'categoria-lugares', '2026-03-12T09:00:00-03:00', {
     slug: { current: 'cafe-do-bairro' },
@@ -140,7 +130,6 @@ const dataset = [
   }),
   review('futuro', 'categoria-filmes', '2026-10-30T12:00:01Z', {
     titulo: 'PROIBIDO futuro',
-    tags: [referencia('tag-sem-post')],
   }),
 ];
 
@@ -160,7 +149,6 @@ const PARAMETROS = {
   tipo: 'review',
   categoria: 'filmes',
   formato: 'frases',
-  tag: 'cafe',
   secao: 'filmes',
   slug: 'dias-perfeitos',
   id: 'dias-perfeitos',
@@ -252,20 +240,11 @@ describe('listagens paginadas', () => {
     })) as CONSULTA_DOS_POSTS_DA_CATEGORIA_RESULT;
     expect(resultado).toEqual({ categoria: null, posts: [], total: 0 });
   });
-
-  it('filtra pela tag, misturando reviews e pensamentos', async () => {
-    const resultado = (await rodar(consultas.CONSULTA_DOS_POSTS_DA_TAG, {
-      ...PARAMETROS,
-      tag: 'cafe',
-    })) as CONSULTA_DOS_POSTS_DA_TAG_RESULT;
-    expect(resultado.tag).toEqual({ nome: 'Café', slug: 'cafe' });
-    expect(resultado.posts.map(({ _id }) => _id)).toEqual(['cafe-do-bairro', 'sobre-gatos']);
-  });
 });
 
 describe('CONSULTA_DA_TAXONOMIA', () => {
-  it('conta só os posts no ar e deixa de fora as tags sem post', async () => {
-    const { categorias, formatos, tags } = (await rodar(
+  it('conta só os posts no ar', async () => {
+    const { categorias, formatos } = (await rodar(
       consultas.CONSULTA_DA_TAXONOMIA,
     )) as CONSULTA_DA_TAXONOMIA_RESULT;
     expect(categorias.map(({ slug, total }) => [slug, total])).toEqual([
@@ -273,10 +252,6 @@ describe('CONSULTA_DA_TAXONOMIA', () => {
       ['lugares', 1],
     ]);
     expect(formatos.map(({ slug, total }) => [slug, total])).toEqual([['frases', 1]]);
-    expect(tags.map(({ slug, total }) => [slug, total])).toEqual([
-      ['cafe', 2],
-      ['cinema', 1],
-    ]);
   });
 });
 
@@ -320,11 +295,6 @@ describe('CONSULTA_DO_POST', () => {
       ondeVi: null,
       valeAPena: null,
     });
-  });
-
-  it('deixa de fora as tags que não estão publicadas', async () => {
-    const resultado = await buscar('review', 'filmes', 'dias-perfeitos');
-    expect(resultado?.tags).toEqual([{ nome: 'Cinema', slug: 'cinema' }]);
   });
 
   it('resolve o link interno para um post fora do ar como null', async () => {

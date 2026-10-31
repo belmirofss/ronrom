@@ -22,7 +22,6 @@ export type Metadados = {
   // Datas ISO 8601, só em `article`.
   publishedTime?: string | undefined;
   modifiedTime?: string | undefined;
-  tags?: readonly string[] | undefined;
   section?: string | undefined;
 };
 
@@ -143,7 +142,6 @@ type PostParaSeo = Pick<
   | 'formato'
   | 'capa'
   | 'corpo'
-  | 'tags'
   | 'seo'
 >;
 
@@ -179,7 +177,7 @@ export function seoDoPost(post: PostParaSeo, canonical: string): Metadados {
     noindex: post.seo?.noindex ?? false,
     publishedTime: post.dataDePublicacao,
     modifiedTime: post._updatedAt,
-    tags: post.tags?.map(({ nome }) => nome) ?? [],
+
     section: (post.tipo === 'review' ? post.categoria : post.formato)?.nome,
   };
 }

@@ -48,7 +48,7 @@ export default defineConfig(
     },
   },
   // Caminhos de post, categoria, formato, tag e paginação só saem de web/src/lib/rotas.ts
-  // (docs/seo-urls.md#helpers-de-rota). Pega `/reviews/${...}` e '/tags/' + slug, por exemplo.
+  // (docs/seo-urls.md#helpers-de-rota). Pega `/reviews/${...}` e '/pensamentos/' + slug, por exemplo.
   {
     files: ['web/src/**/*.{ts,astro}'],
     // O redirects.ts roda no astro.config, antes do astro:env que o rotas.ts lê, e monta os
@@ -59,12 +59,12 @@ export default defineConfig(
         'error',
         {
           selector:
-            'TemplateLiteral > TemplateElement[value.raw=/^\\/(reviews|pensamentos|tags)\\/|\\/pagina\\/$/]',
+            'TemplateLiteral > TemplateElement[value.raw=/^\\/(reviews|pensamentos)\\/|\\/pagina\\/$/]',
           message: 'Monte a URL com os helpers de @/lib/rotas.',
         },
         {
           selector:
-            "BinaryExpression[operator='+'] > Literal[value=/^\\/(reviews|pensamentos|tags)\\/|\\/pagina\\/$/]",
+            "BinaryExpression[operator='+'] > Literal[value=/^\\/(reviews|pensamentos)\\/|\\/pagina\\/$/]",
           message: 'Monte a URL com os helpers de @/lib/rotas.',
         },
       ],

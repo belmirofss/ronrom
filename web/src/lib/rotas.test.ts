@@ -1,12 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  canonicalUrl,
-  urlDaCategoria,
-  urlDaPagina,
-  urlDaTag,
-  urlDoFormato,
-  urlDoPost,
-} from '@/lib/rotas';
+import { canonicalUrl, urlDaCategoria, urlDaPagina, urlDoFormato, urlDoPost } from '@/lib/rotas';
 
 // A URL base não pode depender do web/.env de quem roda o teste (docs/testes.md).
 vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
@@ -31,10 +24,6 @@ describe('exemplos do seo-urls.md', () => {
 
   it('categoria: /reviews/{slug}', () => {
     expect(urlDaCategoria('restaurantes-e-cafes')).toBe('/reviews/restaurantes-e-cafes');
-  });
-
-  it('tag: /tags/{slug}', () => {
-    expect(urlDaTag('cafe')).toBe('/tags/cafe');
   });
 
   it('página 1 é a própria listagem', () => {
@@ -103,7 +92,7 @@ describe('urlDoPost', () => {
   });
 });
 
-describe('urlDoFormato, urlDaCategoria e urlDaTag', () => {
+describe('urlDoFormato e urlDaCategoria', () => {
   it('formato: /pensamentos/{slug}', () => {
     expect(urlDoFormato('opinioes')).toBe('/pensamentos/opinioes');
   });
@@ -111,7 +100,6 @@ describe('urlDoFormato, urlDaCategoria e urlDaTag', () => {
   it.each([
     ['urlDaCategoria', urlDaCategoria],
     ['urlDoFormato', urlDoFormato],
-    ['urlDaTag', urlDaTag],
   ])('%s recusa slug fora do formato e o reservado "pagina"', (_nome, helper) => {
     expect(() => helper('Café')).toThrow();
     expect(() => helper('')).toThrow();
@@ -124,12 +112,15 @@ describe('urlDaPagina', () => {
     expect(() => urlDaPagina('/posts', n)).toThrow(/Página inválida/);
   });
 
-  it.each(['/', '', 'posts', '/posts/', '/tags/Cafe'])('lança erro com a base "%s"', (base) => {
-    expect(() => urlDaPagina(base, 2)).toThrow(/Base de listagem inválida/);
-  });
+  it.each(['/', '', 'posts', '/posts/', '/reviews/Filmes'])(
+    'lança erro com a base "%s"',
+    (base) => {
+      expect(() => urlDaPagina(base, 2)).toThrow(/Base de listagem inválida/);
+    },
+  );
 
   it('funciona com a base de qualquer listagem', () => {
-    expect(urlDaPagina(urlDaTag('cafe'), 3)).toBe('/tags/cafe/pagina/3');
+    expect(urlDaPagina(urlDoFormato('frases'), 3)).toBe('/pensamentos/frases/pagina/3');
     expect(urlDaPagina('/posts', 10)).toBe('/posts/pagina/10');
   });
 });
@@ -141,7 +132,6 @@ describe('barra final', () => {
       urlDoPost({ tipo: 'pensamento', slug: 'a', formato: { slug: 'frases' } }),
       urlDaCategoria('filmes'),
       urlDoFormato('frases'),
-      urlDaTag('cafe'),
       urlDaPagina('/posts', 1),
       urlDaPagina('/posts', 2),
     ];

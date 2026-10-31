@@ -31,11 +31,10 @@ export interface PostComAnteriores extends RotaDoPost {
   anteriores: string[] | null;
 }
 
-/** Categorias, formatos e tags com post, cada um com a listagem dele. */
+/** Categorias e formatos, cada um com a listagem dele. */
 export interface TaxonomiaComPagina {
   categorias: { slug: string }[];
   formatos: { slug: string }[];
-  tags: { slug: string }[];
 }
 
 /**
@@ -113,13 +112,12 @@ export function montarRedirects({
   paginas,
 }: DadosDosRedirects) {
   const avisos: string[] = [];
-  // As listagens nos mesmos caminhos do urlDaCategoria, urlDoFormato e urlDaTag (rotas.ts).
+  // As listagens nos mesmos caminhos do urlDaCategoria e do urlDoFormato (rotas.ts).
   const noAr = new Set([
     ...paginas,
     ...rotasDosPosts.map(caminho),
     ...taxonomia.categorias.map(({ slug }) => `/reviews/${slug}`),
     ...taxonomia.formatos.map(({ slug }) => `/pensamentos/${slug}`),
-    ...taxonomia.tags.map(({ slug }) => `/tags/${slug}`),
   ]);
   const mapa = new Map<string, RedirectComOrigem>();
 
