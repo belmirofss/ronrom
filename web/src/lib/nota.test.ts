@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { coracoesDaNota, rotuloDaNota, validarNota, type Preenchimento } from '@/lib/nota';
+import {
+  coracoesDaNota,
+  notaPorExtenso,
+  rotuloDaNota,
+  validarNota,
+  type Preenchimento,
+} from '@/lib/nota';
 
 function contar(coracoes: Preenchimento[]) {
   return {
@@ -62,5 +68,17 @@ describe('rotuloDaNota', () => {
 
   it('lança erro para nota inválida', () => {
     expect(() => rotuloDaNota(0)).toThrow(/Nota inválida/);
+  });
+});
+
+describe('notaPorExtenso', () => {
+  it.each([
+    [0.5, '0,5 coração'],
+    [1.5, '1,5 coração'],
+    [2, '2 corações'],
+    [4.5, '4,5 corações'],
+    [5, '5 corações'],
+  ])('%d vira "%s"', (nota, texto) => {
+    expect(notaPorExtenso(nota)).toBe(texto);
   });
 });

@@ -34,7 +34,7 @@ Domínio de produção novo entra na regex do `has` da segunda regra, no mesmo P
 
 ```
 default-src 'self';
-script-src 'self' https://www.instagram.com https://cloud.umami.is;
+script-src 'self' 'wasm-unsafe-eval' https://www.instagram.com https://cloud.umami.is;
 style-src 'self' 'unsafe-inline';
 img-src 'self' data: https://cdn.sanity.io https://i.ytimg.com;
 font-src 'self';
@@ -54,6 +54,7 @@ frame-ancestors …; report-uri /api/csp-report; report-to csp
 | `data:`                                   | Imagens de placeholder das fixtures e SVGs pequenos que o Vite põe inline           |
 
 - **Scripts:** só arquivos do próprio site, sem `'unsafe-inline'`. O Astro poria inline, dentro do HTML, os scripts menores que 4 kB (os das fachadas, por exemplo); o `vite.build.assetsInlineLimit` do [`astro.config.mjs`](../web/astro.config.mjs) desliga isso só para JS. **Não use `<script is:inline>`** nem atributos `on*=`: a CSP bloqueia. Se um dia for inevitável, acrescente o hash do script (`'sha256-…'`) ao `script-src`.
+- **WebAssembly:** `'wasm-unsafe-eval'` no `script-src` deixa a busca (Pagefind, #54) compilar o WASM dela. Libera só WebAssembly, não `eval` de JavaScript. Detalhes em [`busca.md`](busca.md#csp).
 - **Estilos:** `'unsafe-inline'` é necessário porque o Astro põe no HTML o `@font-face` da DM Sans e o CSS pequeno de cada página, e o `ImagemSanity` usa `style=` para o `aspect-ratio` e a cor de fundo. CSS injetado não executa código, então o risco é baixo.
 - **Política dupla:** a CSP está duas vezes no `vercel.json` (previews e produção), que não aceita variável. Ao mudar uma, mude a outra: o [`csp.test.ts`](../web/src/lib/csp.test.ts) falha se elas diferirem em algo além do `frame-ancestors`.
 - **Serviço novo** (outro embed, outro analytics): acrescente a origem na diretiva certa nas duas cópias e na tabela acima, no mesmo PR.
@@ -77,8 +78,9 @@ Para passar para o modo enforce:
 | `/_astro/*`                 | `public, max-age=31536000, immutable` | `vercel.json` (o adapter já manda o mesmo) |
 | `/api/*`                    | `no-store`                            | `vercel.json` e cada rota                  |
 | HTML e o resto de `public/` | `public, max-age=0, must-revalidate`  | padrão da Vercel                           |
+| `/pagefind/*` (busca, #54)  | `public, max-age=0, must-revalidate`  | padrão da Vercel                           |
 
-Os arquivos em `/_astro` têm o hash do conteúdo no nome, então podem ficar no cache para sempre: um build novo gera nomes novos. O HTML não pode: o navegador sempre revalida, e a CDN da Vercel guarda a página até o próximo deploy, que invalida o cache sozinho. Por isso conteúdo novo aparece assim que o rebuild termina (#17). Arquivos de `web/public` não têm hash: nunca dê cache longo para eles.
+Os arquivos em `/_astro` têm o hash do conteúdo no nome, então podem ficar no cache para sempre: um build novo gera nomes novos. O HTML não pode: o navegador sempre revalida, e a CDN da Vercel guarda a página até o próximo deploy, que invalida o cache sozinho. Por isso conteúdo novo aparece assim que o rebuild termina (#17). Arquivos de `web/public` não têm hash: nunca dê cache longo para eles. O mesmo vale para `/pagefind/`: os pedaços do índice têm hash no nome, mas o `pagefind.js`, o `pagefind-entry.json` e o WASM não, e precisam mudar juntos a cada build ([`busca.md`](busca.md)).
 
 ## Redirects
 

@@ -17,6 +17,8 @@ vi.mock('astro:env/server', () => ({
   SANITY_PROJECT_ID: undefined,
   SANITY_DATASET: undefined,
   SANITY_API_VERSION: '2025-02-19',
+  // Lido pelo robotsDaPagina (seo.ts, #52); o JSON-LD não depende dele.
+  VERCEL_ENV: undefined,
 }));
 vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
 
