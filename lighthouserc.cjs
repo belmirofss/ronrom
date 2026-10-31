@@ -57,6 +57,9 @@ module.exports = {
         extraHeaders: segredo
           ? JSON.stringify({
               'x-vercel-protection-bypass': segredo,
+              // O Lighthouse baixa o robots.txt por fora da página, sem os cabeçalhos extras: sem o
+              // cookie que a navegação grava, ele receberia a tela de login da Vercel.
+              'x-vercel-set-bypass-cookie': 'true',
               // Sem a barra de ferramentas da Vercel, que só existe no preview e pesaria no JS.
               'x-vercel-skip-toolbar': '1',
             })
