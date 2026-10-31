@@ -1,6 +1,7 @@
 ---
 import BarraLateral from '@/components/barra-lateral/BarraLateral.astro';
 import ItemDeLista from '@/components/post/ItemDeLista.astro';
+import JsonLd from '@/components/seo/JsonLd.astro';
 import Breadcrumb from '@/components/ui/Breadcrumb.astro';
 import EstadoVazio from '@/components/ui/EstadoVazio.astro';
 import Paginacao from '@/components/ui/Paginacao.astro';
@@ -40,18 +41,26 @@ const { titulo, descricao, descricaoPadrao, trilha, base, pagina, posts, total, 
 
 const paginas = totalDePaginas(total);
 const textoDaDescricao = descricao?.trim();
+// A trilha desta página serve ao Breadcrumb e ao BreadcrumbList do JSON-LD, sempre iguais.
+const trilhaDaListagem = trilhaDaPagina(trilha, pagina);
+const tituloDaListagem = tituloComPagina(titulo, pagina);
 ---
 
 <LayoutComBarraLateral
   seo={{
     ...seoDaPaginacao(base, pagina, paginas),
-    title: tituloComPagina(titulo, pagina),
+    title: tituloDaListagem,
     description: textoDaDescricao || descricaoPadrao,
   }}
 >
+  <JsonLd
+    slot="head"
+    pagina={{ tipo: 'listagem', titulo: tituloDaListagem, trilha: trilhaDaListagem }}
+  />
+
   <div class="listagem">
     <header class="listagem__topo">
-      <Breadcrumb itens={trilhaDaPagina(trilha, pagina)} />
+      <Breadcrumb itens={trilhaDaListagem} />
       <h1 class="listagem__titulo">
         {titulo}
         {pagina > 1 && <span class="listagem__pagina">{` — página ${pagina}`}</span>}

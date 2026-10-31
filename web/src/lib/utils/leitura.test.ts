@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { tempoDeLeitura } from '@/lib/utils/leitura';
+import { contarPalavras, tempoDeLeitura } from '@/lib/utils/leitura';
 
 const palavras = (n: number) => Array.from({ length: n }, (_, i) => `palavra${i}`).join(' ');
 
@@ -61,5 +61,12 @@ describe('tempoDeLeitura', () => {
     const texto = `  ${palavras(200).replaceAll(' ', '   \n\t ')}  —  ...  !  `;
     expect(tempoDeLeitura([bloco('normal', texto)])).toBe('1 min de leitura');
     expect(tempoDeLeitura([bloco('normal', `${texto} mais`)])).toBe('2 min de leitura');
+  });
+});
+
+describe('contarPalavras', () => {
+  it('conta as palavras dos blocos de texto e ignora o resto', () => {
+    expect(contarPalavras([bloco('normal', 'neg', 'rito e — mais'), { _type: 'imagem' }])).toBe(3);
+    expect(contarPalavras(undefined)).toBe(0);
   });
 });
