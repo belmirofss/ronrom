@@ -1,0 +1,192 @@
+# Lighthouse CI (#60): Performance, Acessibilidade, Best Practices e SEO no celular, contra o deploy
+# da Vercel. No preview de cada PR, falha se Acessibilidade, SEO ou Best Practices caírem abaixo
+# de 95 ou se uma página passar do orçamento de tamanho; Performance e Core Web Vitals só avisam.
+# Em produção, depois de cada deploy, com a auditoria `is-crawlable`, tudo é erro. Configuração:
+# lighthouserc.cjs e budget.json. Como ler o resultado: docs/performance.md.
+name: lighthouse
+
+on:
+  # A Vercel deste projeto não cria GitHub Deployments (só os commit statuses "Vercel – ronrom"),
+  # então o `deployment_status` nunca dispararia. Ela manda, a cada deploy pronto, um
+  # repository_dispatch com a URL, o ambiente e o commit. Esse evento roda o workflow da `main`,
+  # não o do PR, e o resultado volta ao PR como o commit status `lighthouse (preview)`.
+  repository_dispatch:
+    types: [vercel.deployment.success]
+  # Execução manual (Actions → lighthouse → Run workflow), contra qualquer deploy do site.
+  workflow_dispatch:
+    inputs:
+      url:
+        description: URL base do deploy, sem barra no final
+        required: true
+        default: https://ronrom-blog.vercel.app
+      ambiente:
+        description: preview (sem is-crawlable, Performance só avisa) ou producao
+        type: choice
+        options: [producao, preview]
+        default: producao
+
+permissions:
+  contents: read
+  statuses: write
+
+# Um push novo no PR cancela a execução do deploy anterior.
+concurrency:
+  group: lighthouse-${{ github.event.client_payload.git.ref || github.event.client_payload.git.sha || github.ref }}-${{ github.event.client_payload.environment || inputs.ambiente }}
+  cancel-in-progress: true
+
+jobs:
+  lighthouse:
+    name: lighthouse
+    # Só o site: o ronrom-previa (docs/ambientes.md#prévia-de-rascunhos-ronrom-previa) também
+    # manda o evento.
+    if: github.event_name == 'workflow_dispatch' || github.event.client_payload.project.name == 'ronrom'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SHA: ${{ github.event.client_payload.git.sha }}
+      AMBIENTE: ${{ github.event_name == 'workflow_dispatch' && inputs.ambiente || (github.event.client_payload.environment == 'production' && 'producao' || 'preview') }}
+      EXECUCAO: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: marca o commit como em andamento
+        if: env.SHA != ''
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state=pending \
+            -f context="lighthouse ($AMBIENTE)" -f target_url="$EXECUCAO" \
+            -f description="Rodando o Lighthouse no deploy" > /dev/null
+
+      # A configuração e o orçamento são os do commit do deploy: um PR pode mudá-los.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.SHA || github.sha }}
+
+      # Produção roda no domínio do site, o que o Google vê. O preview roda na URL do deploy, que
+      # tem a Vercel Authentication: o segredo da Protection Bypass for Automation passa por ela.
+      - name: define a URL base
+        env:
+          URL_MANUAL: ${{ inputs.url }}
+          URL_DO_DEPLOY: ${{ github.event.client_payload.url }}
+          SITE_URL: ${{ vars.SITE_URL || 'https://ronrom-blog.vercel.app' }}
+          SEGREDO: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          if [ -n "$URL_MANUAL" ]; then
+            base=$URL_MANUAL
+          elif [ "$AMBIENTE" = producao ]; then
+            base=$SITE_URL
+          else
+            base=$URL_DO_DEPLOY
+          fi
+          case "$base" in http*) ;; *) base="https://$base" ;; esac
+          if [ "$AMBIENTE" = preview ] && [ -z "$SEGREDO" ]; then
+            echo "::error::Falta o secret VERCEL_AUTOMATION_BYPASS_SECRET (docs/performance.md#configuração)."
+            exit 1
+          fi
+          echo "BASE=${base%/}" >> "$GITHUB_ENV"
+          echo "Deploy: ${base%/} ($AMBIENTE)"
+
+      # O evento chega quando o deploy fica pronto; o domínio de produção pode levar alguns
+      # segundos para apontar para ele. O /api/health diz o commit no ar.
+      - name: espera o deploy responder com o commit certo
+        env:
+          SEGREDO: ${{ env.AMBIENTE == 'preview' && secrets.VERCEL_AUTOMATION_BYPASS_SECRET || '' }}
+        run: |
+          for tentativa in $(seq 1 30); do
+            commit=$(curl -fsS --max-time 10 -H "x-vercel-protection-bypass: $SEGREDO" \
+              "$BASE/api/health" | jq -r '.commit // empty' || true)
+            if [ -n "$commit" ] && { [ -z "$SHA" ] || [ "$commit" = "$SHA" ]; }; then
+              echo "No ar: $commit"
+              exit 0
+            fi
+            echo "Tentativa $tentativa: commit no ar '${commit:-nenhum}', esperando $SHA."
+            sleep 10
+          done
+          echo "::error::$BASE/api/health não respondeu com o commit $SHA em 5 minutos."
+          exit 1
+
+      # As 5 páginas de referência: home, um review, um pensamento, uma listagem e a busca. O
+      # review e o pensamento são os mais recentes do /posts-index.json do próprio deploy, porque
+      # o preview lê o dataset development e a produção, o production.
+      - name: escolhe as páginas
+        env:
+          SEGREDO: ${{ env.AMBIENTE == 'preview' && secrets.VERCEL_AUTOMATION_BYPASS_SECRET || '' }}
+        run: |
+          indice=$(curl -fsS --retry 3 --max-time 30 -H "x-vercel-protection-bypass: $SEGREDO" \
+            "$BASE/posts-index.json")
+          paginas="/"
+          for tipo in review pensamento; do
+            url=$(echo "$indice" | jq -r --arg tipo "$tipo" 'map(select(.tipo == $tipo)) | first | .url // empty')
+            if [ -n "$url" ]; then
+              paginas="$paginas $url"
+            else
+              echo "::warning::Nenhum $tipo publicado em $BASE: a página fica de fora."
+            fi
+          done
+          paginas="$paginas /reviews /busca"
+          {
+            echo 'URLS<<FIM'
+            for pagina in $paginas; do echo "$BASE$pagina"; done
+            echo FIM
+          } >> "$GITHUB_ENV"
+          echo "Páginas: $paginas"
+
+      # Sem o temporary-public-storage: os relatórios ficam só no artifact, que é privado.
+      - id: lhci
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # 12.6.2
+        env:
+          LHCI_AMBIENTE: ${{ env.AMBIENTE }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ env.AMBIENTE == 'preview' && secrets.VERCEL_AUTOMATION_BYPASS_SECRET || '' }}
+        with:
+          urls: ${{ env.URLS }}
+          configPath: ./lighthouserc.cjs
+          uploadArtifacts: false
+          temporaryPublicStorage: false
+
+      # O relatório guarda os cabeçalhos extras da coleta, inclusive o segredo: ele sai dos
+      # arquivos antes do upload.
+      - name: tira o segredo dos relatórios
+        if: always()
+        env:
+          SEGREDO: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          if [ -n "$SEGREDO" ] && [ -d .lighthouseci ]; then
+            grep -rlF -- "$SEGREDO" .lighthouseci | xargs -r sed -i "s|$SEGREDO|***|g"
+          fi
+
+      - name: resumo
+        if: always()
+        run: |
+          [ -f .lighthouseci/manifest.json ] || exit 0
+          {
+            echo "### Lighthouse ($AMBIENTE, mediana de 3 execuções, celular)"
+            echo
+            echo '| Página | Performance | Acessibilidade | Best Practices | SEO |'
+            echo '| --- | --- | --- | --- | --- |'
+            jq -r --arg base "$BASE" '.[] | select(.isRepresentativeRun) | .summary as $s |
+              "| \(.url | ltrimstr($base) | if . == "" then "/" else . end) | \([$s.performance, $s.accessibility, $s["best-practices"], $s.seo] | map(. * 100 | round | tostring) | join(" | ")) |"' \
+              .lighthouseci/manifest.json
+            echo
+            echo "Relatórios completos no artifact \`lighthouse-$AMBIENTE\` desta execução."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: lighthouse-${{ env.AMBIENTE }}
+          path: .lighthouseci
+          include-hidden-files: true
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: marca o commit com o resultado
+        if: always() && env.SHA != ''
+        env:
+          RESULTADO: ${{ job.status }}
+        run: |
+          case "$RESULTADO" in
+            success) estado=success; descricao="Acessibilidade, SEO, Best Practices e orçamento ok" ;;
+            failure) estado=failure; descricao="Abaixo do limite: veja o resumo da execução" ;;
+            *) estado=error; descricao="Execução cancelada" ;;
+          esac
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state="$estado" \
+            -f context="lighthouse ($AMBIENTE)" -f target_url="$EXECUCAO" \
+            -f description="$descricao" > /dev/null

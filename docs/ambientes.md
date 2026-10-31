@@ -178,7 +178,7 @@ Conferidos em **29/10/2026** em [vercel.com/docs/limits](https://vercel.com/docs
 Pontos que a issue #10 pediu para conferir:
 
 - **Autor do commit em repo privado:** a regra de que o autor do commit precisa ser o dono do time Hobby não aparece nas páginas acima. Na prática, mantenha o `git config user.email` igual a um e-mail verificado na conta do GitHub ligada à Vercel. Conferido em 29/10/2026: os commits com `belmirofss@gmail.com` aparecem ligados à conta `belmirofss`.
-- **Protection Bypass for Automation:** disponível em todos os planos, inclusive o Hobby. O segredo vai no cabeçalho `x-vercel-protection-bypass` (variável `VERCEL_AUTOMATION_BYPASS_SECRET`), para os testes E2E da #49.
+- **Protection Bypass for Automation:** disponível em todos os planos, inclusive o Hobby. O segredo vai no cabeçalho `x-vercel-protection-bypass` (variável `VERCEL_AUTOMATION_BYPASS_SECRET`), para os testes E2E da #49 e o Lighthouse CI da #60 ([`performance.md`](performance.md#configuração)).
 - **Vercel Authentication:** disponível no Hobby para preview e produção. Proteção por senha é só no Pro.
 - **`X-Robots-Tag: noindex` nos previews:** a Vercel adiciona sozinha em todo Preview Deployment ([guia](https://vercel.com/kb/guide/are-vercel-preview-deployment-indexed-by-search-engines)). A exceção é um domínio próprio apontado para uma branch que não é a de produção. Informação para a área de SEO (#52).
 

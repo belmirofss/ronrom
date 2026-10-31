@@ -22,13 +22,15 @@ Poucos testes, nos lugares certos:
 | Links internos e âncoras                            | lychee no HTML do build         | `ci / links`, em todo PR                     | depois de estabilizar    | #45      |
 | Smoke E2E dos caminhos principais                   | Playwright                      | Contra o preview da Vercel e a produção      | sim (check do PR)        | #49      |
 | Acessibilidade automatizada (WCAG 2.1 AA)           | `@axe-core/playwright`          | Junto com o E2E                              | sim (serious/critical)   | #49      |
-| Performance, SEO e boas práticas                    | Lighthouse CI                   | Contra o preview da Vercel                   | sim (exceto Performance) | #60      |
+| Performance, SEO e boas práticas                    | Lighthouse CI                   | `lighthouse`, no preview e em produção       | sim (exceto Performance) | #60      |
 | Links externos quebrados nos posts                  | lychee contra o sitemap         | `links-externos`, toda segunda, abre issue   | não                      | #62      |
 | Dispositivos reais (iPhone/Safari, Android/Chrome)  | à mão                           | Antes do lançamento e em mudança visual      | —                        | #67      |
 | Leitor de tela (NVDA, VoiceOver, TalkBack)          | à mão                           | Auditoria (#48) e checklist de go-live (#67) | —                        | #48, #67 |
 | Revisão visual em 320, 768 e 1280px                 | à mão, prints no PR             | Em todo PR que muda algo visual              | —                        | —        |
 | Fluxo da autora (publicar no Studio e ver no site)  | à mão, com a autora             | Onboarding e go-live                         | —                        | #31, #67 |
 | Prévia de link (WhatsApp, Instagram, Telegram)      | à mão                           | Go-live                                      | —                        | #67      |
+
+Metas, orçamento e como ler o resultado do Lighthouse CI: [`performance.md`](performance.md).
 
 O que fica no manual é o que uma ferramenta não julga bem: se o leitor de tela anuncia a nota de um jeito que faz sentido, se o layout está bonito num celular de verdade, se a autora consegue publicar sem ajuda. O axe e o Lighthouse pegam regressões, mas não substituem essas passadas.
 

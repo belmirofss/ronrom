@@ -26,3 +26,6 @@ pnpm-debug.log*
 # sistema e editores
 .DS_Store
 .idea/
+
+# relatórios do Lighthouse CI rodado localmente (docs/performance.md)
+.lighthouseci/

@@ -1,0 +1,14 @@
+[
+  {
+    "descricao": "JS por página, sem o Pagefind, que a /busca só carrega quando alguém busca",
+    "paginas": ".*",
+    "recurso": "script",
+    "kb": 50
+  },
+  {
+    "descricao": "Peso total da home",
+    "paginas": "^https?://[^/]+/?$",
+    "recurso": "total",
+    "kb": 1024
+  }
+]
