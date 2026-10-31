@@ -51,7 +51,9 @@ export default defineConfig(
   // (docs/seo-urls.md#helpers-de-rota). Pega `/reviews/${...}` e '/tags/' + slug, por exemplo.
   {
     files: ['web/src/**/*.{ts,astro}'],
-    ignores: ['web/src/lib/rotas.ts'],
+    // O redirects.ts roda no astro.config, antes do astro:env que o rotas.ts lê, e monta os
+    // mesmos caminhos das listagens.
+    ignores: ['web/src/lib/rotas.ts', 'web/src/lib/redirects.ts'],
     rules: {
       'no-restricted-syntax': [
         'error',

@@ -248,6 +248,17 @@ As regras de [`web/src/lib/sobre.ts`](../web/src/lib/sobre.ts), com o documento 
 - [ ] O alt da foto é o do Studio; sem ele, "Foto de {nome}".
 - [ ] Os metadados usam a description e a imagem do SEO; vazios, a bio e a foto (com o alt da foto); sem documento, os padrões do site.
 
+### Contador de visualizações (#56)
+
+[`registrar.test.ts`](../web/src/lib/views/registrar.test.ts), com um Redis em memória no lugar do Upstash:
+
+- uma visualização nova grava com dois comandos (`SET … NX EX 1800` e `ZINCRBY views:all`); a mesma pessoa no mesmo post grava só o `SET` e não sobe o ranking;
+- fora de produção, sem `User-Agent`, com `User-Agent` de bot (inclui `curl`), com `id` que não está publicado ou com corpo inválido, nenhum comando é mandado;
+- a chave `seen:` é um sha256 sem o IP em claro, igual no mesmo dia de São Paulo e diferente no dia seguinte, com outro IP, navegador, post ou segredo;
+- o cliente REST manda o comando com o token e lança o erro do Upstash.
+
+O script do navegador (5 s de leitura com a aba visível, `sendBeacon` e `sessionStorage`) é conferido à mão em produção ([`visualizacoes.md`](visualizacoes.md#conferir-em-produção)).
+
 ### Componentes
 
 Teste de componente (Container API) existe só para estes cinco:

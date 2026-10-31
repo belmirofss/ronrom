@@ -1,7 +1,7 @@
 // @ts-check
-// Sitemap do site (#52), com o @astrojs/sitemap. O astro.config.mjs não lê o Sanity, então o
-// lastmod e a lista de páginas noindex vêm do /sitemap-dados.json, que o build gera a partir de
-// src/lib/sitemap.ts. A integração `ronrom:sitemap-dados` vem antes do sitemap na lista: lê o
+// Sitemap do site (#52), com o @astrojs/sitemap. Os caminhos saem dos helpers de rota (rotas.ts),
+// que dependem do astro:env e não rodam no astro.config.mjs. Por isso o lastmod e a lista de páginas
+// noindex vêm do /sitemap-dados.json, que o build gera a partir de src/lib/sitemap.ts. A integração `ronrom:sitemap-dados` vem antes do sitemap na lista: lê o
 // arquivo, o apaga (ele não vai para o deploy) e guarda os dados para o `filter` e o `serialize`.
 // Política: docs/seo-urls.md#sitemap.
 import sitemap from '@astrojs/sitemap';

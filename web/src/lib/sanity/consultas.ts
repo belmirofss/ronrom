@@ -185,6 +185,10 @@ export const CONSULTA_DO_INDICE_DE_POSTS = defineQuery(
   `*[${POST_PUBLICADO}] | ${MAIS_RECENTES} ${CARD}`,
 );
 
+// Os `_id` publicados, que a rota /api/views (#56) aceita. Lidos no build e embutidos na função
+// (src/lib/sanity/ids-publicados.ts): um post novo só conta depois do rebuild que o publica.
+export const CONSULTA_DOS_IDS_PUBLICADOS = defineQuery(`*[${POST_PUBLICADO}]._id`);
+
 // Redirects 301 (#53): cada caminho antigo de `anteriores` leva ao `urlDoPost` do post atual.
 export const CONSULTA_DOS_REDIRECTS = defineQuery(
   `*[${POST_PUBLICADO} && count(slugsAnteriores) > 0]{ "anteriores": slugsAnteriores, ${ROTA} }`,

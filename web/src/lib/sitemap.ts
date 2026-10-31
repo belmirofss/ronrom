@@ -2,8 +2,8 @@ import { urlDaCategoria, urlDaPagina, urlDaTag, urlDoFormato, urlDoPost } from '
 import { POSTS_POR_PAGINA, totalDePaginas } from '@/lib/sanity/conteudo';
 import type { CONSULTA_DO_SITEMAP_RESULT } from '@/lib/sanity/tipos.gerados';
 
-// Dados do sitemap (#52). O @astrojs/sitemap roda no astro.config, que não lê o Sanity (não tem o
-// astro:env nem os helpers de rota). Por isso o endpoint /sitemap-dados.json, prerenderizado, monta
+// Dados do sitemap (#52). O @astrojs/sitemap roda no astro.config, onde os helpers de rota e a
+// paginação (que dependem do astro:env) não rodam. Por isso o endpoint /sitemap-dados.json monta
 // aqui o mapa caminho → lastmod e a lista de páginas noindex, e o web/sitemap.mjs lê o arquivo no
 // fim do build e o apaga antes do deploy. Política: docs/seo-urls.md#sitemap.
 

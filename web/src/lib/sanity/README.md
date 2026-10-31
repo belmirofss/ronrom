@@ -8,8 +8,10 @@ Como o site lê o conteúdo do Sanity no build:
 | [`imagem.ts`](imagem.ts)                   | As URLs do CDN de uma imagem (`fontesDaImagem`), usadas pelo `<ImagemSanity>`   | #34   |
 | [`consultas.ts`](consultas.ts)             | Todas as consultas GROQ, escritas com `defineQuery`                             | #25   |
 | [`tipos.gerados.d.ts`](tipos.gerados.d.ts) | Os tipos dos resultados, gerados pelo typegen: não edite à mão                  | #25   |
-| [`cliente.ts`](cliente.ts)                 | O `@sanity/client` e o `consultar`, que escolhe entre o Sanity e as fixtures    | #33   |
+| [`cliente.ts`](cliente.ts)                 | O `consultar` do site, que escolhe entre o Sanity e as fixtures                 | #33   |
 | [`config.ts`](config.ts)                   | De onde vem o conteúdo (`fonteDoConteudo`): Sanity ou fixtures                  | #8    |
+| [`fonte.ts`](fonte.ts)                     | A regra da fonte e o `@sanity/client`, sem o `astro:env`                        | #53   |
+| [`redirects.ts`](redirects.ts)             | O que os redirects do build buscam, chamado pelo `astro.config.mjs`             | #53   |
 | [`fixtures/`](fixtures)                    | O dataset de exemplo do [modo fixtures](#modo-fixtures)                         | #33   |
 
 ## Funções de acesso
@@ -48,7 +50,6 @@ const rotas = await buscarRotasDosPosts();
 | `buscarRotasDosPosts()`                 | `CONSULTA_DAS_ROTAS_DOS_POSTS`    |
 | `buscarLeiaTambem(id)`                  | `CONSULTA_DO_LEIA_TAMBEM`         |
 | `buscarIndiceDePosts()`                 | `CONSULTA_DO_INDICE_DE_POSTS`     |
-| `buscarRedirects()`                     | `CONSULTA_DOS_REDIRECTS`          |
 | `buscarSitemap()`                       | `CONSULTA_DO_SITEMAP`             |
 | `CONSULTA_DO_FEED`                      | —                                 | Os 30 posts mais recentes, para o `/rss.xml`: rota, título, subtítulo, data, categoria ou formato, tags, capa, texto dos blocos do corpo e `seo.descricao` (#52) |
 | `buscarFeed()`                          | `CONSULTA_DO_FEED`                |
@@ -59,7 +60,7 @@ Cada função devolve o tipo `<NOME_DA_CONSULTA>_RESULT` do typegen, passado exp
 
 ## Cliente
 
-O [`cliente.ts`](cliente.ts) cria o `@sanity/client` com:
+O `criarConsultar` do [`fonte.ts`](fonte.ts) cria o `@sanity/client`, e o [`cliente.ts`](cliente.ts) o usa com a fonte do `astro:env`. O cliente tem:
 
 - **`apiVersion` fixa**, da `SANITY_API_VERSION` (padrão `2025-02-19`): uma mudança da API não muda o site sem um PR.
 - **`useCdn: false`**: o build roda logo depois da publicação ([deploy hook](../../../../docs/deploy.md)) e precisa do conteúdo novo, que a API CDN pode levar alguns instantes para entregar. São poucas consultas por build.

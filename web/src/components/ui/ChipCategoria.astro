@@ -46,6 +46,19 @@ const Elemento = href ? 'a' : 'span';
     --texto-do-chip: var(--cor-texto);
   }
 
+  /* O chip-link continua pequeno na tela, mas a área de toque cresce até 44px em volta dele.
+     Quem põe chips-link lado a lado reserva 44px de altura por linha (ex.: .post__tags). */
+  a.chip {
+    position: relative;
+  }
+
+  a.chip::after {
+    content: '';
+    position: absolute;
+    inset-block: min(0px, calc(50% - 22px));
+    inset-inline: min(0px, calc(50% - 22px));
+  }
+
   /* Hover em vinho-hover nos dois tons (11,25:1 no creme e 6,37:1 no rosa). */
   a.chip:hover {
     color: var(--cor-vinho-hover);
