@@ -14,7 +14,8 @@ const { itens, class: classe } = Astro.props;
 const ultimo = itens.length - 1;
 ---
 
-<nav class:list={['trilha', classe]} aria-label="Trilha de navegação">
+{/* Navegação não é conteúdo: fica fora do índice da busca (#54). */}
+<nav class:list={['trilha', classe]} aria-label="Trilha de navegação" data-pagefind-ignore>
   <ol class="trilha__itens">
     {itens.map(({ rotulo, href }, i) => (
       <li class="trilha__item">

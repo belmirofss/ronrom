@@ -1,0 +1,80 @@
+# Busca
+
+O índice da busca do site, gerado pelo [Pagefind](https://pagefind.app) no build, sem servidor (#54, SEO-07). A página `/busca` e o campo da home que usam o índice vêm na #55.
+
+## Como o índice é gerado
+
+A integração [`web/integracao-pagefind.mjs`](../web/integracao-pagefind.mjs), registrada no [`astro.config.mjs`](../web/astro.config.mjs), roda no `astro:build:done`: chama a API Node do Pagefind (`createIndex` → `addDirectory` → `writeFiles`) sobre a saída estática do build (`web/dist/client`) e grava o índice em `web/dist/client/pagefind/`.
+
+A ordem importa: a integração roda **antes** do adapter da Vercel copiar `dist/client` para `.vercel/output/static`, então o índice chega ao deploy (`/pagefind/`) e ao artifact `web-dist` do CI sem cópia própria. O build termina com uma linha como:
+
+```
+[ronrom:pagefind] Índice da busca: 10 posts (pt-br) de 34 páginas lidas, em /pagefind/.
+```
+
+Erro do Pagefind derruba o build. O `pagefind` é dependência de desenvolvimento do `web`: só o build usa o pacote; o navegador carrega os arquivos gerados.
+
+## O que entra no índice
+
+Só as páginas de post. A [`PaginaDoPost`](../web/src/components/post/PaginaDoPost.astro) marca o `<article>` com `data-pagefind-body`, e página sem esse atributo (home, listagens, Sobre, 404) fica fora. Dentro do post:
+
+| Parte                             | No índice? | Por quê                                                     |
+| --------------------------------- | ---------- | ----------------------------------------------------------- |
+| Título, subtítulo e texto         | sim        | O subtítulo tem peso 5 (`data-pagefind-weight`; o h1 tem 7) |
+| Ficha da review                   | sim        | Diretor, autor, endereço, cozinha ajudam a achar a review   |
+| Tags                              | sim        | O nome da tag também é texto buscável                       |
+| Trilha de navegação               | não        | `data-pagefind-ignore` no próprio `Breadcrumb`              |
+| Autora, data e tempo de leitura   | não        | `data-pagefind-ignore` na linha de meta                     |
+| Cabeçalho, rodapé e "Leia também" | não        | Ficam fora do `<article>`                                   |
+
+## Filtros, metadados e ordenação
+
+Saem de [`indiceDoPost`](../web/src/lib/busca.ts) e vão num `<div hidden data-pagefind-ignore>` dentro do `<article>`. O `data-pagefind-ignore` (sem `="all"`) tira o texto do índice, mas o Pagefind ainda lê os filtros, os metadados e a ordenação de dentro dele.
+
+**Filtros** (`data-pagefind-filter`):
+
+| Filtro      | Valores                                        | Em           |
+| ----------- | ---------------------------------------------- | ------------ |
+| `tipo`      | `Review` ou `Pensamento`                       | todo post    |
+| `categoria` | nome da categoria (`Filmes`, `Séries`…)        | review       |
+| `formato`   | nome do formato (`Textos`, `Opiniões`…)        | pensamento   |
+| `tags`      | nome de cada tag, sem `#` (vários)             | post com tag |
+| `nota`      | `4,5 corações`, `1 coração` (`notaPorExtenso`) | review       |
+
+**Metadados** (`data-pagefind-meta`), o que o resultado mostra: `title`, `url`, `image`, `image_alt`, `date`, `subtitulo` e `nota`. Campo vazio não entra.
+
+- **Use `meta.url`, não o `url` do resultado.** O Pagefind calcula o `url` a partir do arquivo (`/reviews/filmes/dias-perfeitos/`, com barra) e, com o `trailingSlash: 'never'` do site, cada clique viraria um redirect 308. O `meta.url` é o caminho do `urlDoPost`, sem barra.
+- **`image`:** a capa a 320 px de largura em 4:3 (a proporção dos cards) pelo CDN do Sanity. Nas fixtures, o próprio placeholder. Post sem capa fica sem `image` declarado, e o Pagefind usa a primeira imagem do texto, se houver.
+- **`date`:** a data de publicação em ISO 8601, como vem do Sanity.
+
+**Ordenação:** `data-pagefind-sort="date"`, com a mesma data ISO, que ordena certo como texto. Na API JS: `search(termo, { sort: { date: 'desc' } })`.
+
+## Idioma e acentos
+
+O Pagefind usa o `lang="pt-BR"` do `<html>` e gera o índice `pt-br`, com stemming em português (o `wasm.pt-br.pagefind`). Não há `forceLanguage`: se o `IDIOMA` do site mudar, o índice acompanha.
+
+Acentos já funcionam sem campo extra: `cafe` acha "café" e o contrário (conferido no PR da #54).
+
+## No `astro dev`
+
+O índice só existe depois de um `pnpm build`. No dev, a integração serve `/pagefind/` a partir de `web/dist/client/pagefind`, o índice do último build, e avisa no terminal quando ele não existe. Esse índice pode estar desatualizado em relação ao conteúdo do dev; para atualizar, rode o build de novo.
+
+## CSP
+
+O Pagefind roda num Web Worker e compila WebAssembly, então o `script-src` tem `'wasm-unsafe-eval'` (libera só a compilação de WASM, não o `eval` de JavaScript). Veja [`cabecalhos.md`](cabecalhos.md#csp).
+
+## Tamanho
+
+Com as fixtures (10 posts), a primeira busca baixa cerca de 170 kB antes de compressão: `pagefind.js` (45 kB), `pagefind-worker.js` (41 kB), o WASM `pt-br` (72 kB, já comprimido) e um pedaço do índice (7 kB). O Pagefind divide o índice em pedaços e só baixa os dos termos buscados, então o total cresce devagar com o número de posts. A meta da #54 é ficar abaixo de ~300 kB na primeira busca.
+
+## Como conferir
+
+Depois de `pnpm build`, rode `pnpm dev` e, no console do navegador em qualquer página:
+
+```js
+const pagefind = await import('/pagefind/pagefind.js');
+await pagefind.init();
+const { results } = await pagefind.search('wenders', { filters: { tipo: 'Review' } });
+await results[0].data(); // meta, filters, excerpt
+await pagefind.filters(); // contagem por filtro
+```

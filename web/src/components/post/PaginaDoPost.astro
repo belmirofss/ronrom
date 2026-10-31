@@ -8,6 +8,7 @@ import ChipCategoria from '@/components/ui/ChipCategoria.astro';
 import Data from '@/components/ui/Data.astro';
 import ImagemSanity from '@/components/ui/ImagemSanity.astro';
 import LayoutBase from '@/layouts/LayoutBase.astro';
+import { indiceDoPost } from '@/lib/busca';
 import { tituloDaTag } from '@/lib/listagem';
 import { urlDaTag, urlDoPost } from '@/lib/rotas';
 import { buscarLeiaTambem, buscarSobre } from '@/lib/sanity/conteudo';
@@ -31,18 +32,26 @@ const [sobre, leiaTambem] = await Promise.all([buscarSobre(), buscarLeiaTambem(p
 
 const autora = sobre?.nome?.trim();
 const tags = post.tags ?? [];
+const url = urlDoPost(post);
+const indice = indiceDoPost(post, url);
 ---
 
-<LayoutBase seo={seoDoPost(post, urlDoPost(post))}>
+<LayoutBase seo={seoDoPost(post, url)}>
   {/* JSON-LD do post (#50, #51): a página passa pelo slot `head`, que termina no <Seo>. */}
   <slot name="head" slot="head" />
 
-  <article class="post">
+  {/* Só o <article> entra no índice da busca (#54): cabeçalho, rodapé e "Leia também" ficam de
+      fora. Detalhes: docs/busca.md. */}
+  <article class="post" data-pagefind-body>
     <Container as="header" largura="leitura" class="post__topo">
       <Breadcrumb itens={trilhaDoPost(post)} />
       <h1 class="post__titulo">{post.titulo}</h1>
-      {post.subtitulo && <p class="post__subtitulo">{post.subtitulo}</p>}
-      <p class="post__meta">
+      {post.subtitulo && (
+        <p class="post__subtitulo" data-pagefind-weight="5">
+          {post.subtitulo}
+        </p>
+      )}
+      <p class="post__meta" data-pagefind-ignore>
         {autora && (
           <>
             <span>Por {autora}</span>
@@ -56,6 +65,17 @@ const tags = post.tags ?? [];
       {/* Ponto de inserção do contador de visualizações (#56): o script dele acha o post por aqui.
           Sem estilo nem conteúdo, não ocupa espaço. */}
       <div data-visualizacoes={post._id}></div>
+      {/* Filtros, metadados do resultado e a data de ordenação da busca. Oculto e fora do texto
+          indexado (o data-pagefind-ignore sem "all" ainda lê filtros, metadados e ordenação). */}
+      <div hidden data-pagefind-ignore>
+        {indice.filtros.map(([chave, valor]) => (
+          <span data-pagefind-filter={chave}>{valor}</span>
+        ))}
+        {indice.metadados.map(([chave, valor]) => (
+          <span data-pagefind-meta={chave}>{valor}</span>
+        ))}
+        <span data-pagefind-sort="date">{indice.data}</span>
+      </div>
     </Container>
 
     {/* A capa é o LCP da página: carrega logo, com prioridade alta e proporção fixa (sem CLS). */}

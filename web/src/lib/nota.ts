@@ -35,3 +35,10 @@ export function coracoesDaNota(nota: number | null | undefined): Preenchimento[]
 export function rotuloDaNota(nota: number | null | undefined): string {
   return `Nota: ${NUMERO.format(validarNota(nota))} de ${NOTA_MAXIMA} corações`;
 }
+
+/** A nota por extenso, curta, para o filtro e o resultado da busca (#54): "4,5 corações". */
+export function notaPorExtenso(nota: number | null | undefined): string {
+  const valida = validarNota(nota);
+  // Singular abaixo de 2, como em "1,5 milhão".
+  return `${NUMERO.format(valida)} ${valida < 2 ? 'coração' : 'corações'}`;
+}

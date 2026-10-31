@@ -2,6 +2,7 @@
 import vercel from '@astrojs/vercel';
 import { defineConfig, envField, fontProviders } from 'astro/config';
 import { loadEnv } from 'vite';
+import { pagefindIntegracao } from './integracao-pagefind.mjs';
 import { redirects } from './redirects.mjs';
 
 // O astro.config roda antes do astro:env, então o que decide a configuração é lido direto do
@@ -79,6 +80,8 @@ export default defineConfig({
     },
   ],
   integrations: [
+    // Índice da busca (#54): o Pagefind indexa os posts no fim do build. Detalhes: docs/busca.md.
+    pagefindIntegracao(),
     // Vitrine dos componentes (#35) em /vitrine e do texto do post (#39) em /vitrine/corpo, só no
     // `astro dev`: as rotas não existem no build, então não chegam a produção, ao sitemap nem à
     // busca. Os arquivos ficam fora de src/pages.
