@@ -10,7 +10,6 @@ import type {
   Movie,
   Person,
   PostalAddress,
-  Product,
   ProfilePage,
   Restaurant,
   Review,
@@ -218,8 +217,8 @@ export function blogPosting(post: Post, comAutora: boolean): BlogPosting {
 
 // O Google só mostra as estrelas (review snippet) quando o `itemReviewed` é de um dos tipos da
 // lista dele: Movie, Book, CreativeWorkSeries (TVSeries), LocalBusiness (Restaurant,
-// CafeOrCoffeeShop) e Product entre os nossos. Lugar (TouristAttraction) e comida sem marca (Thing)
-// continuam válidos no schema.org, sem expectativa de snippet.
+// CafeOrCoffeeShop) entre os nossos. Lugar (TouristAttraction) continua válido no schema.org, sem
+// expectativa de snippet. Documentários usam a ficha de filme e viram um Movie.
 // https://developers.google.com/search/docs/appearance/structured-data/review-snippet
 
 // A categoria de restaurantes e cafés usa a ficha de lugar, como a de lugares, mas vira um
@@ -358,17 +357,6 @@ export function itemAvaliado(post: Pick<Post, 'titulo' | 'categoria' | 'ficha' |
     }
     case 'lugar':
       return lugar(nome, ficha, post.categoria?.slug, imagem);
-    case 'comida': {
-      // Com marca, é um produto que dá para comprar; sem, só o nome do que foi provado.
-      const marca = texto(ficha.marca);
-      if (!marca) return { '@type': 'Thing', name: nome, ...opcional('image', imagem) };
-      return {
-        '@type': 'Product',
-        name: nome,
-        ...opcional('image', imagem),
-        brand: { '@type': 'Brand', name: marca },
-      } satisfies Product;
-    }
     default:
       return { '@type': 'Thing', name: nome, ...opcional('image', imagem) };
   }

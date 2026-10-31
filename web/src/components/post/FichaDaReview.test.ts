@@ -86,14 +86,15 @@ describe('<FichaDaReview>', () => {
       ],
     },
     {
-      modelo: 'comida',
-      secao: 'comidas',
-      slug: 'pao-de-queijo-da-padaria-estrela',
+      modelo: 'filme, num documentário',
+      secao: 'documentarios',
+      slug: 'vozes-da-represa',
       esperado: [
-        ['Marca ou onde comprar', 'Padaria Estrela'],
-        ['Preço', 'R$ 4,50'],
-        ['O que provei', 'O pão de queijo tradicional, saindo do forno às quatro da tarde.'],
-        ['Vale a pena?', 'Só se estiver saindo do forno; frio, perde tudo.'],
+        ['Direção', 'Lia Monteiro'],
+        ['Ano', '2021'],
+        ['Duração', '92 min'],
+        ['Onde vi', 'Streaming · Farol+'],
+        ['Vale a pena?', 'Pelos depoimentos, sim; pela montagem, nem tanto.'],
       ],
     },
   ])(

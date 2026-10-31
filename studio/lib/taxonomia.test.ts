@@ -29,10 +29,10 @@ describe('categorias', () => {
     expect(CATEGORIAS.map((categoria) => categoria.slug)).toEqual([
       'filmes',
       'series',
+      'documentarios',
       'livros',
       'restaurantes-e-cafes',
       'lugares',
-      'comidas',
     ]);
   });
 });

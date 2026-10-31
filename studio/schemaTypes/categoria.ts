@@ -3,7 +3,7 @@ import { defineField, defineType } from 'sanity';
 import { MODELOS_DE_FICHA } from '../lib/taxonomia';
 import { campoDescricao, campoNome, campoOrdem, campoSlug, ordenacaoPorOrdem } from './campos';
 
-// Categoria das reviews (Filmes, Séries...). As seis iniciais vêm do script
+// Categoria das reviews (Filmes, Séries...). As seis fixas vêm do script
 // scripts/criar-taxonomia.ts, com `_id` fixo.
 export const categoria = defineType({
   name: 'categoria',

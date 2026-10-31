@@ -19,7 +19,6 @@ export const CAMPOS_DA_FICHA = {
     'oQuePedi',
     'instagram',
   ],
-  comida: ['marca', 'preco', 'oQueProvei'],
 } as const satisfies Record<ModeloDeFicha, readonly string[]>;
 
 // Valem para qualquer modelo e ficam no fim da ficha.
@@ -81,7 +80,6 @@ const CAMPOS_CHAVE: Record<ModeloDeFicha, readonly CampoChave[]> = {
     { caminho: ['endereco', 'cidade'], mensagem: 'Preencha a cidade do lugar.' },
     { caminho: ['endereco', 'uf'], mensagem: 'Escolha o estado do lugar.' },
   ],
-  comida: [{ caminho: ['oQueProvei'], mensagem: 'Conte o que você provou.' }],
 };
 
 // Erros da validação, com o caminho relativo à ficha para o Sanity marcar o subcampo certo.
@@ -115,8 +113,5 @@ export const FICHA_NO_GROQ = `select(
   },
   categoria->modeloFicha == "lugar" => ficha{
     "modelo": "lugar", endereco, linkDoMapa, localizacao, faixaDePreco, tipoDeCozinha, oQuePedi, instagram, valeAPena
-  },
-  categoria->modeloFicha == "comida" => ficha{
-    "modelo": "comida", marca, preco, oQueProvei, valeAPena
   }
 )`;

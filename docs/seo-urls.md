@@ -180,10 +180,12 @@ Fixas: o script da #18 ([`studio/scripts/criar-taxonomia.ts`](../studio/scripts/
 | -------------------- | ---------------------- | -------------------------------- | ------------- | ------------------------------- |
 | Filmes               | `filmes`               | `categoria-filmes`               | `filme`       | `/reviews/filmes`               |
 | Séries               | `series`               | `categoria-series`               | `serie`       | `/reviews/series`               |
+| Documentários        | `documentarios`        | `categoria-documentarios`        | `filme`       | `/reviews/documentarios`        |
 | Livros               | `livros`               | `categoria-livros`               | `livro`       | `/reviews/livros`               |
 | Restaurantes e cafés | `restaurantes-e-cafes` | `categoria-restaurantes-e-cafes` | `lugar`       | `/reviews/restaurantes-e-cafes` |
-| Lugares              | `lugares`              | `categoria-lugares`              | `lugar`       | `/reviews/lugares`              |
-| Comidas              | `comidas`              | `categoria-comidas`              | `comida`      | `/reviews/comidas`              |
+| Outros lugares       | `lugares`              | `categoria-lugares`              | `lugar`       | `/reviews/lugares`              |
+
+Na #142, Documentários entrou com a ficha de filme, Lugares passou a se chamar "Outros lugares" (o slug `lugares` e as URLs não mudaram) e Comidas (`comidas`) saiu, junto com o modelo de ficha `comida`. Comidas não tinha post publicado: só a listagem vazia `/reviews/comidas`, que responde `301` para `/reviews` por [`web/redirects.mjs`](../web/redirects.mjs). A migração dos datasets é o [`studio/scripts/revisar-categorias.ts`](../studio/scripts/revisar-categorias.ts). Não reaproveite o slug `comidas` numa categoria nova: o redirect fixo esconderia a listagem dela.
 
 ### Formatos (pensamentos)
 

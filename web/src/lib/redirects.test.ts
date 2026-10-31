@@ -223,7 +223,7 @@ describe('caminhosDasPaginas', () => {
 });
 
 describe('redirects das fixtures', () => {
-  it('os endereços antigos levam aos novos, inclusive os dos formatos unificados (#143)', async () => {
+  it('os endereços antigos levam aos novos, inclusive os de Comidas (#142) e dos formatos unificados (#143)', async () => {
     const { redirects, avisos } = montarRedirects({
       fixos,
       paginas: [],
@@ -232,6 +232,7 @@ describe('redirects das fixtures', () => {
     expect(redirects).toEqual({
       '/pensamentos/artigos': { status: 301, destination: '/pensamentos/textos' },
       '/pensamentos/opinioes': { status: 301, destination: '/pensamentos/textos' },
+      '/reviews/comidas': { status: 301, destination: '/reviews' },
       '/pensamentos/frases/gatos': { status: 301, destination: '/pensamentos/frases/sobre-gatos' },
       '/pensamentos/artigos/por-que-eu-anoto-tudo-num-caderno': {
         status: 301,

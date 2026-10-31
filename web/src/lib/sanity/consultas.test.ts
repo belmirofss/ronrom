@@ -61,7 +61,7 @@ const dataset = [
   {
     _id: 'categoria-lugares',
     _type: 'categoria',
-    nome: 'Lugares',
+    nome: 'Outros lugares',
     slug: { current: 'lugares' },
     descricao: 'Passeios.',
     ordem: 2,
@@ -216,7 +216,7 @@ describe('listagens paginadas', () => {
     expect(posts[0]).toMatchObject({
       tipo: 'review',
       slug: 'cafe-do-bairro',
-      categoria: { nome: 'Lugares', slug: 'lugares' },
+      categoria: { nome: 'Outros lugares', slug: 'lugares' },
       capa: {
         alt: 'Capa de cafe-do-bairro',
         asset: { url: expect.any(String), largura: 1200, altura: 800, lqip: expect.any(String) },

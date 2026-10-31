@@ -77,7 +77,7 @@ export const post = defineType({
       type: 'string',
       group: 'conteudo',
       description:
-        'Review avalia um filme, livro, lugar ou comida. Pensamento é um texto livre. O tipo faz parte do endereço do post e não muda depois de escolhido: se errar num post novo, apague o rascunho e comece outro.',
+        'Review avalia um filme, documentário, livro ou lugar. Pensamento é um texto livre. O tipo faz parte do endereço do post e não muda depois de escolhido: se errar num post novo, apague o rascunho e comece outro.',
       options: { list: [...TIPOS_DE_POST], layout: 'radio', direction: 'horizontal' },
       readOnly: ({ value }) => Boolean(value),
       validation: (rule) =>

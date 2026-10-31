@@ -85,14 +85,13 @@ A lista de posts mostra a capa, o título e um subtítulo como "Review · Filmes
 
 **Ficha da review.** A `ficha` fica na aba Review e usa o input de [`componentes/FichaInput.tsx`](componentes/FichaInput.tsx). Como o `hidden` do Sanity não enxerga campos da categoria referenciada, o input lê `categoria._ref`, busca o `modeloFicha` dela (e escuta mudanças) e mostra só os campos daquele modelo. Sem categoria, mostra "Escolha a categoria para preencher a ficha." Os campos e as regras ficam em [`lib/ficha.ts`](lib/ficha.ts), com testes (a projeção GROQ é conferida com o `groq-js`):
 
-| Modelo   | Categorias                    | Campos (obrigatório em **negrito**)                                                                                                           |
-| -------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `filme`  | Filmes                        | **`direcao`**, `ano`, `duracao` (minutos), `ondeVi` (`meio`: cinema ou streaming, `qual`)                                                     |
-| `serie`  | Séries                        | **`criacao`**, `anoDeEstreia`, `anoDeFim` (vazio se ainda está no ar), `temporadasVistas`, `ondeVi`                                           |
-| `livro`  | Livros                        | **`autoria`**, `editora`, `ano`, `paginas`, `formatoDoLivro` (`fisico`, `ebook` ou `audiobook`)                                               |
-| `lugar`  | Restaurantes e cafés, Lugares | `endereco` (**`rua`**, `bairro`, **`cidade`**, **`uf`**), `linkDoMapa`, `faixaDePreco` (R$ a R$$$$), `tipoDeCozinha`, `oQuePedi`, `instagram` |
-| `comida` | Comidas                       | `marca` (marca ou onde comprar), `preco` (reais), **`oQueProvei`**                                                                            |
-| todos    |                               | `valeAPena` (frase curta opcional)                                                                                                            |
+| Modelo  | Categorias                           | Campos (obrigatório em **negrito**)                                                                                                           |
+| ------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filme` | Filmes, Documentários                | **`direcao`**, `ano`, `duracao` (minutos), `ondeVi` (`meio`: cinema ou streaming, `qual`)                                                     |
+| `serie` | Séries                               | **`criacao`**, `anoDeEstreia`, `anoDeFim` (vazio se ainda está no ar), `temporadasVistas`, `ondeVi`                                           |
+| `livro` | Livros                               | **`autoria`**, `editora`, `ano`, `paginas`, `formatoDoLivro` (`fisico`, `ebook` ou `audiobook`)                                               |
+| `lugar` | Restaurantes e cafés, Outros lugares | `endereco` (**`rua`**, `bairro`, **`cidade`**, **`uf`**), `linkDoMapa`, `faixaDePreco` (R$ a R$$$$), `tipoDeCozinha`, `oQuePedi`, `instagram` |
+| todos   |                                      | `valeAPena` (frase curta opcional)                                                                                                            |
 
 Os campos de todos os modelos ficam num objeto só e sem prefixo; os que têm o mesmo sentido em mais de um modelo (`ano`, `ondeVi`) têm o mesmo nome e continuam valendo ao trocar de categoria. Os obrigatórios são conferidos por uma validação que também busca o modelo da categoria. Ao trocar para uma categoria de outro modelo, nada é apagado em silêncio: o input lista os campos preenchidos que deixaram de valer e oferece o botão "Apagar esses campos". Eles ficam guardados, mas o site não os lê: as consultas usam o `FICHA_NO_GROQ` de `lib/ficha.ts` (`"ficha": ${FICHA_NO_GROQ}`), que devolve só os campos do modelo da categoria, mais o `modelo` que os identifica, e `null` em pensamento ou sem ficha. A projeção é escrita por extenso, porque o typegen não roda código ([`web/src/lib/sanity`](../web/src/lib/sanity/README.md)); um teste confere que cada modelo traz os campos de `CAMPOS_DA_FICHA`. A lista de campos foi aprovada na #1 e pode mudar depois do onboarding da autora (#31).
 
@@ -183,6 +182,25 @@ pnpm --filter studio taxonomia --dataset production
 
 O dataset é sempre explícito: sem `--dataset`, o script não grava nada.
 
+### Revisão das categorias
+
+Na #142, Documentários entrou (ficha de filme, logo depois de Séries), Lugares passou a se chamar "Outros lugares" (o slug `lugares` continua) e Comidas saiu, junto com o modelo de ficha `comida` ([`docs/seo-urls.md`](../docs/seo-urls.md#categorias-reviews)). O [`scripts/revisar-categorias.ts`](scripts/revisar-categorias.ts) leva cada dataset para a taxonomia nova, numa transação só:
+
+- grava as seis categorias de [`lib/taxonomia.ts`](lib/taxonomia.ts) (como o `taxonomia`, desfaz edições feitas nelas no Studio);
+- apaga a `categoria-comidas`, publicada e rascunho.
+
+Enquanto algum documento (publicado, rascunho ou versão de lançamento) apontar para Comidas, o script lista quais são e não grava nada: mude a categoria desses posts antes. Sem `--gravar`, só mostra o que faria. Rodar de novo não muda nada. Na raiz, confira o plano e depois grave:
+
+```bash
+pnpm --filter studio revisar-categorias --dataset production
+```
+
+```bash
+pnpm --filter studio revisar-categorias --dataset production --gravar
+```
+
+No `development`, rode antes o `pnpm seed`, que passa a review de exemplo de Comidas para Documentários. **A ordem importa:** grave no dataset antes do merge do PR. Enquanto a categoria existe, a listagem `/reviews/comidas` está no ar, e o build recusa o redirect fixo de [`web/redirects.mjs`](../web/redirects.mjs) por cima dela. O código anterior funciona com o dataset migrado: a listagem de Comidas some até o merge.
+
 ### Unificação dos formatos
 
 Na #143, Artigos, Textos e Opiniões viraram um formato só, "Textos e opiniões", com o slug `textos` ([`docs/seo-urls.md`](../docs/seo-urls.md#formatos-pensamentos)). O [`scripts/unificar-formatos.ts`](scripts/unificar-formatos.ts) leva cada dataset para a taxonomia nova, numa transação só:
@@ -210,7 +228,7 @@ Conteúdo de exemplo para desenvolver e testar o site antes da autora escrever. 
 
 - **12 posts:** uma review por categoria, com nota e ficha preenchidas, e pensamentos dos dois formatos. Entre eles, uma frase bem curta ("Café primeiro."), um texto longo ("Por que eu ainda escrevo à mão"), três posts sem subtítulo e a review de "Dias Perfeitos", com todos os blocos do texto (imagem, galeria, vídeo do YouTube e do Instagram, citação em destaque, citação, listas, link externo e link para outro post).
 - As **Configurações do site** (frase em destaque, post em destaque, SEO e redes) e o **Sobre mim**.
-- **11 imagens** de [`seed/imagens`](seed/imagens): ilustrações próprias com a paleta do Ronrom, sem direitos de terceiros, enviadas como assets.
+- **10 imagens** de [`seed/imagens`](seed/imagens): ilustrações próprias com a paleta do Ronrom, sem direitos de terceiros, enviadas como assets.
 
 Com `studio/.env` preenchido e `sanity login` feito (o token do usuário é o token de escrita, como na taxonomia), na raiz:
 

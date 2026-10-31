@@ -89,7 +89,7 @@ As fixtures são **documentos no formato do Sanity**, não resultados prontos: o
 
 O que o dataset tem (o [`conteudo.test.ts`](conteudo.test.ts) confere):
 
-- **1 review de cada categoria**, com nota e ficha do modelo certo. A ficha do mirante (Lugares) fica sem tipo de cozinha e sem Instagram: o caso do campo vazio.
+- **1 review de cada categoria**, com nota e ficha do modelo certo. A ficha do mirante (Outros lugares) fica sem tipo de cozinha e sem Instagram: o caso do campo vazio.
 - **Pensamentos dos dois formatos**: um texto com **todos os blocos do Portable Text** (subtítulos h2 e h3, citação, listas com marcadores e numerada, com subnível, negrito, itálico, link externo `https` e `mailto`, link interno no ar e fora do ar, imagem normal e larga, galeria, vídeo do YouTube e do Instagram e citação em destaque com e sem fonte), um texto sem subtítulo, uma frase curta (com `noindex` e um endereço antigo, para o sitemap e os redirects) e uma opinião com o SEO preenchido. O texto com todos os blocos e a opinião guardam o endereço de antes da unificação dos formatos (#143), em `/pensamentos/artigos` e `/pensamentos/opinioes`.
 - Configurações (frase em destaque, post em destaque e redes) e a página Sobre.
 
@@ -187,6 +187,6 @@ O projeto e o dataset saem da URL do próprio asset (`https://cdn.sanity.io/imag
 `CONSULTA_DO_POST` devolve o card com `categoria: { nome, slug, modeloFicha }` e mais:
 
 - `_updatedAt`, para o `dateModified` e o `lastmod`;
-- `ficha`: só os campos do modelo da categoria, com `modelo` (`'filme' | 'serie' | 'livro' | 'lugar' | 'comida'`) para separar os casos no TypeScript; campo vazio vem `null`, e a ficha toda vem `null` em pensamento ou sem ficha;
+- `ficha`: só os campos do modelo da categoria, com `modelo` (`'filme' | 'serie' | 'livro' | 'lugar'`) para separar os casos no TypeScript; campo vazio vem `null`, e a ficha toda vem `null` em pensamento ou sem ficha;
 - `corpo`: o Portable Text com as imagens (soltas e da galeria) expandidas e cada `linkInterno` com `post: Rota | null`, `null` quando o destino não está no ar;
 - `seo: { titulo, descricao, noindex, imagem } | null`.

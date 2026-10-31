@@ -28,7 +28,7 @@ const lugar = (slug: string, extra: Partial<Lugar> = {}): Lugar => ({
   titulo: slug,
   slug,
   nota: 4,
-  categoria: { nome: 'Lugares', slug: 'lugares' },
+  categoria: { nome: 'Outros lugares', slug: 'lugares' },
   endereco: { bairro: null, cidade: 'São Paulo', uf: 'SP' },
   localizacao: null,
   ...extra,
@@ -117,7 +117,13 @@ describe('pontosDoMapa', () => {
     expect(
       pontosDoMapa([lugar('sem'), lugar('com', { localizacao: { lat: -22.9, lng: -43.2 } })]),
     ).toEqual([
-      { titulo: 'com', url: '/reviews/lugares/com', categoria: 'Lugares', lat: -22.9, lng: -43.2 },
+      {
+        titulo: 'com',
+        url: '/reviews/lugares/com',
+        categoria: 'Outros lugares',
+        lat: -22.9,
+        lng: -43.2,
+      },
     ]);
   });
 });
