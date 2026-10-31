@@ -8,12 +8,11 @@ import {
 
 import { problemaNoSlug, slugify, TAMANHO_MAXIMO_DO_SLUG } from '../lib/slug';
 
-// Campos repetidos entre os schemas. O post reaproveita o slug, as tags, o texto alternativo e a
-// legenda.
+// Campos repetidos entre os schemas. O post reaproveita o slug, o texto alternativo e a legenda.
 
 // Slug gerado a partir de outro campo (o nome ou o título). A unicidade fica com a checagem
-// padrão do Sanity, que compara só com documentos do mesmo tipo: uma tag pode ter o mesmo
-// slug de uma categoria, porque as URLs não se cruzam (/tags/cafe e /reviews/cafe).
+// padrão do Sanity, que compara só com documentos do mesmo tipo: um formato pode ter o mesmo
+// slug de uma categoria, porque as URLs não se cruzam (/pensamentos/cafe e /reviews/cafe).
 // `aviso` acrescenta uma regra de nível warning, como a do post publicado.
 export function campoSlug(
   source: string,
@@ -110,13 +109,13 @@ export const ordenacaoPorOrdem = {
   by: [{ field: 'ordem', direction: 'asc' as const }],
 };
 
-// Tags do post. O botão "Criar novo" da referência abre o formulário da tag ali mesmo,
-// sem sair do post.
+// Tags do post. O site deixou de mostrar tags (#145): o campo fica escondido, só para não perder
+// o que já foi preenchido. Para remover de vez, apague o campo e o tipo `tag` com uma migração.
 export const campoTags = defineField({
   name: 'tags',
   title: 'Tags',
   type: 'array',
-  description: 'Escolha tags que já existem ou crie uma nova pelo botão "Criar novo".',
+  hidden: true,
   of: [defineArrayMember({ type: 'reference', to: [{ type: 'tag' }] })],
   validation: (rule) => rule.unique().error('Esta tag já está no post.'),
 });

@@ -34,7 +34,7 @@ export function dadosDoCanal(urlDoFeed: string): string {
 
 /**
  * Um `<item>`: título, description (a mesma do `<meta name="description">` do post), link
- * canônico, data, categorias (tipo, categoria ou formato e tags) e a capa como `media:content`,
+ * canônico, data, categorias (tipo e categoria ou formato) e a capa como `media:content`,
  * no recorte 1200×630 do og:image. O `enclosure` pediria o tamanho do arquivo em bytes, que o
  * Sanity não informa sem baixar a imagem.
  */
@@ -46,7 +46,7 @@ export function itemDoFeed(post: PostDoFeed): RSSFeedItem {
     description: descricaoDoPost(post),
     link: canonicalUrl(urlDoPost(post)),
     pubDate: new Date(post.dataDePublicacao),
-    categories: [...rotuloDoCard(post), ...(post.tags ?? []).map(({ nome }) => nome)],
+    categories: rotuloDoCard(post),
     ...(capa && {
       customData:
         `<media:content url="${escaparXml(capa)}" medium="image" type="image/jpeg" width="${LARGURA_OG}" height="${ALTURA_OG}">` +

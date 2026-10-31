@@ -111,15 +111,8 @@ export const CONSULTA_DOS_POSTS_DO_FORMATO = defineQuery(`{
   ${PAGINA_DE_POSTS('tipo == "pensamento" && formato->slug.current == $formato')}
 }`);
 
-// /tags/[tag]. Parâmetros: $tag (slug), $inicio e $fim. `tag` vem `null` se o slug não existe.
-export const CONSULTA_DOS_POSTS_DA_TAG = defineQuery(`{
-  "tag": *[_type == "tag" && ${PUBLICADO} && slug.current == $tag][0]${TAXONOMIA},
-  ${PAGINA_DE_POSTS('$tag in tags[]->slug.current')}
-}`);
-
 // Menu, getStaticPaths das listagens e contagens. Categorias e formatos vêm na ordem do menu, com
-// zero post também (a página da listagem existe vazia). Tags só com post, porque não há índice de
-// tags e a página de uma tag sem post não teria o que mostrar.
+// zero post também (a página da listagem existe vazia).
 export const CONSULTA_DA_TAXONOMIA = defineQuery(`{
   "categorias": *[_type == "categoria" && ${PUBLICADO}] | order(ordem asc){
     _id, nome, "slug": slug.current, descricao,
@@ -128,18 +121,14 @@ export const CONSULTA_DA_TAXONOMIA = defineQuery(`{
   "formatos": *[_type == "formato" && ${PUBLICADO}] | order(ordem asc){
     _id, nome, "slug": slug.current, descricao,
     "total": count(*[${POST_PUBLICADO} && tipo == "pensamento" && formato._ref == ^._id])
-  },
-  "tags": *[_type == "tag" && ${PUBLICADO}]{
-    _id, nome, "slug": slug.current,
-    "total": count(*[${POST_PUBLICADO} && ^._id in tags[]._ref])
-  }[total > 0] | order(nome asc)
+  }
 }`);
 
 // --- Post ---
 
 // Página do post. Parâmetros: $tipo, $secao (slug da categoria, em review, ou do formato, em
 // pensamento) e $slug. A ficha traz só os campos do modelo da categoria; o corpo vem com links
-// internos e imagens resolvidos; tags apagadas ou não publicadas ficam de fora.
+// internos e imagens resolvidos.
 export const CONSULTA_DO_POST = defineQuery(`*[
   ${POST_PUBLICADO} && tipo == $tipo && slug.current == $slug &&
   select(tipo == "review" => categoria->slug.current, formato->slug.current) == $secao
@@ -157,7 +146,6 @@ export const CONSULTA_DO_POST = defineQuery(`*[
   "ficha": ${FICHA_NO_GROQ},
   "capa": capa${IMAGEM_NO_GROQ},
   "corpo": ${CORPO_NO_GROQ},
-  "tags": (tags[]->)[defined(slug.current)]${TAXONOMIA},
   seo{ titulo, descricao, noindex, "imagem": imagem${IMAGEM_NO_GROQ} }
 }`);
 
@@ -195,20 +183,18 @@ export const CONSULTA_DOS_REDIRECTS = defineQuery(
 );
 
 // Sitemap (#52): o `lastmod` de cada página (web/src/lib/sitemap.ts). A URL do post sai do
-// `urlDoPost`, e post com `noindex` fica de fora. Os posts vêm na ordem das listagens, com as tags,
-// para o `lastmod` de cada página de listagem; as datas da taxonomia, do Sobre e das Configurações
+// `urlDoPost`, e post com `noindex` fica de fora. Os posts vêm na ordem das listagens, para o
+// `lastmod` de cada página de listagem; as datas da taxonomia, do Sobre e das Configurações
 // cobrem o que essas páginas mostram além dos posts.
 export const CONSULTA_DO_SITEMAP = defineQuery(`{
   "posts": *[${POST_PUBLICADO}] | ${MAIS_RECENTES} {
     ${ROTA},
     _updatedAt,
     dataDePublicacao,
-    "noindex": coalesce(seo.noindex, false),
-    "tags": (tags[]->)[defined(slug.current)].slug.current
+    "noindex": coalesce(seo.noindex, false)
   },
   "categorias": *[_type == "categoria" && ${PUBLICADO}]{ "slug": slug.current, _updatedAt },
   "formatos": *[_type == "formato" && ${PUBLICADO}]{ "slug": slug.current, _updatedAt },
-  "tags": *[_type == "tag" && ${PUBLICADO}]{ "slug": slug.current, _updatedAt },
   "sobre": *[_id == "sobre"][0]._updatedAt,
   "configuracoes": *[_id == "configuracoes"][0]._updatedAt
 }`);
@@ -224,7 +210,6 @@ export const CONSULTA_DO_FEED =
   dataDePublicacao,
   "categoria": categoria->{ nome, "slug": slug.current },
   "formato": formato->{ nome, "slug": slug.current },
-  "tags": (tags[]->)[defined(slug.current)]{ nome },
   "capa": capa${IMAGEM_NO_GROQ},
   "corpo": corpo[_type == "block"]{ _type, style, children[]{ text } },
   seo{ descricao }

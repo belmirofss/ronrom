@@ -18,7 +18,7 @@ import Paginacao from '@/components/ui/Paginacao.astro';
 import LayoutBase from '@/layouts/LayoutBase.astro';
 import { NOTA_MAXIMA, NOTA_MINIMA } from '@/lib/nota';
 import { buscarDestaque, buscarLeiaTambem, buscarUltimos } from '@/lib/sanity/conteudo';
-import { urlDaCategoria, urlDaTag, urlDoFormato } from '@/lib/rotas';
+import { urlDaCategoria, urlDoFormato } from '@/lib/rotas';
 import { trilhaDaCategoria, trilhaDoFormato, trilhaDoPost } from '@/lib/trilha';
 
 const NOTAS = Array.from(
@@ -132,7 +132,6 @@ const casosExtremos = [
             href={urlDaCategoria('restaurantes-e-cafes')}
           />
           <ChipCategoria nome="Frases soltas" href={urlDoFormato('frases')} tom="rosa" />
-          <ChipCategoria nome="#café" href={urlDaTag('cafe')} tom="rosa" />
         </p>
         <h3>Estático</h3>
         <p class="vitrine__linha">

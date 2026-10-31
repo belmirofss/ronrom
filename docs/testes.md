@@ -190,8 +190,8 @@ Os helpers de `rotas.ts` (#33):
 As consultas de [`web/src/lib/sanity/consultas.ts`](../web/src/lib/sanity/consultas.ts) rodam com o `groq-js` num dataset montado no teste, com o "agora" fixo:
 
 - [ ] Nenhuma consulta devolve rascunho (`drafts.*`), versão de release (`versions.*`) ou post com data no futuro.
-- [ ] Listagens em ordem do mais recente, com a fatia da página e o total; categoria, formato ou tag inexistente vem `null`.
-- [ ] O post só é achado no tipo e na categoria (ou formato) certos, com a ficha do modelo da categoria e sem tags fora do ar.
+- [ ] Listagens em ordem do mais recente, com a fatia da página e o total; categoria ou formato inexistente vem `null`.
+- [ ] O post só é achado no tipo e na categoria (ou formato) certos, com a ficha do modelo da categoria.
 - [ ] Destaque com e sem escolha nas configurações, "Leia também" na ordem de prioridade, redirects e sitemap.
 
 ### Seed de desenvolvimento (#26)
@@ -220,7 +220,7 @@ As entidades de [`web/src/lib/jsonld.ts`](../web/src/lib/jsonld.ts), com os docu
 - [ ] Cada página tem o seu grafo: home (WebSite e Person), `/sobre` (com o ProfilePage), pensamento (WebPage, BlogPosting e BreadcrumbList), review (WebPage, Review e BreadcrumbList; sem autora, sem a Review) e listagem (CollectionPage e BreadcrumbList).
 - [ ] Nenhum `@id` repetido no grafo e nenhuma referência para um `@id` que não está nele, inclusive sem nome no Sobre (aí não há Person).
 - [ ] O BreadcrumbList repete os itens da trilha, com URL absoluta e posição a partir de 1.
-- [ ] O BlogPosting tem as datas em `-03:00`, as tags em `keywords` (sem a chave quando não há tag), a capa do CDN em 1200×630, 1200×900 e 1200×1200 e a imagem padrão fora do CDN.
+- [ ] O BlogPosting tem as datas em `-03:00`, sem `keywords`, a capa do CDN em 1200×630, 1200×900 e 1200×1200 e a imagem padrão fora do CDN.
 - [ ] `serializarJsonLd` não deixa `<`, `>`, `&` nem U+2028 no texto, e o JSON continua lendo o mesmo valor.
 - [ ] `isoNoFuso` converte UTC para `-03:00` sem virar o dia errado e escreve meia-noite como `00`.
 

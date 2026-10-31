@@ -44,14 +44,13 @@ const rotas = await buscarRotasDosPosts();
 | `buscarPostsDoTipo(tipo, pagina?)`      | `CONSULTA_DOS_POSTS_DO_TIPO`      |
 | `buscarPostsDaCategoria(slug, pagina?)` | `CONSULTA_DOS_POSTS_DA_CATEGORIA` |
 | `buscarPostsDoFormato(slug, pagina?)`   | `CONSULTA_DOS_POSTS_DO_FORMATO`   |
-| `buscarPostsDaTag(slug, pagina?)`       | `CONSULTA_DOS_POSTS_DA_TAG`       |
 | `buscarTaxonomia()`                     | `CONSULTA_DA_TAXONOMIA`           |
 | `buscarPost({ tipo, secao, slug })`     | `CONSULTA_DO_POST`                |
 | `buscarRotasDosPosts()`                 | `CONSULTA_DAS_ROTAS_DOS_POSTS`    |
 | `buscarLeiaTambem(id)`                  | `CONSULTA_DO_LEIA_TAMBEM`         |
 | `buscarIndiceDePosts()`                 | `CONSULTA_DO_INDICE_DE_POSTS`     |
 | `buscarSitemap()`                       | `CONSULTA_DO_SITEMAP`             |
-| `CONSULTA_DO_FEED`                      | —                                 | Os 30 posts mais recentes, para o `/rss.xml`: rota, título, subtítulo, data, categoria ou formato, tags, capa, texto dos blocos do corpo e `seo.descricao` (#52) |
+| `CONSULTA_DO_FEED`                      | —                                 | Os 30 posts mais recentes, para o `/rss.xml`: rota, título, subtítulo, data, categoria ou formato, capa, texto dos blocos do corpo e `seo.descricao` (#52) |
 | `buscarFeed()`                          | `CONSULTA_DO_FEED`                |
 
 As listagens recebem o número da página (a partir de 1; o padrão é 1) e calculam a fatia com `fatiaDaPagina(n)`, a partir de `POSTS_POR_PAGINA` (12). `totalDePaginas(total)` diz quantas páginas gerar, com pelo menos uma.
@@ -89,7 +88,7 @@ O que o dataset tem (o [`conteudo.test.ts`](conteudo.test.ts) confere):
 
 - **1 review de cada categoria**, com nota e ficha do modelo certo. A ficha do mirante (Lugares) fica sem tipo de cozinha e sem Instagram: o caso do campo vazio.
 - **1 pensamento de cada formato**: um artigo com **todos os blocos do Portable Text** (subtítulos h2 e h3, citação, listas com marcadores e numerada, com subnível, negrito, itálico, link externo `https` e `mailto`, link interno no ar e fora do ar, imagem normal e larga, galeria, vídeo do YouTube e do Instagram e citação em destaque com e sem fonte), um texto sem subtítulo, uma frase curta (com `noindex` e um endereço antigo, para o sitemap e os redirects) e uma opinião com o SEO preenchido.
-- Tags, configurações (frase em destaque, post em destaque e redes) e a página Sobre.
+- Configurações (frase em destaque, post em destaque e redes) e a página Sobre.
 
 **Imagens.** Cada asset é um placeholder em SVG num data URI (`url`), com dimensões e `lqip`: nada vai para o repositório nem para a rede. O `_id` segue o padrão dos assets do Sanity (`image-{id}-{largura}x{altura}-svg`), mas não existe no CDN, e sem `SANITY_PROJECT_ID` não há como montar uma URL do CDN. O [`imagem.ts`](imagem.ts) usa o `url` do asset direto no modo fixtures, sem `srcset`, e o `<ImagemSanity>` recorta na proporção pelo CSS (veja [Imagens](#imagens)).
 
@@ -117,7 +116,7 @@ O typegen lê as consultas sem rodar o código: os pedaços reaproveitados são 
 - **Só conteúdo no ar:** nunca rascunho (`drafts.*`) nem versão de release (`versions.*`), e post só com `dataDePublicacao` até agora. Os testes ([`consultas.test.ts`](consultas.test.ts)) rodam cada consulta com o [`groq-js`](https://github.com/sanity-io/groq-js) num dataset com rascunho, versão e post no futuro, e falham se algum aparecer.
 - **Ordem:** do mais recente para o mais antigo, com o `_id` desempatando, para a paginação não repetir nem pular post.
 - **Slugs resolvidos:** `slug`, `categoria.slug` e `formato.slug` já vêm como texto, prontos para o `urlDoPost` (veja [`docs/seo-urls.md`](../../../../docs/seo-urls.md#helpers-de-rota)).
-- **Parâmetro `$tag`:** o tipo `QueryParams` do `@sanity/client` reserva `tag`, que é o nome de uma opção do `fetch`. É só uma trava de tipo: o `consultar` aceita o parâmetro, e ele chega ao Sanity como `$tag`.
+- **Parâmetro `$tag`:** o tipo `QueryParams` do `@sanity/client` reserva `tag`, que é o nome de uma opção do `fetch`. É só uma trava de tipo: o `consultar` aceita um parâmetro com esse nome, e ele chega ao Sanity como `$tag`.
 - **Projeções do Studio:** o corpo (`CORPO_NO_GROQ`), a ficha (`FICHA_NO_GROQ`) e as imagens (`IMAGEM_NO_GROQ`) vêm de [`studio/lib`](../../../../studio/lib), ao lado dos schemas e com os próprios testes.
 
 ## Formatos compartilhados
@@ -161,23 +160,22 @@ O projeto e o dataset saem da URL do próprio asset (`https://cdn.sanity.io/imag
 
 ## Consultas
 
-| Consulta                          | Parâmetros                      | Resultado                                                                                                                                                                                                                 |
-| --------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONSULTA_DAS_CONFIGURACOES`      | —                               | `{ fraseDaSemana, seo: { descricao, imagem }, redes: { rede, url }[] }` ou `null`                                                                                                                                         |
-| `CONSULTA_DO_SOBRE`               | —                               | `{ _updatedAt, nome, bio, foto, texto (Portable Text), seo: { descricao, imagem } }` ou `null`                                                                                                                            |
-| `CONSULTA_DO_DESTAQUE`            | —                               | Card com leitura do post escolhido em Configurações; se não houver (ou ele saiu do ar), o do mais recente. `null` sem nenhum post                                                                                         |
-| `CONSULTA_DOS_ULTIMOS_POSTS`      | `$inicio`, `$fim`               | Página de listagem com todos os posts                                                                                                                                                                                     |
-| `CONSULTA_DOS_POSTS_DO_TIPO`      | `$tipo`, `$inicio`, `$fim`      | Página de listagem de reviews ou de pensamentos                                                                                                                                                                           |
-| `CONSULTA_DOS_POSTS_DA_CATEGORIA` | `$categoria`, `$inicio`, `$fim` | Página de listagem e `categoria: { nome, slug, descricao }`, `null` se o slug não existe                                                                                                                                  |
-| `CONSULTA_DOS_POSTS_DO_FORMATO`   | `$formato`, `$inicio`, `$fim`   | Página de listagem e `formato: { nome, slug, descricao }`, `null` se o slug não existe                                                                                                                                    |
-| `CONSULTA_DOS_POSTS_DA_TAG`       | `$tag`, `$inicio`, `$fim`       | Página de listagem e `tag: { nome, slug }`, `null` se o slug não existe                                                                                                                                                   |
-| `CONSULTA_DA_TAXONOMIA`           | —                               | `{ categorias, formatos, tags }`, cada item com `_id`, `nome`, `slug` e `total` de posts no ar. Categorias e formatos (com `descricao`) na ordem do menu, inclusive sem post; só as tags com post, por nome               |
-| `CONSULTA_DO_POST`                | `$tipo`, `$secao`, `$slug`      | Post inteiro ou `null` (abaixo). `$secao` é o slug da categoria (review) ou do formato (pensamento)                                                                                                                       |
-| `CONSULTA_DAS_ROTAS_DOS_POSTS`    | —                               | Rota de cada post, para o `getStaticPaths`                                                                                                                                                                                |
-| `CONSULTA_DO_LEIA_TAMBEM`         | `$id`                           | Até 3 cards: mesma categoria (ou formato), depois mesmo tipo, depois os mais recentes, sem o próprio post. `[]` se o `$id` não existe                                                                                     |
-| `CONSULTA_DO_INDICE_DE_POSTS`     | —                               | Card de todos os posts, com o texto dos blocos do corpo (para o tempo de leitura): `/posts-index.json` do "Mais lidos" (#57)                                                                                              |
-| `CONSULTA_DOS_REDIRECTS`          | —                               | Rota e `anteriores: string[]` (caminhos completos antigos) dos posts que mudaram de endereço. Cada caminho antigo redireciona para o `urlDoPost` do post (#53)                                                            |
-| `CONSULTA_DO_SITEMAP`             | —                               | `{ posts, categorias, formatos, tags, sobre, configuracoes }`: de cada post, na ordem das listagens, a rota, `_updatedAt`, `dataDePublicacao`, `noindex` e os slugs das tags; dos outros documentos, o `_updatedAt` (#52) |
+| Consulta                          | Parâmetros                      | Resultado                                                                                                                                                                                         |
+| --------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSULTA_DAS_CONFIGURACOES`      | —                               | `{ fraseDaSemana, seo: { descricao, imagem }, redes: { rede, url }[] }` ou `null`                                                                                                                 |
+| `CONSULTA_DO_SOBRE`               | —                               | `{ _updatedAt, nome, bio, foto, texto (Portable Text), seo: { descricao, imagem } }` ou `null`                                                                                                    |
+| `CONSULTA_DO_DESTAQUE`            | —                               | Card com leitura do post escolhido em Configurações; se não houver (ou ele saiu do ar), o do mais recente. `null` sem nenhum post                                                                 |
+| `CONSULTA_DOS_ULTIMOS_POSTS`      | `$inicio`, `$fim`               | Página de listagem com todos os posts                                                                                                                                                             |
+| `CONSULTA_DOS_POSTS_DO_TIPO`      | `$tipo`, `$inicio`, `$fim`      | Página de listagem de reviews ou de pensamentos                                                                                                                                                   |
+| `CONSULTA_DOS_POSTS_DA_CATEGORIA` | `$categoria`, `$inicio`, `$fim` | Página de listagem e `categoria: { nome, slug, descricao }`, `null` se o slug não existe                                                                                                          |
+| `CONSULTA_DOS_POSTS_DO_FORMATO`   | `$formato`, `$inicio`, `$fim`   | Página de listagem e `formato: { nome, slug, descricao }`, `null` se o slug não existe                                                                                                            |
+| `CONSULTA_DA_TAXONOMIA`           | —                               | `{ categorias, formatos }`, cada item com `_id`, `nome`, `slug` e `total` de posts no ar. Categorias e formatos (com `descricao`) na ordem do menu, inclusive sem post                            |
+| `CONSULTA_DO_POST`                | `$tipo`, `$secao`, `$slug`      | Post inteiro ou `null` (abaixo). `$secao` é o slug da categoria (review) ou do formato (pensamento)                                                                                               |
+| `CONSULTA_DAS_ROTAS_DOS_POSTS`    | —                               | Rota de cada post, para o `getStaticPaths`                                                                                                                                                        |
+| `CONSULTA_DO_LEIA_TAMBEM`         | `$id`                           | Até 3 cards: mesma categoria (ou formato), depois mesmo tipo, depois os mais recentes, sem o próprio post. `[]` se o `$id` não existe                                                             |
+| `CONSULTA_DO_INDICE_DE_POSTS`     | —                               | Card de todos os posts, com o texto dos blocos do corpo (para o tempo de leitura): `/posts-index.json` do "Mais lidos" (#57)                                                                      |
+| `CONSULTA_DOS_REDIRECTS`          | —                               | Rota e `anteriores: string[]` (caminhos completos antigos) dos posts que mudaram de endereço. Cada caminho antigo redireciona para o `urlDoPost` do post (#53)                                    |
+| `CONSULTA_DO_SITEMAP`             | —                               | `{ posts, categorias, formatos, sobre, configuracoes }`: de cada post, na ordem das listagens, a rota, `_updatedAt`, `dataDePublicacao`, e `noindex`; dos outros documentos, o `_updatedAt` (#52) |
 
 ### Post
 
@@ -186,5 +184,4 @@ O projeto e o dataset saem da URL do próprio asset (`https://cdn.sanity.io/imag
 - `_updatedAt`, para o `dateModified` e o `lastmod`;
 - `ficha`: só os campos do modelo da categoria, com `modelo` (`'filme' | 'serie' | 'livro' | 'lugar' | 'comida'`) para separar os casos no TypeScript; campo vazio vem `null`, e a ficha toda vem `null` em pensamento ou sem ficha;
 - `corpo`: o Portable Text com as imagens (soltas e da galeria) expandidas e cada `linkInterno` com `post: Rota | null`, `null` quando o destino não está no ar;
-- `tags: { nome, slug }[]`, sem as tags apagadas ou não publicadas;
 - `seo: { titulo, descricao, noindex, imagem } | null`.

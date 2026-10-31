@@ -27,14 +27,12 @@ const ROTULO_DO_TIPO: Record<TipoDoPost, string> = {
   pensamento: 'Pensamentos',
 };
 
-/** O que a URL da /busca guarda: `?q=`, `?tipo=`, `?categoria=` e `?tag=`. Vazio é ausente. */
+/** O que a URL da /busca guarda: `?q=`, `?tipo=` e `?categoria=`. Vazio é ausente. */
 export interface EstadoDaBusca {
   q: string;
   tipo?: TipoDoPost | undefined;
   /** Nome da categoria (reviews) ou do formato (pensamentos), como no índice: `Filmes`. */
   categoria?: string | undefined;
-  /** Nome da tag, sem `#`: `Wim Wenders`. */
-  tag?: string | undefined;
 }
 
 /** Um resultado pronto para a UI (#61). Tudo texto puro, menos o `excerpt`. */
@@ -70,7 +68,6 @@ export interface OpcaoDeFiltro<Valor extends string = string> {
 export interface FiltrosDisponiveis {
   tipos: OpcaoDeFiltro<TipoDoPost>[];
   categorias: OpcaoDeFiltro[];
-  tags: OpcaoDeFiltro[];
 }
 
 // O pedaço da API JS do Pagefind que o site usa (https://pagefind.app/docs/api/). O pacote
@@ -118,7 +115,6 @@ export function lerEstado(parametros: URLSearchParams): EstadoDaBusca {
     q: parametros.get('q')?.trim() ?? '',
     tipo: ehTipo(tipo) ? tipo : undefined,
     categoria: limpo(parametros.get('categoria')),
-    tag: limpo(parametros.get('tag')),
   };
 }
 
@@ -129,7 +125,6 @@ export function parametrosDoEstado(estado: EstadoDaBusca): URLSearchParams {
     ['q', limpo(estado.q)],
     ['tipo', estado.tipo],
     ['categoria', limpo(estado.categoria)],
-    ['tag', limpo(estado.tag)],
   ];
   for (const [chave, valor] of pares) {
     if (valor) parametros.set(chave, valor);
@@ -145,7 +140,7 @@ export function urlDaBusca(estado: EstadoDaBusca): string {
 
 /** Sem termo e sem filtro, não há o que buscar: a página pede para digitar algo. */
 export function temBusca(estado: EstadoDaBusca): boolean {
-  return Boolean(limpo(estado.q) || estado.tipo || limpo(estado.categoria) || limpo(estado.tag));
+  return Boolean(limpo(estado.q) || estado.tipo || limpo(estado.categoria));
 }
 
 /**
@@ -157,8 +152,6 @@ export function filtrosDoEstado(estado: EstadoDaBusca): FiltrosDoPagefind {
   if (estado.tipo) filtros['tipo'] = TIPO_NO_INDICE[estado.tipo];
   const categoria = limpo(estado.categoria);
   if (categoria) filtros['any'] = [{ categoria }, { formato: categoria }];
-  const tag = limpo(estado.tag);
-  if (tag) filtros['tags'] = tag;
   return filtros;
 }
 
@@ -218,7 +211,6 @@ export function paraFiltros(contagem: ContagemDosFiltros): FiltrosDisponiveis {
   return {
     tipos,
     categorias: opcoes(Object.fromEntries(categorias)),
-    tags: opcoes(contagem['tags']),
   };
 }
 

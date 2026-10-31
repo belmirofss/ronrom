@@ -153,6 +153,5 @@ export const estrutura: StructureResolver = (S, { getClient }) => {
       S.divider(),
       S.documentTypeListItem('categoria').title('Categorias'),
       S.documentTypeListItem('formato').title('Formatos'),
-      S.documentTypeListItem('tag').title('Tags'),
     ]);
 };

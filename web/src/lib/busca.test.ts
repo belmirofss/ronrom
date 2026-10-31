@@ -21,10 +21,6 @@ const review = {
   categoria: { nome: 'Filmes', slug: 'filmes', modeloFicha: 'filme' as const },
   formato: null,
   nota: 4.5,
-  tags: [
-    { nome: 'Wim Wenders', slug: 'wim-wenders' },
-    { nome: 'Japão', slug: 'japao' },
-  ],
   capa,
 };
 
@@ -36,7 +32,6 @@ const pensamento = {
   categoria: null,
   formato: { nome: 'Textos', slug: 'textos' },
   nota: null,
-  tags: null,
   capa: { ...capa, asset: null },
 };
 
@@ -46,8 +41,6 @@ describe('indiceDoPost', () => {
     expect(indice.filtros).toEqual([
       ['tipo', 'Review'],
       ['categoria', 'Filmes'],
-      ['tags', 'Wim Wenders'],
-      ['tags', 'Japão'],
       ['nota', '4,5 corações'],
     ]);
     const metadados = Object.fromEntries(indice.metadados);

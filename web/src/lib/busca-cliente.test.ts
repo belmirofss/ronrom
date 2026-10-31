@@ -27,7 +27,6 @@ const diasPerfeitos: DadosDoPagefind = {
   filters: {
     tipo: ['Review'],
     categoria: ['Filmes'],
-    tags: ['Wim Wenders'],
     nota: ['4,5 corações'],
   },
 };
@@ -40,33 +39,30 @@ const sobreCafe: DadosDoPagefind = {
 };
 
 describe('lerEstado', () => {
-  it('lê os quatro parâmetros, com o tipo em minúsculas', () => {
-    const estado = lerEstado(
-      new URLSearchParams('q=+caf%C3%A9+&tipo=Review&categoria=Filmes&tag=Wim%20Wenders'),
-    );
-    expect(estado).toEqual({ q: 'café', tipo: 'review', categoria: 'Filmes', tag: 'Wim Wenders' });
+  it('lê os três parâmetros, com o tipo em minúsculas', () => {
+    const estado = lerEstado(new URLSearchParams('q=+caf%C3%A9+&tipo=Review&categoria=Filmes'));
+    expect(estado).toEqual({ q: 'café', tipo: 'review', categoria: 'Filmes' });
   });
 
   it('ignora tipo desconhecido e campos vazios', () => {
-    expect(lerEstado(new URLSearchParams('tipo=receita&categoria=&tag=%20'))).toEqual({
+    expect(lerEstado(new URLSearchParams('tipo=receita&categoria=%20'))).toEqual({
       q: '',
       tipo: undefined,
       categoria: undefined,
-      tag: undefined,
     });
   });
 });
 
 describe('urlDaBusca', () => {
   it('monta a query na ordem fixa e sem campos vazios', () => {
-    expect(urlDaBusca({ tag: 'Japão', q: 'café', categoria: '' })).toBe(
-      '/busca?q=caf%C3%A9&tag=Jap%C3%A3o',
+    expect(urlDaBusca({ categoria: 'Séries', q: 'café', tipo: undefined })).toBe(
+      '/busca?q=caf%C3%A9&categoria=S%C3%A9ries',
     );
     expect(urlDaBusca({ q: '  ' })).toBe('/busca');
   });
 
   it('volta ao mesmo estado ao ler a própria URL', () => {
-    const estado = { q: 'café', tipo: 'pensamento' as const, categoria: 'Textos', tag: 'manhã' };
+    const estado = { q: 'café', tipo: 'pensamento' as const, categoria: 'Textos' };
     const url = new URL(urlDaBusca(estado), 'https://ronrom.blog');
     expect(lerEstado(url.searchParams)).toEqual(estado);
   });
@@ -83,10 +79,9 @@ describe('temBusca', () => {
 
 describe('filtrosDoEstado e ordemDoEstado', () => {
   it('traduz o tipo e casa a categoria com categoria ou formato', () => {
-    expect(filtrosDoEstado({ q: 'x', tipo: 'review', categoria: 'Filmes', tag: 'Japão' })).toEqual({
+    expect(filtrosDoEstado({ q: 'x', tipo: 'review', categoria: 'Filmes' })).toEqual({
       tipo: 'Review',
       any: [{ categoria: 'Filmes' }, { formato: 'Filmes' }],
-      tags: 'Japão',
     });
     expect(filtrosDoEstado({ q: 'x' })).toEqual({});
   });
@@ -131,7 +126,6 @@ describe('paraFiltros', () => {
         tipo: { Review: 3, Pensamento: 1 },
         categoria: { Séries: 1, Filmes: 2 },
         formato: { Textos: 1, Opiniões: 0 },
-        tags: { Japão: 2, 'Wim Wenders': 1 },
       }),
     ).toEqual({
       tipos: [
@@ -142,10 +136,6 @@ describe('paraFiltros', () => {
         { valor: 'Filmes', rotulo: 'Filmes', total: 2 },
         { valor: 'Séries', rotulo: 'Séries', total: 1 },
         { valor: 'Textos', rotulo: 'Textos', total: 1 },
-      ],
-      tags: [
-        { valor: 'Japão', rotulo: 'Japão', total: 2 },
-        { valor: 'Wim Wenders', rotulo: 'Wim Wenders', total: 1 },
       ],
     });
   });
@@ -236,11 +226,11 @@ describe('criarBusca', () => {
     expect(await vazia).toBeNull();
     expect(pagefind.search).not.toHaveBeenCalled();
 
-    const pedido = busca.buscar({ q: '', tag: 'Japão' });
+    const pedido = busca.buscar({ q: '', categoria: 'Filmes' });
     await vi.advanceTimersByTimeAsync(200);
     await pedido;
     expect(pagefind.search).toHaveBeenCalledWith(null, {
-      filters: { tags: 'Japão' },
+      filters: { any: [{ categoria: 'Filmes' }, { formato: 'Filmes' }] },
       sort: { date: 'desc' },
     });
   });
