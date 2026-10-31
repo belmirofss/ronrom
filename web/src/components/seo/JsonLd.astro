@@ -1,0 +1,18 @@
+---
+import { grafoDaPagina, serializarJsonLd, type PaginaDoJsonLd } from '@/lib/jsonld';
+import { buscarConfiguracoes, buscarSobre } from '@/lib/sanity/conteudo';
+
+// O JSON-LD da página (#50), um único @graph com o site, a autora e as entidades da página. Vai no
+// slot `head` do layout, que termina no <Seo>. Busca sozinho o Sobre e as Configurações do site,
+// como a BarraLateral, para a página só dizer o que ela é.
+interface Props {
+  pagina: PaginaDoJsonLd;
+}
+
+const { pagina } = Astro.props;
+
+const [sobre, configuracoes] = await Promise.all([buscarSobre(), buscarConfiguracoes()]);
+const json = serializarJsonLd(grafoDaPagina(pagina, { sobre, configuracoes }));
+---
+
+<script type="application/ld+json" is:inline set:html={json} />

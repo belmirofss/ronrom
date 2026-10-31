@@ -2,6 +2,7 @@
 import Container from '@/components/layout/Container.astro';
 import CorpoDoPost from '@/components/post/CorpoDoPost.astro';
 import EstadoVazio from '@/components/ui/EstadoVazio.astro';
+import JsonLd from '@/components/seo/JsonLd.astro';
 import ImagemSanity from '@/components/ui/ImagemSanity.astro';
 import LayoutBase from '@/layouts/LayoutBase.astro';
 import { navegacaoDaBarraLateral } from '@/lib/barra-lateral';
@@ -21,6 +22,8 @@ const secoes = [
 ---
 
 <LayoutBase seo={seoDoSobre(sobre)}>
+  <JsonLd slot="head" pagina={{ tipo: 'sobre' }} />
+
   <Container as="article" largura="leitura" class="sobre">
     <h1 class="sobre__titulo">{TITULO_DO_SOBRE}</h1>
 

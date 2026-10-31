@@ -79,7 +79,10 @@ Toda página usa um dos layouts de [`src/layouts`](src/layouts), que montam a ca
 
 ```astro
 <LayoutComBarraLateral seo={{ title: 'Reviews', description: '...', canonical: '/reviews' }}>
-  <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
+  <JsonLd
+    slot="head"
+    pagina={{ tipo: 'listagem', titulo: 'Reviews', trilha: trilhaDoTipo('review') }}
+  />
   <h1>Reviews</h1>
   <BarraLateral slot="barra-lateral" />
 </LayoutComBarraLateral>
@@ -113,17 +116,17 @@ No celular (abaixo de 960px) a barra lateral vem depois do conteúdo principal, 
 
 O [`<Seo>`](src/components/seo/Seo.astro) concentra o `<head>` de todas as páginas, uma tag de cada: `<title>`, description, canonical, robots, Open Graph, Twitter card, o `<link>` do RSS e os ícones. Quem o renderiza é o `LayoutBase`, com a prop `seo`; a página não coloca outro `<title>` nem meta tag no slot `head`, que fica só para o JSON-LD (#50, #51).
 
-| Prop                            | Uso                                                                                                                         |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `title`                         | Título sem o nome do site. Vira `"{title} · Ronrom"`; sem ele (a home), `"Ronrom · Reviews e pensamentos"`                  |
-| `description`                   | Obrigatória. Vazia, vale a `DESCRICAO_DO_SITE` (`src/lib/utils/site.ts`)                                                    |
-| `canonical`                     | Obrigatória: o caminho da página (`/sobre`). O `<Seo>` monta a URL absoluta com o `canonicalUrl`, também usada no `og:url`  |
-| `image`, `imageAlt`             | Imagem do Sanity (capa, foto, imagem de compartilhamento). Sem ela, ou com o arquivo apagado, vale a `public/og-padrao.jpg` |
-| `type`                          | `website` (padrão) ou `article`. Só `article` emite `article:published_time`, `modified_time`, `section` e um `tag` por tag |
-| `noindex`                       | `noindex,follow` no lugar do padrão `index,follow,max-image-preview:large`                                                  |
-| `publishedTime`, `modifiedTime` | Datas ISO 8601 do post (`dataDePublicacao` e `_updatedAt`)                                                                  |
-| `tags`, `section`               | Nomes das tags e da categoria (review) ou do formato (pensamento)                                                           |
-| `prev`, `next`                  | Caminhos das páginas vizinhas de uma listagem paginada; viram `<link rel="prev">` e `<link rel="next">` absolutos           |
+| Prop                            | Uso                                                                                                                                                                               |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`                         | Título sem o nome do site. Vira `"{title} · Ronrom"`; sem ele (a home), `"Ronrom · Reviews e pensamentos"`                                                                        |
+| `description`                   | Obrigatória. Vazia, vale a `DESCRICAO_DO_SITE` (`src/lib/utils/site.ts`)                                                                                                          |
+| `canonical`                     | Obrigatória: o caminho da página (`/sobre`). O `<Seo>` monta a URL absoluta com o `canonicalUrl`, também usada no `og:url`                                                        |
+| `image`, `imageAlt`             | Imagem do Sanity (capa, foto, imagem de compartilhamento). Sem ela, ou com o arquivo apagado, vale a `public/og-padrao.jpg`                                                       |
+| `type`                          | `website` (padrão) ou `article`. Só `article` emite `article:published_time`, `modified_time`, `section` e um `tag` por tag                                                       |
+| `noindex`                       | `noindex,follow` no lugar do padrão `index,follow,max-image-preview:large`. Fora de produção, toda página sai com `noindex,nofollow` ([indexação](../docs/seo-urls.md#indexação)) |
+| `publishedTime`, `modifiedTime` | Datas ISO 8601 do post (`dataDePublicacao` e `_updatedAt`)                                                                                                                        |
+| `tags`, `section`               | Nomes das tags e da categoria (review) ou do formato (pensamento)                                                                                                                 |
+| `prev`, `next`                  | Caminhos das páginas vizinhas de uma listagem paginada; viram `<link rel="prev">` e `<link rel="next">` absolutos                                                                 |
 
 Regras:
 
@@ -132,6 +135,29 @@ Regras:
 - **Imagem de compartilhamento:** o `ogImage(imagem)` ([`src/lib/sanity/imagem.ts`](src/lib/sanity/imagem.ts)) pede ao CDN do Sanity um JPG de 1200×630 recortado no hotspot (JPG porque alguns crawlers não aceitam WebP nem AVIF). O `og:title` e o `twitter:title` vão sem o " · Ronrom", que já aparece no `og:site_name`.
 - **Título longo:** acima de 65 caracteres (com o " · Ronrom"), o build mostra um aviso `[seo]` com a página. Não quebra o build: a autora encurta pelo "Título para o Google" do post.
 - **Prévia de link:** depois do deploy, confira a URL no [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/), no [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) e mandando o link no WhatsApp.
+
+### Dados estruturados (JSON-LD)
+
+O [`<JsonLd>`](src/components/seo/JsonLd.astro) (#50) vai no slot `head` do layout e publica um único `<script type="application/ld+json">` com um `@graph`. A página só diz o que ela é, na prop `pagina`; o componente busca o Sobre e as Configurações do site e monta o grafo com o `grafoDaPagina` ([`src/lib/jsonld.ts`](src/lib/jsonld.ts), tipado com o `schema-dts`):
+
+| `pagina`                               | Onde                            | Entidades além do `WebSite` e da `Person`           |
+| -------------------------------------- | ------------------------------- | --------------------------------------------------- |
+| `{ tipo: 'home' }`                     | `/`                             | nenhuma                                             |
+| `{ tipo: 'sobre' }`                    | `/sobre`                        | `ProfilePage` com a autora como `mainEntity`        |
+| `{ tipo: 'post', post }`               | `PaginaDoPost`                  | `WebPage`, `BlogPosting` (só pensamento) e a trilha |
+| `{ tipo: 'listagem', titulo, trilha }` | `Listagem` (todas as listagens) | `CollectionPage` e a trilha                         |
+
+Regras:
+
+- **Uma entidade, um `@id`:** `{site}/#site` (WebSite), `{site}/sobre#autora` (Person), a URL canônica (a página), `{canonical}#post` (o artigo) e `{canonical}#trilha` (BreadcrumbList). As entidades se citam só pelo `@id`, e nenhuma aparece duas vezes no grafo.
+- **Autora:** nome, bio e foto (600×600) do Sobre e os links de `redes` de Configurações como `sameAs`. Sem nome no Sobre, não há `Person` e nada cita a autora.
+- **WebSite:** nome `Ronrom`, `alternateName` `Ronrom Blog` (o que conta para os [nomes de site](https://developers.google.com/search/docs/appearance/site-names) do Google) e um `SearchAction` para `/busca?q=`, que o Google não mostra mais, mas o schema.org aceita.
+- **Artigo:** `headline`, a description do `<Seo>`, a imagem de compartilhamento em 1200×630, 1200×900 e 1200×1200 (fora do CDN, a `og-padrao.jpg`), as tags em `keywords`, o formato em `articleSection` e o `wordCount` do `contarPalavras`.
+- **Datas:** ISO 8601 no fuso de Brasília, com o deslocamento (`2026-03-14T23:30:00-03:00`), pelo `isoNoFuso` ([`src/lib/utils/data.ts`](src/lib/utils/data.ts)).
+- **Trilha:** o `BreadcrumbList` usa os mesmos itens do `Breadcrumb` da página (@/lib/trilha), com `canonicalUrl(href)`.
+- **Seguro no HTML:** o `serializarJsonLd` troca `<`, `>`, `&`, U+2028 e U+2029 por escapes Unicode, então um `</script>` no texto de um post não fecha a tag.
+
+Para conferir, cole o HTML de uma página do build no [Rich Results Test](https://search.google.com/test/rich-results) e no [validator.schema.org](https://validator.schema.org/).
 
 ### Ícones e imagem de compartilhamento
 
@@ -245,7 +271,7 @@ As listagens paginadas (#46) ficam em `src/pages`: `/posts`, `/reviews`, `/revie
 
 - **Páginas geradas:** o `getStaticPaths` usa o `parametrosDosPosts` ([`src/lib/post.ts`](src/lib/post.ts)): um post só ganha página no endereço da categoria (ou formato) atual. Post cuja categoria não existe não gera página, e qualquer outra combinação dá 404.
 - **Ficha:** a [`FichaDaReview.astro`](src/components/post/FichaDaReview.astro) aparece só em review: a nota em corações e os campos do modelo da categoria num `<dl>`, com os rótulos e valores de `itensDaFicha` ([`src/lib/ficha.ts`](src/lib/ficha.ts)). Campo vazio não aparece; endereço linka para o mapa e o Instagram para o perfil.
-- **Pontos de inserção:** o slot `head` da `PaginaDoPost` vai para o fim do `<Seo>` (o JSON-LD do post, #50 e #51), e o `<div data-visualizacoes="{_id}">`, sem estilo nem conteúdo, é onde o contador de visualizações (#56) se pendura.
+- **Pontos de inserção:** o `<JsonLd>` da `PaginaDoPost` vai para o fim do `<Seo>` (o JSON-LD do post, #50; a Review entra na #51), e o `<div data-visualizacoes="{_id}">`, sem estilo nem conteúdo, é onde o contador de visualizações (#56) se pendura.
 
 ## Imagens, datas e tempo de leitura
 

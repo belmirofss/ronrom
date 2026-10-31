@@ -376,7 +376,7 @@ describe('dados do build', () => {
 
   it('marca no sitemap o post com noindex', async () => {
     const sitemap = (await rodar(consultas.CONSULTA_DO_SITEMAP)) as CONSULTA_DO_SITEMAP_RESULT;
-    expect(sitemap.map(({ slug, noindex }) => [slug, noindex])).toEqual([
+    expect(sitemap.posts.map(({ slug, noindex }) => [slug, noindex])).toEqual([
       ['cafe-do-bairro', false],
       ['sobre-gatos', false],
       ['dias-perfeitos', false],

@@ -181,8 +181,8 @@ describe('funções de acesso no modo fixtures', () => {
 
   it('sitemap', async () => {
     const sitemap = await buscarSitemap();
-    expect(sitemap).toHaveLength(10);
-    expect(sitemap.filter((post) => post.noindex).map((post) => post.slug)).toEqual([
+    expect(sitemap.posts).toHaveLength(10);
+    expect(sitemap.posts.filter((post) => post.noindex).map((post) => post.slug)).toEqual([
       'sobre-gatos',
     ]);
   });

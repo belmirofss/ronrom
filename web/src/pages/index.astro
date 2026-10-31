@@ -3,6 +3,7 @@ import BarraLateral from '@/components/barra-lateral/BarraLateral.astro';
 import MaisLidos from '@/components/home/MaisLidos.astro';
 import TopoHome from '@/components/home/TopoHome.astro';
 import Destaque from '@/components/post/Destaque.astro';
+import JsonLd from '@/components/seo/JsonLd.astro';
 import ListaDePosts from '@/components/post/ListaDePosts.astro';
 import Abas from '@/components/ui/Abas.astro';
 import EstadoVazio from '@/components/ui/EstadoVazio.astro';
@@ -36,6 +37,8 @@ const ABAS = [
     image: seo?.imagem,
   }}
 >
+  <JsonLd slot="head" pagina={{ tipo: 'home' }} />
+
   {/* O único h1 da home, "Ronrom", está no TopoHome. */}
   <TopoHome slot="topo" />
 

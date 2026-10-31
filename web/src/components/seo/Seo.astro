@@ -3,8 +3,7 @@ import { canonicalUrl } from '@/lib/rotas';
 import {
   imagemDeCompartilhamento,
   LIMITE_DO_TITULO,
-  ROBOTS_INDEXAVEL,
-  ROBOTS_NOINDEX,
+  robotsDaPagina,
   type Metadados,
 } from '@/lib/seo';
 import { DESCRICAO_DO_SITE, NOME_DO_SITE } from '@/lib/utils/site';
@@ -50,7 +49,7 @@ const imagem = imagemDeCompartilhamento(image, imageAlt, tituloSocial);
 <link rel="canonical" href={url} />
 {prev && <link rel="prev" href={canonicalUrl(prev)} />}
 {next && <link rel="next" href={canonicalUrl(next)} />}
-<meta name="robots" content={noindex ? ROBOTS_NOINDEX : ROBOTS_INDEXAVEL} />
+<meta name="robots" content={robotsDaPagina(noindex)} />
 
 <meta property="og:title" content={tituloSocial} />
 <meta property="og:description" content={descricao} />

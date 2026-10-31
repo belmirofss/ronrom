@@ -1,6 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ogImage } from '@/lib/sanity/imagem';
-import { descricaoDoPost, imagemDeCompartilhamento, resumir, seoDoPost } from '@/lib/seo';
+import {
+  descricaoDoPost,
+  imagemDeCompartilhamento,
+  resumir,
+  robotsDaPagina,
+  robotsTxt,
+  seoDoPost,
+} from '@/lib/seo';
 
 vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
 
@@ -166,5 +173,29 @@ describe('imagemDeCompartilhamento', () => {
     expect(imagemDeCompartilhamento(capa, 'Alt da página', 'Título').alt).toBe('Alt da página');
     expect(imagemDeCompartilhamento(capa, undefined, 'Título').alt).toBe(capa.alt);
     expect(imagemDeCompartilhamento({ ...capa, alt: '' }, undefined, 'Título').alt).toBe('Título');
+  });
+});
+
+describe('robotsDaPagina', () => {
+  it('em produção, segue a prop noindex', () => {
+    expect(robotsDaPagina(false, true)).toBe('index,follow,max-image-preview:large');
+    expect(robotsDaPagina(true, true)).toBe('noindex,follow');
+  });
+
+  it('fora de produção, bloqueia toda página', () => {
+    expect(robotsDaPagina(false, false)).toBe('noindex,nofollow');
+    expect(robotsDaPagina(true, false)).toBe('noindex,nofollow');
+  });
+});
+
+describe('robotsTxt', () => {
+  const sitemap = 'https://ronrom-blog.vercel.app/sitemap-index.xml';
+
+  it('em produção, libera tudo e aponta o sitemap', () => {
+    expect(robotsTxt(true, sitemap)).toBe(`User-agent: *\nAllow: /\n\nSitemap: ${sitemap}\n`);
+  });
+
+  it('fora de produção, bloqueia tudo e não anuncia o sitemap', () => {
+    expect(robotsTxt(false, sitemap)).toBe('User-agent: *\nDisallow: /\n');
   });
 });
