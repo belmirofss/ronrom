@@ -122,10 +122,12 @@ O [`<Seo>`](src/components/seo/Seo.astro) concentra o `<head>` de todas as pági
 | `noindex`                       | `noindex,follow` no lugar do padrão `index,follow,max-image-preview:large`                                                  |
 | `publishedTime`, `modifiedTime` | Datas ISO 8601 do post (`dataDePublicacao` e `_updatedAt`)                                                                  |
 | `tags`, `section`               | Nomes das tags e da categoria (review) ou do formato (pensamento)                                                           |
+| `prev`, `next`                  | Caminhos das páginas vizinhas de uma listagem paginada; viram `<link rel="prev">` e `<link rel="next">` absolutos           |
 
 Regras:
 
 - **Post:** a página do post (#42) monta as props com o `seoDoPost(post, urlDoPost(post))`, de [`src/lib/seo.ts`](src/lib/seo.ts). O título é o `seo.titulo` ou o título do post; a description é a `seo.descricao`, depois o subtítulo, depois os primeiros ~155 caracteres do texto, sem quebrar palavra; a imagem é a `seo.imagem` ou a capa.
+- **Listagem:** canonical, `prev` e `next` vêm do `seoDaPaginacao(base, pagina, paginas)`, de [`src/lib/listagem.ts`](src/lib/listagem.ts); o título da página 2 em diante termina em " — página N" (veja [Listagens](#listagens)).
 - **Imagem de compartilhamento:** o `ogImage(imagem)` ([`src/lib/sanity/imagem.ts`](src/lib/sanity/imagem.ts)) pede ao CDN do Sanity um JPG de 1200×630 recortado no hotspot (JPG porque alguns crawlers não aceitam WebP nem AVIF). O `og:title` e o `twitter:title` vão sem o " · Ronrom", que já aparece no `og:site_name`.
 - **Título longo:** acima de 65 caracteres (com o " · Ronrom"), o build mostra um aviso `[seo]` com a página. Não quebra o build: a autora encurta pelo "Título para o Google" do post.
 - **Prévia de link:** depois do deploy, confira a URL no [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/), no [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) e mandando o link no WhatsApp.
@@ -227,6 +229,15 @@ A [`src/pages/index.astro`](src/pages/index.astro) usa o `LayoutComBarraLateral`
 
 Sem nenhum post publicado, a home mostra o topo, um estado vazio com link para `/sobre` e a barra lateral, sem destaque, abas nem o botão.
 
+## Listagens
+
+As listagens paginadas (#46) ficam em `src/pages`: `/posts`, `/reviews`, `/reviews/[categoria]`, `/pensamentos`, `/pensamentos/[formato]` e `/tags/[tag]`, cada uma com um `index.astro` (a página 1) e um `pagina/[n].astro` (da 2 em diante). As páginas só buscam os dados em `@/lib/sanity/conteudo` e passam para a [`Listagem.astro`](src/components/listagem/Listagem.astro), que desenha trilha, h1, descrição do CMS (quando há), total de posts, os `ItemDeLista` com a `Paginacao` e a barra lateral à direita no desktop. Sem post, mostra o `EstadoVazio`, com link para `/posts`.
+
+- **Páginas geradas:** o `getStaticPaths` de cada `pagina/[n].astro` parte do total de posts (da consulta da listagem ou das contagens do `buscarTaxonomia`) e gera só da 2 até a última (`paginasExtras(totalDePaginas(total))`, de [`src/lib/listagem.ts`](src/lib/listagem.ts)). `/pagina/1` e páginas além da última não existem. São 12 posts por página (`POSTS_POR_PAGINA`).
+- **Quais categorias, formatos e tags:** toda categoria e todo formato publicados, mesmo sem post (é o que a barra lateral lista); tag só com post, porque não há índice de tags.
+- **Textos:** o h1 é "Todos os posts", "Reviews", "Pensamentos", "Reviews de {categoria}", o nome do formato ou "#{tag}" (`TEXTOS_DAS_SECOES`, `textosDaCategoria`, `textosDoFormato` e `textosDaTag`). Da página 2 em diante, o título e o h1 terminam em " — página N" e a trilha ganha o item "Página N".
+- **Fixtures:** os 10 posts cabem numa página. Para ver a paginação em local, baixe o `POSTS_POR_PAGINA` temporariamente (com 2, saem `/posts/pagina/2` a `/posts/pagina/5`).
+
 ## Imagens, datas e tempo de leitura
 
 Componentes em [`src/components/ui`](src/components/ui) usados em quase toda página:
@@ -273,7 +284,8 @@ O [`CorpoDoPost.astro`](src/components/post/CorpoDoPost.astro) renderiza o `corp
 | Link para outro post       | `<a>` com o caminho do `urlDoPost`                                                                                           | [`corpo/LinkInterno.astro`](src/components/post/corpo/LinkInterno.astro)         |
 | Imagem                     | `<figure>` com o `<ImagemSanity>` e o `<figcaption>` opcional                                                                | [`Figura.astro`](src/components/post/Figura.astro)                               |
 | Galeria                    | `<ul>` de `<figure>`, recortadas em quadrado: duas colunas, ou três a partir de 600px com 3, 6, 9 ou 12 fotos                | [`corpo/Galeria.astro`](src/components/post/corpo/Galeria.astro)                 |
-| Vídeo                      | Provisório: `<figure>` com um link para o YouTube ou o Instagram e a legenda. O player leve entra na #40                     | [`corpo/Video.astro`](src/components/post/corpo/Video.astro)                     |
+| Vídeo do YouTube           | `<figure>` com a fachada leve (miniatura e play) e a legenda; o player entra no clique                                       | [`VideoYoutube.astro`](src/components/post/VideoYoutube.astro)                   |
+| Post do Instagram          | `<figure>` com um cartão: o link para o post e o botão "Carregar post aqui"                                                  | [`EmbedInstagram.astro`](src/components/post/EmbedInstagram.astro)               |
 | Citação em destaque        | `<figure>` com `<blockquote>` e a fonte no `<figcaption>`: centralizada, maior, em vinho, com as aspas grandes `aria-hidden` | [`corpo/CitacaoDestaque.astro`](src/components/post/corpo/CitacaoDestaque.astro) |
 
 Regras, aplicadas pelo `prepararCorpo` ([`src/lib/corpo.ts`](src/lib/corpo.ts), com teste) antes de renderizar:
@@ -282,4 +294,7 @@ Regras, aplicadas pelo `prepararCorpo` ([`src/lib/corpo.ts`](src/lib/corpo.ts), 
 - **Sem bloco vazio.** Parágrafos, subtítulos e itens de lista sem texto (o Enter a mais no editor) não aparecem.
 - **Links seguros.** Link externo só com `http`, `https` ou `mailto`, como no Studio; outro esquema (um `javascript:` vindo da API) vira texto. Link interno com o destino fora do ar também vira texto.
 - **Imagens.** `alt` sempre (vem do Studio, onde é obrigatório) e `loading="lazy"`: nenhuma imagem do texto carrega antes de chegar perto da viewport. A imagem `larga` tem 960px a partir de 1100px de tela e ocupa a coluna abaixo disso; o `sizes` de cada variante segue essas larguras.
+- **Vídeos só no clique.** O iframe do YouTube e o embed do Instagram pesam centenas de KB, derrubariam o LCP e o INP e gravariam cookies de terceiros. Por isso a página não faz nenhuma requisição a youtube.com nem a instagram.com antes de a leitora pedir; só a miniatura vem do `i.ytimg.com`, com `loading="lazy"`. O [`corpo/Video.astro`](src/components/post/corpo/Video.astro) tira o provedor e o ID do link com o `videoDoLink` do Studio ([`studio/lib/video.ts`](../studio/lib/video.ts): watch, `youtu.be`, Shorts, embed e `youtube-nocookie`, post e reel do Instagram); link que não é de vídeo não aparece.
+  - **YouTube:** sem JS, a fachada é um link para o vídeo. O script da ilha a troca por um `<button aria-label="Reproduzir vídeo: <legenda>">` (Enter e Espaço) e, no clique, pelo iframe do `youtube-nocookie.com` com `autoplay=1`, com o foco no player.
+  - **Instagram:** um cartão com "Ver post no Instagram", que funciona sem JS, e o botão "Carregar post aqui", que só aparece com JS. No clique, o blockquote oficial entra no lugar do cartão e o `embed.js` carrega uma vez para a página.
 - **Bloco desconhecido** (um tipo novo no Studio antes de o site saber mostrá-lo): não aparece e não quebra o build; o `astro dev` avisa no terminal (`[corpo] O site ainda não sabe mostrar...`).

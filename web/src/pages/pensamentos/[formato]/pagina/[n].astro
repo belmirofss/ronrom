@@ -1,0 +1,35 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import Listagem from '@/components/listagem/Listagem.astro';
+import { paginasExtras, textosDoFormato } from '@/lib/listagem';
+import { urlDoFormato } from '@/lib/rotas';
+import { buscarPostsDoFormato, buscarTaxonomia, totalDePaginas } from '@/lib/sanity/conteudo';
+import { trilhaDoFormato } from '@/lib/trilha';
+
+// Da página 2 em diante de cada formato, pelas contagens da taxonomia: a 1 é a própria listagem.
+export const getStaticPaths = (async () => {
+  const taxonomia = await buscarTaxonomia();
+  return (taxonomia?.formatos ?? []).flatMap(({ slug, total }) =>
+    paginasExtras(totalDePaginas(total)).map((pagina) => ({
+      params: { formato: slug, n: String(pagina) },
+      props: { pagina },
+    })),
+  );
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { formato: slug } = Astro.params;
+const { pagina } = Astro.props;
+const { formato, posts, total } = await buscarPostsDoFormato(slug, pagina);
+if (!formato) throw new Error(`Formato "${slug}" não encontrado na listagem.`);
+---
+
+<Listagem
+  {...textosDoFormato(formato)}
+  trilha={trilhaDoFormato(formato)}
+  base={urlDoFormato(slug)}
+  pagina={pagina}
+  posts={posts}
+  total={total}
+/>
