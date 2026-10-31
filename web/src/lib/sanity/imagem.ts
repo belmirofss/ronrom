@@ -104,8 +104,47 @@ export function fontesDaImagem(imagem: ImagemDoSanity, proporcao?: number): Font
   const tamanho = { width: maior, height: Math.round((maior * maximo.altura) / maximo.largura) };
 
   // Nas fixtures, o `url` é um placeholder em SVG: vai direto, e o CSS recorta na proporção.
+  const url = urlDaVersao(imagem, asset, proporcao);
+  if (!url) return { src: asset.url, srcset: undefined, ...tamanho };
+
+  return {
+    src: url(maior),
+    srcset: versoes.map((largura) => `${url(largura)} ${largura}w`).join(', '),
+    ...tamanho,
+  };
+}
+
+/**
+ * Uma versão só da imagem, com `largura` pixels (ou a do recorte, se for menor) e recortada em
+ * `proporcao`: a miniatura do /posts-index.json (#57), que o "Mais lidos" monta no navegador sem
+ * `srcset`. `null` se o asset foi apagado.
+ */
+export function versaoDaImagem(
+  imagem: ImagemDoSanity,
+  largura: number,
+  proporcao?: number,
+): Omit<FontesDaImagem, 'srcset'> | null {
+  const { asset } = imagem;
+  if (!asset) return null;
+
+  const maximo = tamanhoMaximo({ ...imagem, asset }, proporcao);
+  const width = Math.min(largura, maximo.largura);
+  const height = Math.round((width * maximo.altura) / maximo.largura);
+  const url = urlDaVersao(imagem, asset, proporcao);
+  return { src: url ? url(width) : asset.url, width, height };
+}
+
+/**
+ * A URL de cada largura no CDN, com o recorte e o hotspot do Studio e, com `proporcao`, recortada
+ * nela. `null` fora do CDN (os placeholders das fixtures).
+ */
+function urlDaVersao(
+  imagem: ImagemDoSanity,
+  asset: Asset,
+  proporcao?: number,
+): ((largura: number) => string) | null {
   const projeto = projetoDoCdn(asset);
-  if (!projeto) return { src: asset.url, srcset: undefined, ...tamanho };
+  if (!projeto) return null;
 
   const base = createImageUrlBuilder(projeto)
     .image({
@@ -116,7 +155,7 @@ export function fontesDaImagem(imagem: ImagemDoSanity, proporcao?: number): Font
     .auto('format')
     .quality(QUALIDADE);
 
-  const url = (largura: number) =>
+  return (largura) =>
     proporcao
       ? base
           .width(largura)
@@ -124,12 +163,6 @@ export function fontesDaImagem(imagem: ImagemDoSanity, proporcao?: number): Font
           .fit('crop')
           .url()
       : base.width(largura).url();
-
-  return {
-    src: url(maior),
-    srcset: versoes.map((largura) => `${url(largura)} ${largura}w`).join(', '),
-    ...tamanho,
-  };
 }
 
 // --- Imagem de compartilhamento (<Seo>) ---

@@ -179,10 +179,10 @@ export const CONSULTA_DO_LEIA_TAMBEM = defineQuery(`coalesce(*[_type == "post" &
 
 // --- Dados gerados no build ---
 
-// /posts-index.json, que o "Mais lidos" (#57) cruza com o ranking pelo `_id`, e a busca (#54).
-// Leve: os campos do card, sem o corpo.
+// /posts-index.json, que o "Mais lidos" (#57) cruza com o ranking pelo `_id`. Traz o texto do corpo
+// só para o tempo de leitura: o JSON publicado leva o "X min de leitura" pronto, sem o texto.
 export const CONSULTA_DO_INDICE_DE_POSTS = defineQuery(
-  `*[${POST_PUBLICADO}] | ${MAIS_RECENTES} ${CARD}`,
+  `*[${POST_PUBLICADO}] | ${MAIS_RECENTES} ${CARD_COM_LEITURA}`,
 );
 
 // Os `_id` publicados, que a rota /api/views (#56) aceita. Lidos no build e embutidos na função

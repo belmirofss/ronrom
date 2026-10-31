@@ -17,7 +17,8 @@ export type NivelDoTitulo = 2 | 3 | 4 | 5 | 6;
 
 type PostDoCard = Pick<Card, 'tipo' | 'slug' | 'categoria' | 'formato'>;
 
-const NOME_DO_TIPO = { review: 'Review', pensamento: 'Pensamento' } as const;
+/** O nome do tipo no rótulo do card. */
+export const NOME_DO_TIPO = { review: 'Review', pensamento: 'Pensamento' } as const;
 
 /**
  * O nome da categoria (review) ou do formato (pensamento), o do chip. Sem ele, o build quebra,

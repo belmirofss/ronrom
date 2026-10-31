@@ -73,14 +73,17 @@ Para passar para o modo enforce:
 
 ## Cache
 
-| Caminho                     | `Cache-Control`                       | Quem define                                |
-| --------------------------- | ------------------------------------- | ------------------------------------------ |
-| `/_astro/*`                 | `public, max-age=31536000, immutable` | `vercel.json` (o adapter já manda o mesmo) |
-| `/api/*`                    | `no-store`                            | `vercel.json` e cada rota                  |
-| HTML e o resto de `public/` | `public, max-age=0, must-revalidate`  | padrão da Vercel                           |
-| `/pagefind/*` (busca, #54)  | `public, max-age=0, must-revalidate`  | padrão da Vercel                           |
+| Caminho                     | `Cache-Control`                                       | Quem define                                     |
+| --------------------------- | ----------------------------------------------------- | ----------------------------------------------- |
+| `/_astro/*`                 | `public, max-age=31536000, immutable`                 | `vercel.json` (o adapter já manda o mesmo)      |
+| `/api/*`                    | `no-store`                                            | `vercel.json` e cada rota                       |
+| `/api/mais-lidos`           | `public, s-maxage=3600, stale-while-revalidate=86400` | a própria rota (fora da regra do `vercel.json`) |
+| HTML e o resto de `public/` | `public, max-age=0, must-revalidate`                  | padrão da Vercel                                |
+| `/pagefind/*` (busca, #54)  | `public, max-age=0, must-revalidate`                  | padrão da Vercel                                |
 
-Os arquivos em `/_astro` têm o hash do conteúdo no nome, então podem ficar no cache para sempre: um build novo gera nomes novos. O HTML não pode: o navegador sempre revalida, e a CDN da Vercel guarda a página até o próximo deploy, que invalida o cache sozinho. Por isso conteúdo novo aparece assim que o rebuild termina (#17). Arquivos de `web/public` não têm hash: nunca dê cache longo para eles. O mesmo vale para `/pagefind/`: os pedaços do índice têm hash no nome, mas o `pagefind.js`, o `pagefind-entry.json` e o WASM não, e precisam mudar juntos a cada build ([`busca.md`](busca.md)).
+Os arquivos em `/_astro` têm o hash do conteúdo no nome, então podem ficar no cache para sempre: um build novo gera nomes novos. O HTML não pode: o navegador sempre revalida, e a CDN da Vercel guarda a página até o próximo deploy, que invalida o cache sozinho. Por isso conteúdo novo aparece assim que o rebuild termina (#17). Arquivos de `web/public` não têm hash: nunca dê cache longo para eles.
+
+A `/api/mais-lidos` é a única rota da API que fica no CDN ([por quê](visualizacoes.md#mais-lidos)). A regra do `vercel.json` que põe `no-store` em `/api/*` tem o `source` `/api/((?!mais-lidos$).*)`, que deixa essa rota de fora para o `Cache-Control` dela valer. Uma rota nova da API continua com `no-store` sem precisar mexer no `vercel.json`. O mesmo vale para `/pagefind/`: os pedaços do índice têm hash no nome, mas o `pagefind.js`, o `pagefind-entry.json` e o WASM não, e precisam mudar juntos a cada build ([`busca.md`](busca.md)).
 
 ## Redirects
 

@@ -2,25 +2,193 @@
 import ListaDePosts from '@/components/post/ListaDePosts.astro';
 import EstadoVazio from '@/components/ui/EstadoVazio.astro';
 import type { CardComLeitura } from '@/lib/card';
+import { LIMITE_PADRAO } from '@/lib/views/ranking';
 
-interface Props {
-  /**
-   * Contrato com a #57 e a WEB-15 (#61): os posts no ar, do mais lido para o menos lido, sem
-   * repetir, no formato das listagens. Vazio (o padrão, até o ranking existir), o painel mostra o
-   * estado vazio.
-   */
-  posts?: readonly CardComLeitura[];
-}
+// A aba "Mais lidos" da home (#57). O site só é reconstruído quando há publicação, então o
+// ranking não sai no HTML: quando a aba abre pela primeira vez, o script busca o ranking na
+// /api/mais-lidos (em cache no CDN) e os cards no /posts-index.json, junta os dois pelo `_id` e
+// monta a lista. Com menos de 10 posts lidos, completa com os mais recentes. Detalhes em
+// docs/visualizacoes.md#mais-lidos.
 
-const { posts = [] } = Astro.props;
+// Um card de mentira, só para o <template>: o script copia a marcação do ItemDeLista (e, com ela,
+// o CSS com escopo) e troca o conteúdo. A nota 1.5 dá um coração de cada: cheio, meio e vazio.
+const MODELO: CardComLeitura = {
+  _id: 'modelo',
+  tipo: 'review',
+  titulo: 'Título',
+  subtitulo: 'Subtítulo',
+  slug: 'modelo',
+  dataDePublicacao: '2026-01-01T12:00:00Z',
+  nota: 1.5,
+  categoria: { nome: 'Categoria', slug: 'modelo' },
+  formato: null,
+  capa: {
+    _type: 'image',
+    asset: { _id: 'image-modelo-4x3-png', url: 'data:,', largura: 4, altura: 3, lqip: null },
+  },
+  textoDoCorpo: [],
+};
 ---
 
-{/* Provisório: os estados de carregando e de erro e o visual final entram na WEB-15 (#61). */}
-{posts.length > 0 ? (
-  <ListaDePosts posts={posts} nivelTitulo={3} />
-) : (
-  <EstadoVazio
-    mensagem="Ainda estamos contando as leituras."
-    link={{ rotulo: 'Enquanto isso, veja todos os posts', href: '/posts' }}
-  />
-)}
+{/* Provisório: o visual dos estados de carregando, erro e vazio é da WEB-15 (#61). */}
+<div class="mais-lidos" data-mais-lidos data-limite={LIMITE_PADRAO}>
+  {/* Sem JS, não há como buscar o ranking: os painéis ficam um embaixo do outro, e este avisa. */}
+  <div class="mais-lidos__sem-js">
+    <EstadoVazio
+      mensagem="Os mais lidos aparecem com o JavaScript ligado."
+      link={{ rotulo: 'Enquanto isso, veja todos os posts', href: '/posts' }}
+    />
+  </div>
+  <p class="mais-lidos__carregando" role="status" data-estado="carregando" hidden>
+    Carregando os mais lidos…
+  </p>
+  <div data-estado="erro" hidden>
+    <EstadoVazio
+      mensagem="Não deu para carregar os mais lidos agora."
+      link={{ rotulo: 'Veja todos os posts', href: '/posts' }}
+    />
+  </div>
+  <div data-estado="vazio" hidden>
+    <EstadoVazio
+      mensagem="Ainda estamos contando as leituras."
+      link={{ rotulo: 'Enquanto isso, veja todos os posts', href: '/posts' }}
+    />
+  </div>
+  <div data-estado="lista" hidden></div>
+  <template data-modelo>
+    <ListaDePosts posts={[MODELO]} nivelTitulo={3} />
+  </template>
+</div>
+
+<script>
+  import { NOME_DO_TIPO } from '@/lib/card';
+  import { juntarMaisLidos, URL_DO_INDICE, type ItemDoIndice } from '@/lib/mais-lidos';
+  import { coracoesDaNota, rotuloDaNota } from '@/lib/nota';
+  import { formatarData } from '@/lib/utils/data';
+
+  type Estado = 'carregando' | 'erro' | 'vazio' | 'lista';
+
+  function achar<T extends Element = Element>(raiz: ParentNode, seletor: string): T {
+    const elemento = raiz.querySelector<T>(seletor);
+    if (!elemento) throw new Error(`[mais-lidos] sem "${seletor}" no modelo.`);
+    return elemento;
+  }
+
+  async function buscarJson<T>(url: string): Promise<T> {
+    const resposta = await fetch(url);
+    if (!resposta.ok) throw new Error(`${url} respondeu ${resposta.status}`);
+    return (await resposta.json()) as T;
+  }
+
+  for (const raiz of document.querySelectorAll<HTMLElement>('[data-mais-lidos]')) {
+    raiz.querySelector('.mais-lidos__sem-js')?.remove();
+
+    const limite = Number(raiz.dataset['limite']);
+    const estados = [...raiz.querySelectorAll<HTMLElement>('[data-estado]')];
+    const lista = achar<HTMLElement>(raiz, '[data-estado="lista"]');
+
+    // As peças do card de modelo: a lista, o item e um coração de cada tipo (nota 1.5).
+    const modelo = achar<HTMLTemplateElement>(raiz, 'template[data-modelo]').content;
+    const listaModelo = achar<HTMLUListElement>(modelo, 'ul');
+    const itemModelo = achar<HTMLLIElement>(listaModelo, 'li');
+    const [cheio, meio, vazio] = itemModelo.querySelectorAll('.coracoes__coracao');
+    const coracao = { cheio, meio, vazio };
+
+    const mostrar = (estado: Estado) => {
+      for (const elemento of estados) elemento.hidden = elemento.dataset['estado'] !== estado;
+    };
+
+    const montarItem = (item: ItemDoIndice): HTMLLIElement => {
+      const li = itemModelo.cloneNode(true) as HTMLLIElement;
+
+      const link = achar<HTMLAnchorElement>(li, '.card-clicavel__link');
+      link.href = item.url;
+      link.textContent = item.titulo;
+
+      const rotulo = achar(li, '.item-de-lista__rotulo');
+      rotulo.replaceChildren(NOME_DO_TIPO[item.tipo], achar(rotulo, 'span'), item.categoria);
+
+      const subtitulo = achar(li, '.item-de-lista__subtitulo');
+      if (item.subtitulo) subtitulo.textContent = item.subtitulo;
+      else subtitulo.remove();
+
+      const coracoes = achar(li, '.coracoes');
+      if (item.nota === null) {
+        coracoes.remove();
+      } else {
+        coracoes.setAttribute('aria-label', rotuloDaNota(item.nota));
+        coracoes.replaceChildren(
+          ...coracoesDaNota(item.nota).map((tipo) => coracao[tipo]?.cloneNode(true) ?? ''),
+        );
+      }
+
+      const meta = achar(li, '.item-de-lista__meta');
+      const data = achar<HTMLTimeElement>(meta, 'time');
+      data.dateTime = item.data;
+      data.textContent = formatarData(item.data);
+      meta.replaceChildren(data, achar(meta, 'span'), item.leitura);
+
+      // Decorativa, como no ItemDeLista: o título já é o link do card.
+      const capa = achar<HTMLImageElement>(li, 'img');
+      if (item.capa) {
+        capa.removeAttribute('srcset');
+        capa.removeAttribute('sizes');
+        capa.src = item.capa.src;
+        capa.width = item.capa.width;
+        capa.height = item.capa.height;
+      } else {
+        capa.remove();
+      }
+
+      achar(li, '.chip').textContent = item.categoria;
+      return li;
+    };
+
+    let carregado = false;
+    const carregar = async () => {
+      if (carregado) return;
+      carregado = true;
+      mostrar('carregando');
+      try {
+        const [ranking, indice] = await Promise.all([
+          buscarJson<{ id: string }[]>(`/api/mais-lidos?limite=${limite}`),
+          buscarJson<ItemDoIndice[]>(URL_DO_INDICE),
+        ]);
+        const itens = juntarMaisLidos(ranking, indice, limite);
+        if (itens.length === 0) {
+          mostrar('vazio');
+          return;
+        }
+        const ul = listaModelo.cloneNode(false) as HTMLUListElement;
+        ul.append(...itens.map(montarItem));
+        lista.replaceChildren(ul);
+        mostrar('lista');
+      } catch (erro) {
+        console.error('[mais-lidos] não deu para montar a lista', erro);
+        mostrar('erro');
+        // Voltar para a aba tenta de novo.
+        carregado = false;
+      }
+    };
+
+    // Só busca quando a aba abre (o evento é do Abas.astro): quem fica nos "Últimos posts" não
+    // faz requisição nenhuma.
+    document.addEventListener('abas:selecionada', (evento) => {
+      const { painel } = (evento as CustomEvent<{ painel?: HTMLElement }>).detail;
+      if (painel?.contains(raiz)) void carregar();
+    });
+  }
+</script>
+
+<style>
+  /* Com o JS ligado, o aviso de "sem JS" nem aparece antes de o script o tirar. */
+  @media (scripting: enabled) {
+    .mais-lidos__sem-js {
+      display: none;
+    }
+  }
+
+  .mais-lidos__carregando {
+    color: var(--cor-texto-2);
+  }
+</style>
