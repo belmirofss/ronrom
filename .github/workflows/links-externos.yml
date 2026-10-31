@@ -1,0 +1,104 @@
+# Links quebrados no site em produção, incluindo os externos dos posts (#62): eles quebram com
+# o tempo, sem mudança de código, então não dá para pegá-los no PR. Uma vez por semana, o lychee
+# checa todas as páginas do sitemap e mantém a issue "Links quebrados" com a lista: abre, atualiza
+# ou fecha quando tudo volta a funcionar. Configuração: lychee-externos.toml.
+name: links-externos
+
+on:
+  schedule:
+    # Segunda, 09:23 UTC = 06:23 em Brasília, depois do rebuild diário (07:17 UTC). Fora da hora
+    # cheia, quando o agendador do Actions atrasa mais.
+    - cron: '23 9 * * 1'
+  # Checagem manual (Actions → links-externos → Run workflow), por exemplo depois de corrigir
+  # os links, para fechar a issue.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: links-externos
+  cancel-in-progress: false
+
+env:
+  # A URL de produção, a mesma do build: o padrão vem do astro.config.mjs.
+  SITE_URL: ${{ vars.SITE_URL || 'https://ronrom-blog.vercel.app' }}
+  TITULO_DA_ISSUE: Links quebrados
+
+jobs:
+  links:
+    name: links
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # As páginas do sitemap (#52) são a entrada do lychee, que baixa cada uma e checa os links
+      # dela. O relatório agrupa os erros pela página de origem.
+      - name: lista as páginas do sitemap
+        run: |
+          locs() {
+            curl -fsS --retry 3 --retry-all-errors --max-time 30 "$1" |
+              grep -o '<loc>[^<]*</loc>' | sed -e 's|<loc>||' -e 's|</loc>||'
+          }
+          paginas=$(for sitemap in $(locs "${SITE_URL%/}/sitemap-index.xml"); do locs "$sitemap"; done)
+          if [ -z "$paginas" ]; then
+            echo "::error::Nenhuma página em ${SITE_URL%/}/sitemap-index.xml."
+            exit 1
+          fi
+          echo "$(echo "$paginas" | wc -l) páginas no sitemap."
+          echo "PAGINAS=$(echo $paginas)" >> "$GITHUB_ENV"
+      - id: lychee
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          # O --config evita que o lychee leia o lychee.toml do CI, que é offline.
+          args: --config lychee-externos.toml $PAGINAS
+          output: lychee/relatorio.md
+          # Quem decide se o job falha é o próximo passo: link quebrado vira issue, não erro.
+          fail: false
+      # Código de saída do lychee: 0 = tudo certo, 2 = link quebrado, outro = erro na execução
+      # (configuração, rede), que não deve abrir issue.
+      - name: abre, atualiza ou fecha a issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SAIDA: ${{ steps.lychee.outputs.exit_code }}
+          REPO: ${{ github.server_url }}/${{ github.repository }}
+          EXECUCAO: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ "$SAIDA" != 0 ] && [ "$SAIDA" != 2 ]; then
+            echo "::error::O lychee terminou com o código $SAIDA. Veja o log do passo anterior."
+            exit 1
+          fi
+          numero=$(gh issue list --state open --search "\"$TITULO_DA_ISSUE\" in:title" \
+            --json number,title --jq "map(select(.title == env.TITULO_DA_ISSUE)) | first | .number // empty")
+
+          if [ "$SAIDA" = 0 ]; then
+            if [ -n "$numero" ]; then
+              gh issue close "$numero" --comment "Nenhum link quebrado na checagem de $(date -u +%F) ($EXECUCAO)."
+            fi
+            echo "Nenhum link quebrado."
+            exit 0
+          fi
+
+          # O corpo de uma issue aceita até 65536 caracteres.
+          limite=60000
+          {
+            echo "Links quebrados no site em produção (${SITE_URL%/}), encontrados pela checagem semanal do [\`links-externos\`]($EXECUCAO) em $(date -u +%F). Cada seção é a página de origem."
+            echo
+            echo "**Como resolver:** corrija ou remova o link no post, no Studio. Se o link abre normalmente no navegador (site que bloqueia robôs), inclua o site nas exclusões do [\`lychee-externos.toml\`]($REPO/blob/main/lychee-externos.toml). A issue é atualizada toda semana e fecha sozinha quando não houver mais links quebrados. Detalhes em [docs/testes.md]($REPO/blob/main/docs/testes.md#links-externos)."
+            echo
+            head -c "$limite" lychee/relatorio.md
+            if [ "$(wc -c < lychee/relatorio.md)" -gt "$limite" ]; then
+              echo
+              echo
+              echo "_Relatório cortado. O completo está no resumo da [execução]($EXECUCAO)._"
+            fi
+          } > corpo.md
+
+          if [ -n "$numero" ]; then
+            gh issue edit "$numero" --body-file corpo.md
+            gh issue comment "$numero" --body "Lista atualizada pela checagem de $(date -u +%F) ($EXECUCAO)."
+          else
+            gh issue create --title "$TITULO_DA_ISSUE" --label area:qa --label prioridade:media --body-file corpo.md
+          fi
+          echo "::warning::Há links quebrados no site. Veja a issue \"$TITULO_DA_ISSUE\"."

@@ -1,5 +1,6 @@
 # Checagem de links internos e âncoras no HTML do build (#45), rodada pelo job `ci / links`.
-# Os links externos ficam de fora: são checados toda semana, contra o sitemap, na #62.
+# Os links externos ficam de fora: são checados toda semana, contra o sitemap de produção, pelo
+# workflow links-externos (#62, configuração em lychee-externos.toml).
 # Opções: https://lychee.cli.rs/guides/config/ (a versão do lychee é a padrão da lychee-action).
 #
 # O --root-dir (caminho absoluto da pasta do build) e o --remap da URL do site vão na linha de

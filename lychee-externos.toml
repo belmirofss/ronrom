@@ -1,0 +1,41 @@
+# Checagem semanal dos links do site em produção, incluindo os externos (#62), rodada pelo
+# workflow `links-externos`. Os links internos e as âncoras também são checados em todo PR, no
+# HTML do build, com o lychee.toml (#45).
+# Opções: https://lychee.cli.rs/guides/config/ (a versão do lychee é a padrão da lychee-action).
+#
+# As páginas checadas são as URLs do sitemap de produção, passadas na linha de comando. Para
+# rodar localmente, veja docs/testes.md#links-externos.
+
+# Só links da web: mailto: e tel: ficam de fora.
+scheme = ["https", "http"]
+
+# Site lento ou instável não vira link quebrado na primeira tentativa.
+timeout = 30
+max_retries = 3
+retry_wait_time = 5
+
+# Poucas conexões ao mesmo tempo, para não ser bloqueado como robô.
+max_concurrency = 8
+
+# Alguns sites respondem 403 a um user agent que não parece de navegador.
+user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
+
+# 429 (muitas requisições) é limite de taxa, não link quebrado.
+accept = ["100..=103", "200..=299", "429"]
+
+no_progress = true
+
+# Exclusões. Toda entrada leva um comentário com o motivo. Os padrões são regex sobre a URL.
+# Só exclua um site que bloqueia robôs (o link abre normalmente no navegador); link quebrado de
+# verdade se corrige no post, no Studio.
+exclude = [
+  # Instagram e Threads respondem 429 ou redirecionam para o login com qualquer robô.
+  '^https?://([a-z0-9-]+\.)*instagram\.com/',
+  '^https?://([a-z0-9-]+\.)*threads\.(net|com)/',
+  # LinkedIn responde 999 a robôs.
+  '^https?://([a-z0-9-]+\.)*linkedin\.com/',
+  # Facebook, X e TikTok pedem login ou respondem 4xx a robôs.
+  '^https?://([a-z0-9-]+\.)*(facebook\.com|fb\.com|fb\.me)/',
+  '^https?://([a-z0-9-]+\.)*(x\.com|twitter\.com)/',
+  '^https?://([a-z0-9-]+\.)*tiktok\.com/',
+]
