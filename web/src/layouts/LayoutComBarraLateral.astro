@@ -17,11 +17,10 @@ const temTopo = Astro.slots.has('topo');
       <slot name="topo" />
     </Container>
   )}
+  {/* O id é o destino da seta do TopoHome (#141). */}
   <Container
-    class:list={[
-      'com-barra-lateral',
-      { 'com-barra-lateral--ativa': temBarraLateral, 'com-barra-lateral--com-topo': temTopo },
-    ]}
+    id={temTopo ? 'depois-do-topo' : undefined}
+    class:list={['com-barra-lateral', { 'com-barra-lateral--ativa': temBarraLateral }]}
   >
     <div class="com-barra-lateral__conteudo">
       <slot />
@@ -40,11 +39,6 @@ const temTopo = Astro.slots.has('topo');
     display: grid;
     gap: var(--espaco-7);
     padding-block: var(--espaco-7);
-  }
-
-  /* O topo já tem o próprio espaço embaixo. */
-  :global(.com-barra-lateral--com-topo) {
-    padding-block-start: 0;
   }
 
   @media (min-width: 60em) {

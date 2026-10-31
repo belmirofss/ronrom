@@ -26,6 +26,26 @@ const { pathname } = Astro.url;
 </header>
 
 <style>
+  /* Altura do cabeçalho, para a capa da home ocupar o resto da tela (#141): 44px por linha, mais o
+     padding e a borda. Os links quebram em 2 linhas abaixo de ~520px e em 3 abaixo de ~350px; os
+     pontos de corte ficam um pouco acima disso, porque sobrar altura é melhor do que a seta da
+     capa cair para fora da tela. Mudou o cabeçalho, confira estes valores. */
+  :global(:root) {
+    --altura-cabecalho: calc(3 * 44px + 2 * var(--espaco-3) + 1px);
+  }
+
+  @media (min-width: 22.5em) {
+    :global(:root) {
+      --altura-cabecalho: calc(2 * 44px + 2 * var(--espaco-3) + 1px);
+    }
+  }
+
+  @media (min-width: 34em) {
+    :global(:root) {
+      --altura-cabecalho: calc(44px + 2 * var(--espaco-3) + 1px);
+    }
+  }
+
   .cabecalho {
     border-block-end: 1px solid var(--cor-borda);
   }
