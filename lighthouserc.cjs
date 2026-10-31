@@ -20,6 +20,31 @@ const segredo = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 // esconder uma regressão.
 const aggregationMethod = 'median-run';
 
+// Páginas com noindex de propósito (docs/seo-urls.md#indexação): em produção, o `is-crawlable`
+// reprova a página e derruba a nota de SEO para uns 66. Nelas, no lugar da nota, cada auditoria
+// de SEO menos o `is-crawlable` tem de passar.
+const NOINDEX = '/busca/?(?:[?#]|$)';
+const AUDITORIAS_DE_SEO = [
+  'document-title',
+  'meta-description',
+  'http-status-code',
+  'link-text',
+  'crawlable-anchors',
+  'robots-txt',
+  'image-alt',
+  'hreflang',
+  'canonical',
+];
+
+const categorias = {
+  'categories:accessibility': ['error', { minScore: 0.95 }],
+  'categories:best-practices': ['error', { minScore: 0.95 }],
+  'categories:performance': [nivel, { minScore: 0.9 }],
+  'largest-contentful-paint': [nivel, { maxNumericValue: 2500 }],
+  'cumulative-layout-shift': [nivel, { maxNumericValue: 0.1 }],
+  'total-blocking-time': [nivel, { maxNumericValue: 200 }],
+};
+
 module.exports = {
   ci: {
     collect: {
@@ -39,16 +64,16 @@ module.exports = {
     assert: {
       assertMatrix: [
         {
-          matchingUrlPattern: '.*',
+          matchingUrlPattern: `^(?!.*${NOINDEX})`,
+          aggregationMethod,
+          assertions: { ...categorias, 'categories:seo': ['error', { minScore: 0.95 }] },
+        },
+        {
+          matchingUrlPattern: NOINDEX,
           aggregationMethod,
           assertions: {
-            'categories:seo': ['error', { minScore: 0.95 }],
-            'categories:accessibility': ['error', { minScore: 0.95 }],
-            'categories:best-practices': ['error', { minScore: 0.95 }],
-            'categories:performance': [nivel, { minScore: 0.9 }],
-            'largest-contentful-paint': [nivel, { maxNumericValue: 2500 }],
-            'cumulative-layout-shift': [nivel, { maxNumericValue: 0.1 }],
-            'total-blocking-time': [nivel, { maxNumericValue: 200 }],
+            ...categorias,
+            ...Object.fromEntries(AUDITORIAS_DE_SEO.map((id) => [id, ['error', { minScore: 1 }]])),
           },
         },
         // O Lighthouse 12 tirou os budgets.json nativos; cada linha do budget.json vira uma

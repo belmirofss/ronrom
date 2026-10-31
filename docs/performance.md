@@ -23,15 +23,15 @@ Performance e as métricas só avisam no preview porque o runner do Actions vari
 
 O workflow [`lighthouse`](../.github/workflows/lighthouse.yml) roda o [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) pela action [`treosh/lighthouse-ci-action`](https://github.com/treosh/lighthouse-ci-action), no perfil de celular do Lighthouse (Moto G Power, 4G lento, CPU 4x mais lenta), **3 execuções por página**, com a **mediana** como resultado.
 
-**Gatilho.** A Vercel deste projeto não cria GitHub Deployments (só os commit statuses `Vercel – ronrom`), então o `deployment_status` nunca dispararia. Ela manda, a cada deploy pronto, um [`repository_dispatch`](https://vercel.com/docs/git/vercel-for-github) do tipo `vercel.deployment.success`, com a URL, o ambiente e o commit. O workflow:
+**Gatilho.** A Vercel deste projeto não cria GitHub Deployments (só os commit statuses `Vercel – ronrom`) nem manda `repository_dispatch`: conferido na #60, depois do primeiro merge. Então nem `deployment_status` nem `repository_dispatch` disparam, e o workflow roda em todo `pull_request` e em todo push na `main`:
 
-1. ignora os eventos do `ronrom-previa` (a prévia de rascunhos manda os dela também);
-2. marca o commit do deploy com o status `lighthouse (preview)` ou `lighthouse (producao)`, em andamento. É esse status que aparece nos checks do PR, porque o `repository_dispatch` roda na `main`, não no PR;
-3. espera o `/api/health` do deploy responder com o commit certo (até 5 minutos);
+1. espera o status `Vercel – ronrom` do commit ficar verde (até 20 minutos). Sem status nenhum em 3 minutos, o Ignored Build Step pulou o deploy (PR que só mexe em `docs/`, `.github/` ou `.md`, veja [`ambientes.md`](ambientes.md#ignored-build-step)), e o job termina verde sem rodar o Lighthouse. Deploy com erro também pula, com um aviso: quem fica vermelho é o check da Vercel;
+2. acha a URL: no PR, a URL da branch (`ronrom-git-<branch>-….vercel.app`), lida do comentário que a Vercel publica no PR; na `main`, o domínio do site;
+3. espera o `/api/health` responder com o commit certo (até 5 minutos);
 4. escolhe as páginas e roda o Lighthouse;
-5. publica os relatórios como artifact e o resultado no commit.
+5. publica os relatórios como artifact e o resumo na execução.
 
-Um deploy cancelado pelo Ignored Build Step (PR que só mexe em `docs/`, `.github/` ou `.md`, veja [`ambientes.md`](ambientes.md#ignored-build-step)) não gera evento, e o PR fica sem o status `lighthouse`. Um push novo no PR cancela a execução do deploy anterior.
+O check `lighthouse / lighthouse` aparece no PR como os do `ci`. Um push novo no PR cancela a execução anterior. Os PRs do Dependabot ficam de fora: eles não recebem os secrets do Actions, e sem o segredo da Protection Bypass o preview não abre. A atualização é medida no merge, em produção. O rebuild diário de conteúdo (deploy hook) não roda o Lighthouse, porque não é push; para medir o conteúdo novo, rode à mão.
 
 **As 5 páginas de referência:**
 
@@ -47,12 +47,14 @@ O review e o pensamento saem do próprio deploy porque o preview lê o dataset `
 
 **Preview e produção:**
 
-|                   | Preview (todo PR)                          | Produção (todo deploy da `main`, inclusive o rebuild diário) |
-| ----------------- | ------------------------------------------ | ------------------------------------------------------------ |
-| URL               | a do deploy (`ronrom-<hash>-….vercel.app`) | o domínio do site (`SITE_URL`), o que o Google vê            |
-| Vercel Auth       | passa com o segredo da Protection Bypass   | não tem                                                      |
-| `is-crawlable`    | fora: todo preview tem `noindex` (#52)     | dentro                                                       |
-| Performance e CWV | aviso                                      | erro                                                         |
+|                   | Preview (todo PR)                                | Produção (todo merge na `main`)                   |
+| ----------------- | ------------------------------------------------ | ------------------------------------------------- |
+| URL               | a da branch (`ronrom-git-<branch>-….vercel.app`) | o domínio do site (`SITE_URL`), o que o Google vê |
+| Vercel Auth       | passa com o segredo da Protection Bypass         | não tem                                           |
+| `is-crawlable`    | fora: todo preview tem `noindex` (#52)           | dentro, menos nas páginas noindex de propósito    |
+| Performance e CWV | aviso                                            | erro                                              |
+
+**Páginas noindex de propósito** (hoje, só a `/busca`, veja [`seo-urls.md`](seo-urls.md#indexação)): em produção, o `is-crawlable` as reprova, e a nota de SEO cai para uns 66 sem regressão nenhuma. Nelas, no lugar da nota da categoria, cada auditoria de SEO menos o `is-crawlable` tem de passar (lista e padrão de URL no `lighthouserc.cjs`). Uma página nova com noindex entra no padrão `NOINDEX`.
 
 As visitas do Lighthouse em produção não contam no "Mais lidos": o `isbot` reconhece o user agent `Chrome-Lighthouse` ([`visualizacoes.md`](visualizacoes.md)). O Umami também descarta robôs pelo user agent.
 
@@ -66,11 +68,11 @@ O Lighthouse 12 tirou o suporte aos budgets nativos, então o [`lighthouserc.cjs
 
 ## Como ler o resultado
 
-- **Nos checks do PR:** o status `lighthouse (preview)` leva à execução. Vermelho é asserção com erro; avisos não mudam a cor.
+- **Nos checks do PR:** o check `lighthouse / lighthouse` leva à execução. Vermelho é asserção com erro; avisos não mudam a cor.
 - **No resumo da execução** (Actions → a execução → Summary): a tabela com as quatro notas de cada página, na mediana, e as anotações de cada asserção que falhou ou avisou.
 - **No artifact `lighthouse-preview`** (ou `lighthouse-producao`), guardado por 14 dias: o relatório HTML de cada execução, para abrir no navegador, e o JSON. O segredo da Protection Bypass sai dos arquivos antes do upload. Os relatórios não vão para o temporary-public-storage do Google: ficam só no artifact, que é privado.
 
-Para rodar de novo contra qualquer deploy: Actions → lighthouse → Run workflow, com a URL base e o ambiente. A execução manual não marca commit.
+Para rodar de novo contra qualquer deploy: Actions → lighthouse → Run workflow, com a URL base e o ambiente.
 
 ## Rodar localmente
 
@@ -92,7 +94,7 @@ Feito uma vez, pelo dono do repositório:
 
 1. Na Vercel, no projeto `ronrom`: Settings → Deployment Protection → **Protection Bypass for Automation** → gere o segredo (se ainda não existir).
 2. No GitHub: Settings → Secrets and variables → Actions → **New repository secret**, com o nome `VERCEL_AUTOMATION_BYPASS_SECRET` e o segredo do passo 1. Sem ele, a execução do preview falha logo no começo, com o motivo.
-3. Depois do merge deste workflow, abra um PR qualquer e confira que o status `lighthouse (preview)` aparece. Se nenhuma execução aparecer em Actions → lighthouse depois do deploy, a Vercel não está mandando o `repository_dispatch`: confira a integração com o GitHub em Settings → Git, no projeto da Vercel.
+3. Para conferir, abra um PR que mude o site: o check `lighthouse / lighthouse` deve rodar depois que o preview da Vercel ficar pronto.
 
 ## Core Web Vitals de campo
 
@@ -110,4 +112,4 @@ Onde acompanhar, uma vez por mês e depois de mudança grande de layout:
 
 ## Pendências conhecidas
 
-- **CLS da `/busca`:** na medição da #60, com as fixtures e já com o visual da #61, a `/busca` teve CLS de 0,34 e Performance 83. O app de busca só aparece quando o script roda (o `hidden` sai depois do carregamento) e empurra o rodapé para baixo. No preview isso é aviso; em produção, o status `lighthouse (producao)` fica vermelho até a correção.
+- **CLS da `/busca`:** na medição da #60, com as fixtures e já com o visual da #61, a `/busca` teve CLS de 0,34 e Performance 83; em produção, CLS de 0,25 e Performance 87. O app de busca só aparece quando o script roda (o `hidden` sai depois do carregamento) e empurra o rodapé para baixo. No preview isso é aviso; em produção, o `lighthouse` da `main` fica vermelho até a correção.
