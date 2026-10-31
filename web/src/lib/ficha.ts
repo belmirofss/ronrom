@@ -19,8 +19,6 @@ type Campo = string | number | null | undefined;
 const MEIOS = { cinema: 'Cinema', streaming: 'Streaming' } as const;
 const FORMATOS_DO_LIVRO = { fisico: 'Físico', ebook: 'E-book', audiobook: 'Audiobook' } as const;
 
-const REAIS = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-
 function texto(valor: Campo): string | undefined {
   if (valor === null || valor === undefined) return undefined;
   return String(valor).trim() || undefined;
@@ -94,12 +92,6 @@ function camposDoModelo(ficha: Ficha): (ItemDaFicha | undefined)[] {
         instagram(ficha.instagram),
       ];
     }
-    case 'comida':
-      return [
-        item('Marca ou onde comprar', ficha.marca),
-        item('Preço', typeof ficha.preco === 'number' ? REAIS.format(ficha.preco) : undefined),
-        item('O que provei', ficha.oQueProvei),
-      ];
     default:
       return [];
   }

@@ -29,8 +29,6 @@ export const CAMPOS_COM_STEGA = new Set([
   'editora',
   'tipoDeCozinha',
   'oQuePedi',
-  'oQueProvei',
-  'marca',
 ]);
 
 type FiltroDoStega = NonNullable<StegaConfig['filter']>;

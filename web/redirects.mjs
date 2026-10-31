@@ -28,4 +28,7 @@ export const redirects = {
   // antigas, então cada página antiga tem para onde ir.
   '/pensamentos/artigos': '/pensamentos/textos',
   '/pensamentos/opinioes': '/pensamentos/textos',
+  // A categoria Comidas saiu na #142, sem nenhum post publicado: a listagem vazia leva às reviews
+  // (studio/scripts/revisar-categorias.ts).
+  '/reviews/comidas': '/reviews',
 };

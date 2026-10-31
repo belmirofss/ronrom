@@ -61,9 +61,9 @@ describe('camposIgnorados', () => {
       direcao: '  ',
       endereco: { _type: 'endereco', rua: '' },
       ondeVi: {},
-      preco: 0,
+      paginas: 0,
     };
-    expect(camposIgnorados(ficha, 'filme')).toEqual(['preco']);
+    expect(camposIgnorados(ficha, 'filme')).toEqual(['paginas']);
   });
 
   it('não acusa nada sem ficha', () => {
@@ -76,7 +76,6 @@ describe('problemasNaFicha', () => {
     ['filme', ['direcao']],
     ['serie', ['criacao']],
     ['livro', ['autoria']],
-    ['comida', ['oQueProvei']],
   ] as const)('%s exige %s', (modelo, caminho) => {
     expect(problemasNaFicha(undefined, modelo).map(({ path }) => path)).toEqual([caminho]);
   });

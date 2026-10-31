@@ -18,10 +18,10 @@ export const SECOES: readonly LinkDeNavegacao[] = [
 export const CATEGORIAS_PRINCIPAIS: readonly LinkDeNavegacao[] = [
   { rotulo: 'Filmes', href: urlDaCategoria('filmes') },
   { rotulo: 'Séries', href: urlDaCategoria('series') },
+  { rotulo: 'Documentários', href: urlDaCategoria('documentarios') },
   { rotulo: 'Livros', href: urlDaCategoria('livros') },
   { rotulo: 'Restaurantes e cafés', href: urlDaCategoria('restaurantes-e-cafes') },
-  { rotulo: 'Lugares', href: urlDaCategoria('lugares') },
-  { rotulo: 'Comidas', href: urlDaCategoria('comidas') },
+  { rotulo: 'Outros lugares', href: urlDaCategoria('lugares') },
 ];
 
 // No build (formato `directory`), Astro.url.pathname termina em "/"; no dev, não.

@@ -220,17 +220,6 @@ export const campoFicha = defineField({
         ),
     }),
 
-    // Comida
-    defineField({ name: 'marca', title: 'Marca ou onde comprar', type: 'string' }),
-    defineField({
-      name: 'preco',
-      title: 'Preço',
-      type: 'number',
-      description: 'Em reais, com centavos depois do ponto: 12.90.',
-      validation: (rule) => rule.min(0).precision(2).error('Use o preço em reais, como 12.90.'),
-    }),
-    defineField({ name: 'oQueProvei', title: 'O que provei', type: 'string' }),
-
     // Todos
     defineField({
       name: 'valeAPena',

@@ -11,7 +11,6 @@ export const MODELOS_DE_FICHA = [
   { value: 'serie', title: 'Série' },
   { value: 'livro', title: 'Livro' },
   { value: 'lugar', title: 'Lugar' },
-  { value: 'comida', title: 'Comida' },
 ] as const;
 
 export type ModeloDeFicha = (typeof MODELOS_DE_FICHA)[number]['value'];
@@ -33,6 +32,8 @@ export interface Formato {
   ordem: number;
 }
 
+// "Outros lugares" se chamava Lugares até a #142 e manteve o slug `lugares`. As categorias que
+// deixaram de existir estão em CATEGORIAS_REMOVIDAS.
 export const CATEGORIAS: readonly Categoria[] = [
   {
     _id: 'categoria-filmes',
@@ -53,12 +54,21 @@ export const CATEGORIAS: readonly Categoria[] = [
     modeloFicha: 'serie',
   },
   {
+    _id: 'categoria-documentarios',
+    nome: 'Documentários',
+    slug: 'documentarios',
+    descricao:
+      'Reviews de documentários: o assunto, como ele é contado e se vale a pena assistir, com nota em corações.',
+    ordem: 3,
+    modeloFicha: 'filme',
+  },
+  {
     _id: 'categoria-livros',
     nome: 'Livros',
     slug: 'livros',
     descricao:
       'Reviews de livros: impressões de leitura, trechos que marcaram e nota em corações para cada um.',
-    ordem: 3,
+    ordem: 4,
     modeloFicha: 'livro',
   },
   {
@@ -67,28 +77,23 @@ export const CATEGORIAS: readonly Categoria[] = [
     slug: 'restaurantes-e-cafes',
     descricao:
       'Reviews de restaurantes e cafés: comida, ambiente, atendimento e se vale a visita, com nota em corações.',
-    ordem: 4,
-    modeloFicha: 'lugar',
-  },
-  {
-    _id: 'categoria-lugares',
-    nome: 'Lugares',
-    slug: 'lugares',
-    descricao:
-      'Reviews de lugares para conhecer: passeios, parques, museus e cantos da cidade, com nota em corações.',
     ordem: 5,
     modeloFicha: 'lugar',
   },
   {
-    _id: 'categoria-comidas',
-    nome: 'Comidas',
-    slug: 'comidas',
+    _id: 'categoria-lugares',
+    nome: 'Outros lugares',
+    slug: 'lugares',
     descricao:
-      'Reviews de comidas e bebidas: doces, salgados, receitas e produtos que valem (ou não) a prova, com nota em corações.',
+      'Reviews de lugares para conhecer: passeios, parques, museus e cantos da cidade, com nota em corações.',
     ordem: 6,
-    modeloFicha: 'comida',
+    modeloFicha: 'lugar',
   },
 ];
+
+// Categorias apagadas na #142, sem posts publicados. Usado pelo scripts/revisar-categorias.ts; o
+// redirect da listagem antiga fica em web/redirects.mjs.
+export const CATEGORIAS_REMOVIDAS = [{ _id: 'categoria-comidas', slug: 'comidas' }] as const;
 
 // "Textos e opiniões" juntou Artigos, Textos e Opiniões (#143) e manteve o slug `textos`, para não
 // mudar o endereço dos textos. Os formatos que deixaram de existir estão em FORMATOS_UNIFICADOS.

@@ -62,7 +62,7 @@ export const TEXTOS_DAS_SECOES = {
   review: {
     titulo: 'Reviews',
     descricaoPadrao:
-      'As reviews do Ronrom: filmes, séries, livros, restaurantes e cafés, lugares e comidas.',
+      'As reviews do Ronrom: filmes, séries, documentários, livros, restaurantes e cafés e outros lugares.',
     mensagemVazia: 'Ainda não tem nenhuma review por aqui.',
   },
   pensamento: {

@@ -257,6 +257,17 @@ describe('itemAvaliado', () => {
       },
     },
     {
+      secao: 'documentarios',
+      slug: 'vozes-da-represa',
+      esperado: {
+        '@type': 'Movie',
+        name: 'Vozes da Represa',
+        director: { '@type': 'Person', name: 'Lia Monteiro' },
+        dateCreated: '2021',
+        duration: 'PT92M',
+      },
+    },
+    {
       secao: 'livros',
       slug: 'o-inverno-das-laranjeiras',
       esperado: {
@@ -303,15 +314,6 @@ describe('itemAvaliado', () => {
         hasMap: 'https://maps.google.com/?q=Campos+do+Jordao',
       },
     },
-    {
-      secao: 'comidas',
-      slug: 'pao-de-queijo-da-padaria-estrela',
-      esperado: {
-        '@type': 'Product',
-        name: 'Pão de queijo da Padaria Estrela',
-        brand: { '@type': 'Brand', name: 'Padaria Estrela' },
-      },
-    },
   ])('$secao → $esperado.@type', async ({ secao, slug, esperado }) => {
     expect(itemAvaliado(await buscarPost('review', secao, slug))).toEqual(esperado);
   });
@@ -329,16 +331,6 @@ describe('itemAvaliado', () => {
     expect(comCozinha('Café especial')['@type' as never]).toBe('CafeOrCoffeeShop');
     expect(comCozinha(null)).not.toHaveProperty('servesCuisine');
     expect(comCozinha(null)['@type' as never]).toBe('Restaurant');
-  });
-
-  it('na comida sem marca, vira um Thing com o nome', async () => {
-    const post = await buscarPost('review', 'comidas', 'pao-de-queijo-da-padaria-estrela');
-    const ficha = post.ficha?.modelo === 'comida' ? post.ficha : null;
-
-    expect(itemAvaliado({ ...post, ficha: ficha && { ...ficha, marca: '  ' } })).toEqual({
-      '@type': 'Thing',
-      name: 'Pão de queijo da Padaria Estrela',
-    });
   });
 
   // Uma categoria nova, com um modelo que a `FICHA_NO_GROQ` ainda não conhece, chega sem ficha.
@@ -431,10 +423,10 @@ describe('review', () => {
   it.each([
     ['filmes', 'dias-perfeitos'],
     ['series', 'a-casa-do-farol'],
+    ['documentarios', 'vozes-da-represa'],
     ['livros', 'o-inverno-das-laranjeiras'],
     ['restaurantes-e-cafes', 'cafe-do-bairro'],
     ['lugares', 'mirante-do-morro-azul'],
-    ['comidas', 'pao-de-queijo-da-padaria-estrela'],
   ])('em %s, a nota do markup é a dos corações da ficha', async (secao, slug) => {
     const post = await buscarPost('review', secao, slug);
     const container = await AstroContainer.create();
