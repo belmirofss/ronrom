@@ -52,13 +52,15 @@ module.exports = {
       // Sem `preset`: o padrão do Lighthouse é o celular (Moto G Power, 4G lento, CPU 4x mais lenta).
       settings: {
         skipAudits: preview ? ['is-crawlable'] : [],
+        // Em JSON: o LHCI repassa os settings ao Lighthouse como argumentos de linha de comando, e
+        // um valor como '1' chegaria como número, que o Chrome recusa como cabeçalho.
         extraHeaders: segredo
-          ? {
+          ? JSON.stringify({
               'x-vercel-protection-bypass': segredo,
               // Sem a barra de ferramentas da Vercel, que só existe no preview e pesaria no JS.
               'x-vercel-skip-toolbar': '1',
-            }
-          : {},
+            })
+          : undefined,
       },
     },
     assert: {
