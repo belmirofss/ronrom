@@ -2,6 +2,7 @@
 import vercel from '@astrojs/vercel';
 import { defineConfig, envField, fontProviders } from 'astro/config';
 import { loadEnv } from 'vite';
+import { idsPublicados } from './src/lib/sanity/ids-publicados';
 import { redirects } from './redirects.mjs';
 
 // O astro.config roda antes do astro:env, então o que decide a configuração é lido direto do
@@ -38,6 +39,13 @@ export default defineConfig({
   // Redirects fixos (#41); o adapter da Vercel os transforma em rotas. Lista e regras: redirects.mjs.
   redirects,
   vite: {
+    // Os `_id` publicados que a /api/views (#56) aceita, lidos do Sanity (ou das fixtures) no build.
+    plugins: [idsPublicados(env)],
+    ssr: {
+      // O isbot (da /api/views) entra no bundle da função, como o resto. Externo, o adapter o
+      // copiaria para a função com symlinks do pnpm, que falham no Windows sem o modo desenvolvedor.
+      noExternal: ['isbot'],
+    },
     build: {
       // O Astro põe inline, dentro do HTML, todo script menor que 4 kB. A CSP (#41) só libera
       // script-src 'self', sem 'unsafe-inline', então JS sempre vai para um arquivo em /_astro.
@@ -163,8 +171,8 @@ export default defineConfig({
         optional: true,
       }),
 
-      // Contador de visualizações (#56): Upstash Redis instalado pelo Marketplace da Vercel.
-      // Nomes que o @upstash/redis lê no Redis.fromEnv(); conferir na Vercel ao provisionar.
+      // Contador de visualizações (#56): Upstash Redis instalado pelo Marketplace da Vercel, que
+      // injeta estes nomes. Sem as duas, a /api/views não grava nada (docs/visualizacoes.md).
       KV_REST_API_URL: envField.string({
         context: 'server',
         access: 'secret',
@@ -174,6 +182,15 @@ export default defineConfig({
       KV_REST_API_TOKEN: envField.string({
         context: 'server',
         access: 'secret',
+        optional: true,
+      }),
+
+      // Variável de sistema da Vercel (sem cadastro): o ambiente do deploy. A /api/views só conta
+      // em production; fora da Vercel fica ausente e nada é contado.
+      VERCEL_ENV: envField.enum({
+        context: 'server',
+        access: 'public',
+        values: ['production', 'preview', 'development'],
         optional: true,
       }),
 
