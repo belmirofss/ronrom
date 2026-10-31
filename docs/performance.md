@@ -109,7 +109,3 @@ Onde acompanhar, uma vez por mês e depois de mudança grande de layout:
 **Site com pouco tráfego não tem dados de campo.** O CrUX só publica uma página ou um site com visitas suficientes, então no começo os três mostram "dados insuficientes". Até lá, o Lighthouse CI é o único sinal.
 
 **Vercel Speed Insights** (RUM da própria Vercel) é opcional e fica desligado: no Hobby, a cota de eventos é pequena e o script seria mais um na página (e na CSP, em [`cabecalhos.md`](cabecalhos.md)). Vale ligar se os dados do CrUX demorarem e houver uma suspeita concreta de regressão no campo.
-
-## Pendências conhecidas
-
-- **CLS da `/busca`:** na medição da #60, com as fixtures e já com o visual da #61, a `/busca` teve CLS de 0,34 e Performance 83; em produção, CLS de 0,25 e Performance 87. O app de busca só aparece quando o script roda (o `hidden` sai depois do carregamento) e empurra o rodapé para baixo. No preview isso é aviso; em produção, o `lighthouse` da `main` fica vermelho até a correção.

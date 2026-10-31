@@ -14,6 +14,9 @@ export const RESULTADOS_POR_PAGINA = 10;
 /** Palavras do trecho em volta do termo encontrado. */
 export const TAMANHO_DO_TRECHO = 24;
 
+/** O status da /busca sem termo nem filtro. O HTML da página já sai com ele (#60). */
+export const TEXTO_SEM_TERMO = 'Digite algo para buscar nas reviews e nos pensamentos.';
+
 export type TipoDoPost = 'review' | 'pensamento';
 
 // Os valores do filtro `tipo` no índice (indiceDoPost) e os da URL, em minúsculas.
