@@ -119,9 +119,9 @@ Quem decide é o `VERCEL_ENV` do build (variável de sistema da Vercel, lida pel
 - **A data de cada página:**
   - post: a mais recente entre a última edição e a entrada no ar (`dataDePublicacao`);
   - página `n` de uma listagem: o post mais recente entre os que aparecem nela ou antes dela (um post novo empurra os outros) e o documento da categoria, do formato ou da tag, cuja descrição a página mostra;
-  - home: a data mais recente de tudo; `/sobre`: a do documento `sobre`;
+  - home: a data mais recente de tudo; `/sobre`: a do documento `sobre`; `/privacidade`: a `PRIVACIDADE_ATUALIZADA_EM` ou a do documento `sobre`, a mais recente;
   - sem data própria (listagem ainda vazia, Sobre não publicado): a da home.
-- **Página nova** (como a `/privacidade` da #59) entra sozinha no sitemap, mas sem `lastmod` e com o aviso `[sitemap] … sem lastmod` no build: inclua-a no `dadosDoSitemap`.
+- **Página nova** (como foi a `/privacidade` da #59) entra sozinha no sitemap, mas sem `lastmod` e com o aviso `[sitemap] … sem lastmod` no build: inclua-a no `dadosDoSitemap`.
 - Sem `changefreq` nem `priority`, que o Google ignora.
 
 ### RSS
@@ -296,6 +296,7 @@ Os nomes finais dos campos saem dos schemas (#18, #19, #21, #24); os do post já
 | `corpo` (Portable Text)                               | post                          | Fallback da description (~155 caracteres), `wordCount`, busca       |
 | `texto` (Portable Text)                               | sobre                         | Conteúdo de `/sobre` (#47)                                          |
 | `nome`, `bio`, `foto{asset, alt, hotspot, crop}`      | sobre                         | `Person` e `ProfilePage` (#50), barra lateral (#38)                 |
+| `email`                                               | sobre                         | Contato da controladora em `/privacidade` (#59)                     |
 | `seo{descricao, imagem{asset, alt}}`                  | sobre, configuracoes          | Description e `og:image` de `/sobre` e o padrão do site             |
 | `redes[]{rede, url}`                                  | configuracoes                 | `sameAs` do `Person` (#50)                                          |
 | `fraseDaSemana{texto, autoria, data}`                 | configuracoes                 | Barra lateral (#38)                                                 |

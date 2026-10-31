@@ -3,6 +3,7 @@ import { STUDIO_URL } from 'astro:env/server';
 import Container from '@/components/layout/Container.astro';
 import { EVENTOS } from '@/lib/analytics';
 import { CATEGORIAS_PRINCIPAIS, SECOES } from '@/lib/navegacao';
+import { CAMINHO_DA_PRIVACIDADE } from '@/lib/privacidade';
 import { NOME_DO_SITE } from '@/lib/utils/site';
 
 // Ano do build no fuso de São Paulo (o site é estático e é rebuildado a cada publicação).
@@ -40,6 +41,7 @@ const grupos = [
         © {ano} {NOME_DO_SITE}
       </p>
       <div class="rodape__fim-links">
+        <a href={CAMINHO_DA_PRIVACIDADE}>Privacidade</a>
         {/* data-umami-event: o Umami conta o clique sozinho (#58). */}
         <a href="/rss.xml" data-umami-event={EVENTOS.rss}>
           RSS
