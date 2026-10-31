@@ -42,6 +42,35 @@ const CAMINHO =
   ))}
 </span>
 
+<script>
+  // Os corações reagem ao aparecer: fora da tela na chegada, esvaziam e enchem um a um quando
+  // entram nela; já visíveis na chegada, só dão um pulinho (esvaziar ali piscaria). Sem JS ou com
+  // movimento reduzido, ficam como no HTML.
+  const reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const notas = document.querySelectorAll<HTMLElement>('.coracoes');
+  if (!reduzido && notas.length > 0 && 'IntersectionObserver' in window) {
+    const observador = new IntersectionObserver(
+      (entradas) => {
+        for (const { isIntersecting, target } of entradas) {
+          if (!isIntersecting) continue;
+          target.classList.replace('coracoes--vazios', 'coracoes--enchendo');
+          observador.unobserve(target);
+        }
+      },
+      { threshold: 1, rootMargin: '0px 0px -10% 0px' },
+    );
+    for (const nota of notas) {
+      const { top, bottom } = nota.getBoundingClientRect();
+      if (bottom > 0 && top < window.innerHeight) {
+        nota.classList.add('coracoes--pulando');
+      } else {
+        nota.classList.add('coracoes--vazios');
+        observador.observe(nota);
+      }
+    }
+  }
+</script>
+
 <style>
   .coracoes {
     display: inline-flex;
@@ -80,5 +109,56 @@ const CAMINHO =
     fill: currentColor;
     stroke: currentColor;
     stroke-width: 1.5;
+  }
+
+  /* As classes abaixo vêm do script. O recheio cresce do centro do próprio coração. */
+  .coracoes__recheio {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .coracoes--vazios .coracoes__recheio {
+    transform: scale(0);
+  }
+
+  .coracoes--enchendo .coracoes__recheio {
+    animation: encher 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) backwards;
+  }
+
+  .coracoes--pulando .coracoes__coracao {
+    animation: pular 0.5s ease-out backwards;
+  }
+
+  /* Um depois do outro, da esquerda para a direita. */
+  .coracoes__coracao:nth-child(2),
+  .coracoes__coracao:nth-child(2) .coracoes__recheio {
+    animation-delay: 0.09s;
+  }
+
+  .coracoes__coracao:nth-child(3),
+  .coracoes__coracao:nth-child(3) .coracoes__recheio {
+    animation-delay: 0.18s;
+  }
+
+  .coracoes__coracao:nth-child(4),
+  .coracoes__coracao:nth-child(4) .coracoes__recheio {
+    animation-delay: 0.27s;
+  }
+
+  .coracoes__coracao:nth-child(5),
+  .coracoes__coracao:nth-child(5) .coracoes__recheio {
+    animation-delay: 0.36s;
+  }
+
+  @keyframes encher {
+    from {
+      transform: scale(0);
+    }
+  }
+
+  @keyframes pular {
+    40% {
+      transform: scale(1.25);
+    }
   }
 </style>
