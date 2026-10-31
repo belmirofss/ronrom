@@ -17,9 +17,9 @@ describe('locaisDoPost', () => {
 
   it('leva o pensamento para o endereço do formato', () => {
     expect(
-      locaisDoPost({ titulo: 'Sobre gatos', tipo: 'pensamento', slug: 'gatos', formato: 'artigos' })
+      locaisDoPost({ titulo: 'Sobre gatos', tipo: 'pensamento', slug: 'gatos', formato: 'textos' })
         .locations?.[0],
-    ).toEqual({ title: 'Sobre gatos', href: '/pensamentos/artigos/gatos' });
+    ).toEqual({ title: 'Sobre gatos', href: '/pensamentos/textos/gatos' });
   });
 
   it('mostra "Sem título" no rascunho ainda sem título', () => {
@@ -41,7 +41,7 @@ describe('locaisDoPost', () => {
 describe('DOCUMENTOS_DAS_ROTAS', () => {
   const dataset = [
     { _id: 'cat-filmes', _type: 'categoria', slug: { current: 'filmes' } },
-    { _id: 'fmt-artigos', _type: 'formato', slug: { current: 'artigos' } },
+    { _id: 'fmt-textos', _type: 'formato', slug: { current: 'textos' } },
     {
       _id: 'review-duna',
       _type: 'post',
@@ -54,7 +54,7 @@ describe('DOCUMENTOS_DAS_ROTAS', () => {
       _type: 'post',
       tipo: 'pensamento',
       slug: { current: 'duna' },
-      formato: { _ref: 'fmt-artigos' },
+      formato: { _ref: 'fmt-textos' },
     },
     { _id: 'sobre', _type: 'sobre' },
     { _id: 'configuracoes', _type: 'configuracoes' },
@@ -75,7 +75,7 @@ describe('DOCUMENTOS_DAS_ROTAS', () => {
 
   it('acha o pensamento pelo slug e pelo formato, sem confundir com a review', async () => {
     const rota = '/pensamentos/:secao/:slug';
-    expect(await documentosDa(rota, { secao: 'artigos', slug: 'duna' })).toEqual([
+    expect(await documentosDa(rota, { secao: 'textos', slug: 'duna' })).toEqual([
       'pensamento-duna',
     ]);
   });

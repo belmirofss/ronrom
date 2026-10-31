@@ -176,12 +176,12 @@ Fixas: o script da #18 ([`studio/scripts/criar-taxonomia.ts`](../studio/scripts/
 
 ### Formatos (pensamentos)
 
-| Nome          | Slug       | `_id`              | URL                     |
-| ------------- | ---------- | ------------------ | ----------------------- |
-| Artigos       | `artigos`  | `formato-artigos`  | `/pensamentos/artigos`  |
-| Textos        | `textos`   | `formato-textos`   | `/pensamentos/textos`   |
-| Frases soltas | `frases`   | `formato-frases`   | `/pensamentos/frases`   |
-| Opiniões      | `opinioes` | `formato-opinioes` | `/pensamentos/opinioes` |
+| Nome              | Slug     | `_id`            | URL                   |
+| ----------------- | -------- | ---------------- | --------------------- |
+| Textos e opiniões | `textos` | `formato-textos` | `/pensamentos/textos` |
+| Frases soltas     | `frases` | `formato-frases` | `/pensamentos/frases` |
+
+Até a #143 eram quatro formatos: Artigos (`artigos`), Textos, Frases soltas e Opiniões (`opinioes`). Artigos e Opiniões entraram em "Textos e opiniões", que manteve o slug `textos` para os textos não mudarem de endereço. Os caminhos antigos respondem `301`: as listagens (`/pensamentos/artigos` e `/pensamentos/opinioes`, com as páginas `/pagina/N`) por [`web/redirects.mjs`](../web/redirects.mjs), e cada post pelo `slugsAnteriores` gravado na migração ([`studio/scripts/unificar-formatos.ts`](../studio/scripts/unificar-formatos.ts)). Não reaproveite esses dois slugs num formato novo: o redirect fixo esconderia a listagem dele.
 
 O nome exibido pode mudar à vontade; o slug de categoria e de formato fica congelado, porque trocá-lo muda a URL de todos os posts daquela categoria. Se for inevitável, entra como redirect do caminho inteiro (`/reviews/antigo/[slug]` → `/reviews/novo/[slug]`) no mecanismo da #53, no mesmo PR. Redirects fixos, fora dos posts: [`cabecalhos.md`](cabecalhos.md#redirects).
 

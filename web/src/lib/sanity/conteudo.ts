@@ -1,3 +1,4 @@
+import { fatiaDaPagina, POSTS_POR_PAGINA, totalDePaginas } from '../paginacao';
 import { consultar } from './cliente';
 import {
   CONSULTA_DA_TAXONOMIA,
@@ -45,21 +46,8 @@ export { validarUrlDaPrevia } from './cliente';
 
 export type TipoDePost = 'review' | 'pensamento';
 
-/** Posts por página nas listagens (#1). A página 2 em diante fica em `{listagem}/pagina/[n]`. */
-export const POSTS_POR_PAGINA = 12;
-
-/** A fatia `[inicio...fim]` (fim exclusivo) da página `n` de uma listagem. */
-export function fatiaDaPagina(n: number): { inicio: number; fim: number } {
-  if (!Number.isInteger(n) || n < 1) {
-    throw new Error(`Página inválida: ${n} (precisa ser inteiro a partir de 1).`);
-  }
-  return { inicio: (n - 1) * POSTS_POR_PAGINA, fim: n * POSTS_POR_PAGINA };
-}
-
-/** Quantas páginas uma listagem com `total` posts tem. Sem post, a página 1 existe vazia. */
-export function totalDePaginas(total: number): number {
-  return Math.max(1, Math.ceil(total / POSTS_POR_PAGINA));
-}
+// O tamanho da página das listagens fica em ../paginacao.ts, que o astro.config também usa.
+export { fatiaDaPagina, POSTS_POR_PAGINA, totalDePaginas };
 
 // --- Site ---
 

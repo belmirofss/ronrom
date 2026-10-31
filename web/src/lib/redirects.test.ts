@@ -9,6 +9,8 @@ import {
 } from '@/lib/redirects';
 import { buscarDadosDosRedirects } from '@/lib/sanity/redirects';
 
+import { redirects as fixos } from '../../redirects.mjs';
+
 const filme = (slug: string, anteriores: string[] | null = null): PostComAnteriores => ({
   tipo: 'review',
   slug,
@@ -23,7 +25,11 @@ function dados(parcial: Partial<DadosDosRedirects>): DadosDosRedirects {
     fixos: {},
     posts,
     rotasDosPosts: posts,
-    taxonomia: { categorias: [{ slug: 'filmes' }], formatos: [], tags: [{ slug: 'cafe' }] },
+    taxonomia: {
+      categorias: [{ slug: 'filmes', total: 1 }],
+      formatos: [{ slug: 'textos', total: 25 }],
+      tags: [{ slug: 'cafe', total: 1 }],
+    },
     paginas: ['/', '/sobre', '/reviews'],
     ...parcial,
   };
@@ -52,6 +58,32 @@ describe('montarRedirects', () => {
     expect(redirects).toEqual({
       '/contato': { status: 301, destination: '/sobre' },
       '/promo': { status: 302, destination: '/reviews' },
+    });
+  });
+
+  it('leva as páginas junto no redirect de uma listagem, até a última do destino', () => {
+    const { redirects } = montarRedirects(
+      dados({
+        fixos: {
+          '/pensamentos/artigos': '/pensamentos/textos',
+          '/pensamentos/rascunhos': { status: 302, destination: '/pensamentos/textos' },
+        },
+      }),
+    );
+    // 25 posts em "textos" são 3 páginas.
+    expect(redirects).toEqual({
+      '/pensamentos/artigos': { status: 301, destination: '/pensamentos/textos' },
+      '/pensamentos/artigos/pagina/2': { status: 301, destination: '/pensamentos/textos/pagina/2' },
+      '/pensamentos/artigos/pagina/3': { status: 301, destination: '/pensamentos/textos/pagina/3' },
+      '/pensamentos/rascunhos': { status: 302, destination: '/pensamentos/textos' },
+      '/pensamentos/rascunhos/pagina/2': {
+        status: 302,
+        destination: '/pensamentos/textos/pagina/2',
+      },
+      '/pensamentos/rascunhos/pagina/3': {
+        status: 302,
+        destination: '/pensamentos/textos/pagina/3',
+      },
     });
   });
 
@@ -184,14 +216,24 @@ describe('caminhosDasPaginas', () => {
 });
 
 describe('redirects das fixtures', () => {
-  it('o endereço antigo da frase leva ao novo', async () => {
+  it('os endereços antigos levam aos novos, inclusive os dos formatos unificados (#143)', async () => {
     const { redirects, avisos } = montarRedirects({
-      fixos: {},
+      fixos,
       paginas: [],
       ...(await buscarDadosDosRedirects({ tipo: 'fixtures', motivo: 'teste' })),
     });
     expect(redirects).toEqual({
+      '/pensamentos/artigos': { status: 301, destination: '/pensamentos/textos' },
+      '/pensamentos/opinioes': { status: 301, destination: '/pensamentos/textos' },
       '/pensamentos/frases/gatos': { status: 301, destination: '/pensamentos/frases/sobre-gatos' },
+      '/pensamentos/artigos/por-que-eu-anoto-tudo-num-caderno': {
+        status: 301,
+        destination: '/pensamentos/textos/por-que-eu-anoto-tudo-num-caderno',
+      },
+      '/pensamentos/opinioes/a-internet-precisa-de-mais-blogs': {
+        status: 301,
+        destination: '/pensamentos/textos/a-internet-precisa-de-mais-blogs',
+      },
     });
     expect(avisos).toEqual([]);
   });

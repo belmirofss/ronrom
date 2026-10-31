@@ -83,9 +83,9 @@ describe('funções de acesso no modo fixtures', () => {
     expect((await buscarDestaque())?.slug).toBe('dias-perfeitos');
   });
 
-  it('a listagem de todos os posts traz 1 review por categoria e 1 pensamento por formato', async () => {
+  it('a listagem de todos os posts traz 1 review por categoria e os 4 pensamentos', async () => {
     const { posts, total } = await buscarUltimos();
-    expect(total).toBe(CATEGORIAS.length + FORMATOS.length);
+    expect(total).toBe(CATEGORIAS.length + 4);
     expect(posts).toHaveLength(total);
 
     const datas = posts.map((post) => post.dataDePublicacao);
@@ -98,7 +98,7 @@ describe('funções de acesso no modo fixtures', () => {
 
   it('filtra por tipo, categoria, formato e tag', async () => {
     expect((await buscarPostsDoTipo('review')).total).toBe(CATEGORIAS.length);
-    expect((await buscarPostsDoTipo('pensamento')).total).toBe(FORMATOS.length);
+    expect((await buscarPostsDoTipo('pensamento')).total).toBe(4);
 
     const filmes = await buscarPostsDaCategoria('filmes');
     expect(filmes.categoria?.nome).toBe('Filmes');
@@ -119,11 +119,15 @@ describe('funções de acesso no modo fixtures', () => {
     expect((await buscarPostsDaTag('nao-existe')).tag).toBeNull();
   });
 
-  it('toda categoria e todo formato têm um post, e toda tag listada tem post', async () => {
+  it('toda categoria tem um post, "Textos e opiniões" tem três, e toda tag listada tem post', async () => {
     const { categorias, formatos, tags } = await buscarTaxonomia();
     expect(categorias.map((categoria) => categoria.slug)).toEqual(CATEGORIAS.map((c) => c.slug));
     expect(formatos.map((formato) => formato.slug)).toEqual(FORMATOS.map((f) => f.slug));
-    for (const item of [...categorias, ...formatos]) expect(item.total).toBe(1);
+    for (const item of categorias) expect(item.total).toBe(1);
+    expect(formatos.map(({ slug, total }) => [slug, total])).toEqual([
+      ['textos', 3],
+      ['frases', 1],
+    ]);
     expect(tags.length).toBeGreaterThan(0);
     for (const tag of tags) expect(tag.total).toBeGreaterThan(0);
   });

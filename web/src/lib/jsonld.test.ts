@@ -111,7 +111,7 @@ describe('grafoDaPagina', () => {
 
   it('sem nome no Sobre, não inventa autora nem deixa referência solta', async () => {
     const { configuracoes } = await identidade();
-    const post = await buscarPost('pensamento', 'artigos', 'por-que-eu-anoto-tudo-num-caderno');
+    const post = await buscarPost('pensamento', 'textos', 'por-que-eu-anoto-tudo-num-caderno');
 
     const resenha = await buscarPost('review', 'livros', 'o-inverno-das-laranjeiras');
 
@@ -129,7 +129,7 @@ describe('grafoDaPagina', () => {
   });
 
   it('no pensamento, traz a página, o BlogPosting e a trilha, sem entidade repetida', async () => {
-    const post = await buscarPost('pensamento', 'artigos', 'por-que-eu-anoto-tudo-num-caderno');
+    const post = await buscarPost('pensamento', 'textos', 'por-que-eu-anoto-tudo-num-caderno');
     const grafo = grafoDaPagina({ tipo: 'post', post }, await identidade());
     const { definidos, citados } = referencias(grafo);
 
@@ -174,9 +174,9 @@ describe('grafoDaPagina', () => {
 
 describe('blogPosting', () => {
   it('preenche os campos do artigo, com as datas no fuso de Brasília', async () => {
-    const post = await buscarPost('pensamento', 'artigos', 'por-que-eu-anoto-tudo-num-caderno');
+    const post = await buscarPost('pensamento', 'textos', 'por-que-eu-anoto-tudo-num-caderno');
     const url =
-      'https://ronrom-blog.vercel.app/pensamentos/artigos/por-que-eu-anoto-tudo-num-caderno';
+      'https://ronrom-blog.vercel.app/pensamentos/textos/por-que-eu-anoto-tudo-num-caderno';
 
     expect(blogPosting(post, true)).toMatchObject({
       '@type': 'BlogPosting',
@@ -189,13 +189,13 @@ describe('blogPosting', () => {
       publisher: { '@id': ID_DA_AUTORA },
       mainEntityOfPage: { '@id': url },
       inLanguage: 'pt-BR',
-      articleSection: 'Artigos',
+      articleSection: 'Textos e opiniões',
       wordCount: expect.any(Number),
     });
   });
 
   it('usa as tags como palavras-chave e omite o que está vazio', async () => {
-    const post = await buscarPost('pensamento', 'artigos', 'por-que-eu-anoto-tudo-num-caderno');
+    const post = await buscarPost('pensamento', 'textos', 'por-que-eu-anoto-tudo-num-caderno');
 
     expect(blogPosting({ ...post, tags: [{ nome: 'Café', slug: 'cafe' }] }, true).keywords).toEqual(
       ['Café'],
@@ -206,7 +206,7 @@ describe('blogPosting', () => {
   });
 
   it('pede a capa do CDN em 1200×630, 1200×900 e 1200×1200', async () => {
-    const post = await buscarPost('pensamento', 'artigos', 'por-que-eu-anoto-tudo-num-caderno');
+    const post = await buscarPost('pensamento', 'textos', 'por-que-eu-anoto-tudo-num-caderno');
     const capa = {
       _type: 'image' as const,
       asset: {
@@ -228,7 +228,7 @@ describe('blogPosting', () => {
   });
 
   it('cai na imagem padrão do site fora do CDN', async () => {
-    const post = await buscarPost('pensamento', 'artigos', 'por-que-eu-anoto-tudo-num-caderno');
+    const post = await buscarPost('pensamento', 'textos', 'por-que-eu-anoto-tudo-num-caderno');
 
     expect(blogPosting(post, true).image).toEqual([`${SITE}/og-padrao.jpg`]);
   });

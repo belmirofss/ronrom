@@ -409,7 +409,7 @@ function posts(assets: Assets): DadosDoPost[] {
     {
       _id: POSTS.escreverAMao,
       tipo: 'pensamento',
-      formato: 'artigos',
+      formato: 'textos',
       // O texto longo: rolagem, índice e tempo de leitura.
       titulo: 'Por que eu ainda escrevo à mão',
       subtitulo: 'Um caderno, uma caneta e o tempo que a tela não me dá',
@@ -503,7 +503,7 @@ function posts(assets: Assets): DadosDoPost[] {
     {
       _id: POSTS.opiniao,
       tipo: 'pensamento',
-      formato: 'opinioes',
+      formato: 'textos',
       // Sem subtítulo.
       titulo: 'Ninguém precisa ter opinião sobre tudo',
       dataDePublicacao: '2026-09-16T21:00:00.000Z',

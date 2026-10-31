@@ -21,7 +21,7 @@ import {
 } from './documentos';
 
 // Conteúdo de exemplo do modo fixtures (README desta pasta): 1 review de cada categoria, com nota e
-// ficha, 1 pensamento de cada formato e um artigo com todos os blocos do Portable Text.
+// ficha, pensamentos dos dois formatos e um texto com todos os blocos do Portable Text.
 // Os textos são inventados; só "Dias Perfeitos" é um filme de verdade. Tudo é publicado (sem
 // rascunho) e tem data no passado, então todas as consultas acham os documentos.
 
@@ -291,7 +291,9 @@ const pensamentos = [
   // imagens normal e larga, galeria, vídeos do YouTube e do Instagram e citações em destaque.
   post('por-que-eu-anoto-tudo-num-caderno', {
     tipo: 'pensamento',
-    formato: referencia('formato-artigos'),
+    formato: referencia('formato-textos'),
+    // Era de "Artigos", que virou "Textos e opiniões" (#143): o caminho antigo vira redirect.
+    slugsAnteriores: ['/pensamentos/artigos/por-que-eu-anoto-tudo-num-caderno'],
     titulo: 'Por que eu anoto tudo num caderno',
     subtitulo: 'Um elogio ao papel, às canetas que falham e às listas que nunca acabam',
     dataDePublicacao: '2026-09-05T08:00:00-03:00',
@@ -400,7 +402,9 @@ const pensamentos = [
   // SEO preenchido: título, descrição e imagem de compartilhamento próprios.
   post('a-internet-precisa-de-mais-blogs', {
     tipo: 'pensamento',
-    formato: referencia('formato-opinioes'),
+    formato: referencia('formato-textos'),
+    // Era de "Opiniões", que virou "Textos e opiniões" (#143).
+    slugsAnteriores: ['/pensamentos/opinioes/a-internet-precisa-de-mais-blogs'],
     titulo: 'A internet precisa de mais blogs',
     subtitulo: 'E de menos feeds que decidem o que a gente vê',
     dataDePublicacao: '2026-10-20T12:00:00-03:00',
@@ -467,7 +471,7 @@ const sobre = {
     paragrafo('Oi! Este é o Ronrom, o meu caderno público.'),
     subtitulo('h2', 'O que você encontra aqui'),
     itemDeLista('bullet', ['Reviews com nota em corações.']),
-    itemDeLista('bullet', ['Pensamentos, de frases soltas a artigos.']),
+    itemDeLista('bullet', ['Pensamentos, de frases soltas a textos e opiniões.']),
     paragrafo(
       'Para falar comigo, me chame no ',
       link('Instagram', 'https://www.instagram.com/ronrom.blog'),

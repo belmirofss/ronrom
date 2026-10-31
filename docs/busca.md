@@ -33,13 +33,13 @@ Saem de [`indiceDoPost`](../web/src/lib/busca.ts) e vão num `<div hidden data-p
 
 **Filtros** (`data-pagefind-filter`):
 
-| Filtro      | Valores                                        | Em           |
-| ----------- | ---------------------------------------------- | ------------ |
-| `tipo`      | `Review` ou `Pensamento`                       | todo post    |
-| `categoria` | nome da categoria (`Filmes`, `Séries`…)        | review       |
-| `formato`   | nome do formato (`Textos`, `Opiniões`…)        | pensamento   |
-| `tags`      | nome de cada tag, sem `#` (vários)             | post com tag |
-| `nota`      | `4,5 corações`, `1 coração` (`notaPorExtenso`) | review       |
+| Filtro      | Valores                                                | Em           |
+| ----------- | ------------------------------------------------------ | ------------ |
+| `tipo`      | `Review` ou `Pensamento`                               | todo post    |
+| `categoria` | nome da categoria (`Filmes`, `Séries`…)                | review       |
+| `formato`   | nome do formato (`Textos e opiniões`, `Frases soltas`) | pensamento   |
+| `tags`      | nome de cada tag, sem `#` (vários)                     | post com tag |
+| `nota`      | `4,5 corações`, `1 coração` (`notaPorExtenso`)         | review       |
 
 **Metadados** (`data-pagefind-meta`), o que o resultado mostra: `title`, `url`, `image`, `image_alt`, `date`, `subtitulo` e `nota`. Campo vazio não entra.
 

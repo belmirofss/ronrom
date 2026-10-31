@@ -39,11 +39,6 @@ describe('categorias', () => {
 
 describe('formatos', () => {
   it('têm os slugs de docs/seo-urls.md, na ordem do menu', () => {
-    expect(FORMATOS.map((formato) => formato.slug)).toEqual([
-      'artigos',
-      'textos',
-      'frases',
-      'opinioes',
-    ]);
+    expect(FORMATOS.map((formato) => formato.slug)).toEqual(['textos', 'frases']);
   });
 });

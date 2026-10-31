@@ -2,7 +2,7 @@
 
 [![ci](https://github.com/belmirofss/ronrom/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/belmirofss/ronrom/actions/workflows/ci.yml)
 
-O **Ronrom** é um blog de reviews (filmes, séries, livros, restaurantes, lugares e comidas) e de pensamentos (artigos, textos, frases e opiniões). A autora escreve no Sanity Studio; o site é gerado pelo Astro e publicado na Vercel. Quem mantém o código é o dono do repositório; a autora só usa o Studio.
+O **Ronrom** é um blog de reviews (filmes, séries, livros, restaurantes, lugares e comidas) e de pensamentos (textos, opiniões e frases soltas). A autora escreve no Sanity Studio; o site é gerado pelo Astro e publicado na Vercel. Quem mantém o código é o dono do repositório; a autora só usa o Studio.
 
 | O quê        | Onde                                                                                 |
 | ------------ | ------------------------------------------------------------------------------------ |

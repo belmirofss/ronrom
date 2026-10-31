@@ -167,7 +167,7 @@ As subpastas são lidas ao abrir Reviews ou Pensamentos: uma categoria ou um for
 
 ### Taxonomia inicial
 
-As 6 categorias e os 4 formatos de [`lib/taxonomia.ts`](lib/taxonomia.ts) (nomes, slugs, descrições e `_id` fixos, como `categoria-filmes`) são gravados por [`scripts/criar-taxonomia.ts`](scripts/criar-taxonomia.ts). Ele usa `createOrReplace`, então rodar de novo não duplica nada, mas **desfaz edições** feitas no Studio nesses dez documentos (nome, descrição, ordem). Depois que a autora começar a editar, mude o arquivo antes de rodar de novo.
+As 6 categorias e os 2 formatos de [`lib/taxonomia.ts`](lib/taxonomia.ts) (nomes, slugs, descrições e `_id` fixos, como `categoria-filmes`) são gravados por [`scripts/criar-taxonomia.ts`](scripts/criar-taxonomia.ts). Ele usa `createOrReplace`, então rodar de novo não duplica nada, mas **desfaz edições** feitas no Studio nesses oito documentos (nome, descrição, ordem). Depois que a autora começar a editar, mude o arquivo antes de rodar de novo.
 
 Com `studio/.env` preenchido e `sanity login` feito, na raiz (o token do CI só publica o Studio e não grava conteúdo):
 
@@ -181,11 +181,32 @@ pnpm --filter studio taxonomia --dataset production
 
 O dataset é sempre explícito: sem `--dataset`, o script não grava nada.
 
+### Unificação dos formatos
+
+Na #143, Artigos, Textos e Opiniões viraram um formato só, "Textos e opiniões", com o slug `textos` ([`docs/seo-urls.md`](../docs/seo-urls.md#formatos-pensamentos)). O [`scripts/unificar-formatos.ts`](scripts/unificar-formatos.ts) leva cada dataset para a taxonomia nova, numa transação só:
+
+- grava o nome, a descrição e a ordem novos dos dois formatos (como o `taxonomia`, desfaz edições feitas neles no Studio);
+- passa os posts de Artigos e Opiniões, publicados, rascunhos e versões de lançamento, para "Textos e opiniões";
+- guarda o endereço antigo de cada post publicado (`/pensamentos/artigos/slug`) em `slugsAnteriores`, como faria o "Publicar", para o build gerar o redirect 301;
+- apaga os formatos `formato-artigos` e `formato-opinioes`.
+
+Sem `--gravar`, só mostra o que faria. Rodar de novo não muda nada. Na raiz, confira o plano e depois grave:
+
+```bash
+pnpm --filter studio unificar-formatos --dataset production
+```
+
+```bash
+pnpm --filter studio unificar-formatos --dataset production --gravar
+```
+
+Rode no `development` do mesmo jeito (o `pnpm seed` já grava os posts no formato novo, mas não apaga os formatos antigos). **A ordem importa:** grave no dataset antes do merge do PR. Enquanto um formato antigo tem posts, a listagem dele está no ar, e o build recusa o redirect fixo de [`web/redirects.mjs`](../web/redirects.mjs) por cima dela. O código anterior funciona com o dataset migrado: as listagens antigas somem até o merge, e os posts já redirecionam pelo `slugsAnteriores`.
+
 ### Seed
 
 Conteúdo de exemplo para desenvolver e testar o site antes da autora escrever. Grava **só no dataset `development`**: [`scripts/seed.ts`](scripts/seed.ts) grava a taxonomia inicial e, depois, o conteúdo de [`seed/conteudo.ts`](seed/conteudo.ts):
 
-- **12 posts:** uma review por categoria, com nota e ficha preenchidas, e pensamentos dos quatro formatos. Entre eles, uma frase bem curta ("Café primeiro."), um texto longo ("Por que eu ainda escrevo à mão"), três posts sem subtítulo e a review de "Dias Perfeitos", com todos os blocos do texto (imagem, galeria, vídeo do YouTube e do Instagram, citação em destaque, citação, listas, link externo e link para outro post).
+- **12 posts:** uma review por categoria, com nota e ficha preenchidas, e pensamentos dos dois formatos. Entre eles, uma frase bem curta ("Café primeiro."), um texto longo ("Por que eu ainda escrevo à mão"), três posts sem subtítulo e a review de "Dias Perfeitos", com todos os blocos do texto (imagem, galeria, vídeo do YouTube e do Instagram, citação em destaque, citação, listas, link externo e link para outro post).
 - **13 tags**, as **Configurações do site** (frase da semana, destaque, SEO e redes) e o **Sobre mim**.
 - **11 imagens** de [`seed/imagens`](seed/imagens): ilustrações próprias com a paleta do Ronrom, sem direitos de terceiros, enviadas como assets.
 

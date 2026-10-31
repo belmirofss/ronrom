@@ -105,7 +105,7 @@ describe('urlDoPost', () => {
 
 describe('urlDoFormato, urlDaCategoria e urlDaTag', () => {
   it('formato: /pensamentos/{slug}', () => {
-    expect(urlDoFormato('opinioes')).toBe('/pensamentos/opinioes');
+    expect(urlDoFormato('frases')).toBe('/pensamentos/frases');
   });
 
   it.each([
