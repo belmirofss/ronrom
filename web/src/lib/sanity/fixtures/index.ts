@@ -1,6 +1,6 @@
 import { evaluate, parse } from 'groq-js';
 
-import type { Parametros } from '../cliente';
+import type { Parametros } from '../fonte';
 import { DATASET } from './dataset';
 
 /**
