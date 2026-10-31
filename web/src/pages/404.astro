@@ -1,0 +1,157 @@
+---
+import Gato from '@/assets/formas/gato.svg';
+import Container from '@/components/layout/Container.astro';
+import CardDePost from '@/components/post/CardDePost.astro';
+import LayoutBase from '@/layouts/LayoutBase.astro';
+import { SECOES } from '@/lib/navegacao';
+import { buscarUltimos } from '@/lib/sanity/conteudo';
+
+// Página estática (sem `prerender = false`): o build gera o 404.html e a Vercel o serve da CDN,
+// com status 404, para qualquer URL inexistente (docs/ambientes.md#página-404).
+
+const POSTS_RECENTES = 3;
+
+const recentes = (await buscarUltimos()).posts.slice(0, POSTS_RECENTES);
+
+// Início, Reviews e Pensamentos: a navegação principal sem o Sobre.
+const caminhos = SECOES.filter(({ href }) => href !== '/sobre');
+---
+
+<LayoutBase
+  seo={{
+    title: 'Página não encontrada',
+    description: 'Esta página não existe ou mudou de endereço.',
+    canonical: '/404',
+    noindex: true,
+  }}
+>
+  <Container class="nao-encontrada">
+    <div class="nao-encontrada__topo">
+      {/* O gato do mosaico, só decorativo. */}
+      <div class="nao-encontrada__forma" aria-hidden="true">
+        <Gato />
+      </div>
+      <h1 class="nao-encontrada__titulo">Esse gato fugiu</h1>
+      <p class="nao-encontrada__texto">
+        A página que você procurou não existe ou mudou de endereço. Talvez ela esteja num destes
+        cantos:
+      </p>
+      <nav aria-label="Seções do site">
+        <ul class="nao-encontrada__caminhos">
+          {caminhos.map(({ rotulo, href }) => (
+            <li>
+              <a href={href}>{rotulo}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+
+    {recentes.length > 0 && (
+      <section class="nao-encontrada__recentes" aria-labelledby="nao-encontrada-recentes">
+        <h2 id="nao-encontrada-recentes" class="nao-encontrada__subtitulo">
+          Ou leia algo recente
+        </h2>
+        <ul class="nao-encontrada__cards">
+          {recentes.map((post) => (
+            <li>
+              <CardDePost post={post} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </Container>
+</LayoutBase>
+
+<style>
+  :global(.nao-encontrada) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-8);
+    padding-block: var(--espaco-8);
+  }
+
+  .nao-encontrada__topo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--espaco-4);
+    text-align: center;
+  }
+
+  /* Rosa sobre vinho, como o primeiro quadrado do mosaico. */
+  .nao-encontrada__forma {
+    width: 7rem;
+    padding: var(--espaco-4);
+    border-radius: var(--raio-lg);
+    background-color: var(--cor-vinho);
+    color: var(--cor-rosa);
+    transform: rotate(-8deg);
+  }
+
+  .nao-encontrada__titulo {
+    font-size: var(--texto-4xl);
+  }
+
+  .nao-encontrada__texto {
+    max-width: 40ch;
+    color: var(--cor-texto-2);
+    font-size: var(--texto-lg);
+  }
+
+  .nao-encontrada__caminhos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--espaco-2);
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Pílulas com alvo de toque de 44px de altura. */
+  .nao-encontrada__caminhos a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--espaco-5);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-pilula);
+    font-weight: var(--peso-medio);
+    text-decoration-line: none;
+  }
+
+  .nao-encontrada__caminhos a:hover {
+    border-color: var(--cor-vinho);
+    background-color: var(--cor-creme);
+  }
+
+  .nao-encontrada__recentes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-5);
+  }
+
+  .nao-encontrada__subtitulo {
+    font-size: var(--texto-2xl);
+  }
+
+  .nao-encontrada__cards {
+    display: grid;
+    gap: var(--espaco-6);
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 40rem) {
+    .nao-encontrada__cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 60em) {
+    .nao-encontrada__cards {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>
