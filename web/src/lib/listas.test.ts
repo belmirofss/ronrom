@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  anosDasListas,
   descricaoDaLista,
   grupoDaReview,
   listaSemIndexacao,
@@ -64,6 +65,19 @@ describe('listasPorAno', () => {
         review('cafe', 'lugar', '2026-01-01T12:00:00Z'),
       ]),
     ).toEqual([]);
+  });
+});
+
+describe('anosDasListas', () => {
+  it('devolve cada ano com lista uma vez, do mais recente ao mais antigo', () => {
+    expect(
+      anosDasListas([
+        review('a', 'livro', '2024-06-01T12:00:00Z'),
+        review('b', 'filme', '2026-03-01T12:00:00Z'),
+        review('c', 'serie', '2026-01-01T12:00:00Z'),
+        review('d', 'lugar', '2025-01-01T12:00:00Z'),
+      ]),
+    ).toEqual([2026, 2024]);
   });
 });
 

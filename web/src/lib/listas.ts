@@ -48,6 +48,10 @@ export function listasPorAno<Review extends ReviewDaLista>(
   return [...porAno.values()].sort((a, b) => b.ano - a.ano);
 }
 
+/** Os anos com lista, do mais recente ao mais antigo, para os links do rodapé. */
+export const anosDasListas = (reviews: readonly ReviewDaLista[]) =>
+  listasPorAno(reviews).map(({ ano }) => ano);
+
 /** Quantas reviews a lista tem, somando lidos e assistidos. */
 export const totalDaLista = (lista: Pick<ListaDoAno, 'lidos' | 'assistidos'>) =>
   lista.lidos.length + lista.assistidos.length;
