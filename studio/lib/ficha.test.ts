@@ -194,6 +194,7 @@ describe('FICHA_NO_GROQ', () => {
       modelo: 'lugar',
       endereco: ficha.endereco,
       linkDoMapa: null,
+      localizacao: null,
       faixaDePreco: null,
       tipoDeCozinha: 'japonesa',
       oQuePedi: null,

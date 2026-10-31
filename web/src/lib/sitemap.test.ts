@@ -108,6 +108,20 @@ describe('dadosDoSitemap', () => {
     expect(lastmod['/sobre']).toBe('2026-02-02T00:00:00.000Z');
   });
 
+  it('dá ao mapa o post de lugar mais recente, ou a home sem nenhum', () => {
+    const dados = {
+      ...vazio,
+      posts: [
+        review('filme-novo', '2026-03-01T00:00:00Z'),
+        review('cafe', '2026-02-01T00:00:00Z', { categoria: { slug: 'lugares' }, modelo: 'lugar' }),
+      ],
+    };
+    expect(dadosDoSitemap(dados).lastmod['/mapa']).toBe('2026-02-01T00:00:00.000Z');
+    expect(dadosDoSitemap({ ...dados, posts: [dados.posts[0]!] }).lastmod['/mapa']).toBe(
+      '2026-03-01T00:00:00.000Z',
+    );
+  });
+
   it('dá a cada lista do ano a review mais recente dela e indexa só a lista cheia', () => {
     const filmes = Array.from({ length: 5 }, (_, i) =>
       review(`filme-${i}`, `2025-0${i + 1}-10T00:00:00Z`, {

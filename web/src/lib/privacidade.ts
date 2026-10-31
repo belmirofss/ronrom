@@ -85,6 +85,14 @@ export const SERVICOS_DE_TERCEIROS: readonly ServicoDeTerceiro[] = [
     politica: 'https://privacycenter.instagram.com/policy',
     origens: ['https://www.instagram.com'],
   },
+  {
+    nome: 'OpenStreetMap',
+    uso: 'Desenha o mapa da página Mapa dos lugares. Ao baixar as imagens do mapa, recebe o endereço IP, o navegador e o endereço do Ronrom. Nada do mapa carrega antes de você clicar em "Mostrar o mapa".',
+    quando: 'Só depois do clique, na página Mapa dos lugares',
+    pais: 'Reino Unido, com servidores em outros países',
+    politica: 'https://osmfoundation.org/wiki/Privacy_Policy',
+    origens: ['https://tile.openstreetmap.org'],
+  },
 ];
 
 type Sobre = CONSULTA_DO_SOBRE_RESULT;

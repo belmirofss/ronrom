@@ -184,6 +184,23 @@ export const CONSULTA_DO_LEIA_TAMBEM = defineQuery(`coalesce(*[_type == "post" &
   } | order(prioridade desc, dataDePublicacao desc, _id asc) [0...${LEIA_TAMBEM}]${CARD}
 }.posts, [])`);
 
+// --- Mapa ---
+
+// /mapa (#136): as reviews com ficha de lugar (restaurantes, cafés e lugares), em ordem alfabética.
+// A lista da página mostra todas, pela cidade; o mapa, só as que têm `localizacao`.
+export const CONSULTA_DOS_LUGARES = defineQuery(`*[
+  ${POST_PUBLICADO} && tipo == "review" && categoria->modeloFicha == "lugar"
+] | order(lower(titulo) asc, _id asc){
+  _id,
+  tipo,
+  titulo,
+  "slug": slug.current,
+  nota,
+  "categoria": categoria->${TAXONOMIA},
+  "endereco": ficha.endereco{ bairro, cidade, uf },
+  "localizacao": ficha.localizacao{ lat, lng }
+}`);
+
 // --- Dados gerados no build ---
 
 // /posts-index.json, que o "Mais lidos" (#57) cruza com o ranking pelo `_id`. Traz o texto do corpo

@@ -192,6 +192,7 @@ const reviews = [
         uf: 'SP',
       },
       linkDoMapa: 'https://maps.google.com/?q=Rua+das+Acacias+120+Sao+Paulo',
+      localizacao: { _type: 'geopoint', lat: -23.5869, lng: -46.6388 },
       faixaDePreco: 'R$$',
       tipoDeCozinha: 'Cafeteria',
       oQuePedi: 'Coado do dia, pão de fermentação natural com manteiga e bolo de laranja.',
@@ -209,7 +210,8 @@ const reviews = [
       itemDeLista('number', ['O bolo de laranja, se ainda tiver.']),
     ],
   }),
-  // Ficha de lugar sem tipo de cozinha nem Instagram: o caso do campo vazio, que a ficha esconde.
+  // Ficha de lugar sem tipo de cozinha, Instagram nem localização: o caso do campo vazio, que a
+  // ficha esconde, e do lugar que fica só na lista do /mapa.
   post('mirante-do-morro-azul', {
     tipo: 'review',
     categoria: referencia('categoria-lugares'),
