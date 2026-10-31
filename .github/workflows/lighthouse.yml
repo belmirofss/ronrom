@@ -1,17 +1,17 @@
 # Lighthouse CI (#60): Performance, Acessibilidade, Best Practices e SEO no celular, contra o deploy
 # da Vercel. No preview de cada PR, falha se Acessibilidade, SEO ou Best Practices caírem abaixo
 # de 95 ou se uma página passar do orçamento de tamanho; Performance e Core Web Vitals só avisam.
-# Em produção, depois de cada deploy, com a auditoria `is-crawlable`, tudo é erro. Configuração:
+# Em produção, depois de cada merge, com a auditoria `is-crawlable`, tudo é erro. Configuração:
 # lighthouserc.cjs e budget.json. Como ler o resultado: docs/performance.md.
 name: lighthouse
 
+# A Vercel deste projeto não cria GitHub Deployments nem manda repository_dispatch (conferido na
+# #60), então nem `deployment_status` nem `repository_dispatch` disparam. O workflow roda no PR e
+# na main e espera o commit status "Vercel – ronrom" do commit ficar verde.
 on:
-  # A Vercel deste projeto não cria GitHub Deployments (só os commit statuses "Vercel – ronrom"),
-  # então o `deployment_status` nunca dispararia. Ela manda, a cada deploy pronto, um
-  # repository_dispatch com a URL, o ambiente e o commit. Esse evento roda o workflow da `main`,
-  # não o do PR, e o resultado volta ao PR como o commit status `lighthouse (preview)`.
-  repository_dispatch:
-    types: [vercel.deployment.success]
+  pull_request:
+  push:
+    branches: [main]
   # Execução manual (Actions → lighthouse → Run workflow), contra qualquer deploy do site.
   workflow_dispatch:
     inputs:
@@ -27,45 +27,70 @@ on:
 
 permissions:
   contents: read
-  statuses: write
+  # O comentário da Vercel no PR, com a URL do preview, e o status do deploy.
+  pull-requests: read
+  issues: read
+  statuses: read
 
-# Um push novo no PR cancela a execução do deploy anterior.
+# Num PR, um push novo cancela a execução anterior. Na main, cada merge roda até o fim.
 concurrency:
-  group: lighthouse-${{ github.event.client_payload.git.ref || github.event.client_payload.git.sha || github.ref }}-${{ github.event.client_payload.environment || inputs.ambiente }}
-  cancel-in-progress: true
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lighthouse:
     name: lighthouse
-    # Só o site: o ronrom-previa (docs/ambientes.md#prévia-de-rascunhos-ronrom-previa) também
-    # manda o evento.
-    if: github.event_name == 'workflow_dispatch' || github.event.client_payload.project.name == 'ronrom'
+    # Os PRs do Dependabot não recebem os secrets do Actions, e sem o segredo da Protection
+    # Bypass o preview não abre. A atualização entra medida no merge, em produção.
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Até 20 minutos esperando o build da Vercel, mais o Lighthouse.
+    timeout-minutes: 30
     env:
-      SHA: ${{ github.event.client_payload.git.sha }}
-      AMBIENTE: ${{ github.event_name == 'workflow_dispatch' && inputs.ambiente || (github.event.client_payload.environment == 'production' && 'producao' || 'preview') }}
-      EXECUCAO: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || (github.event_name == 'push' && github.sha || '') }}
+      AMBIENTE: ${{ github.event_name == 'workflow_dispatch' && inputs.ambiente || (github.event_name == 'push' && 'producao' || 'preview') }}
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: marca o commit como em andamento
-        if: env.SHA != ''
-        run: |
-          gh api "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state=pending \
-            -f context="lighthouse ($AMBIENTE)" -f target_url="$EXECUCAO" \
-            -f description="Rodando o Lighthouse no deploy" > /dev/null
-
-      # A configuração e o orçamento são os do commit do deploy: um PR pode mudá-los.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ env.SHA || github.sha }}
 
-      # Produção roda no domínio do site, o que o Google vê. O preview roda na URL do deploy, que
-      # tem a Vercel Authentication: o segredo da Protection Bypass for Automation passa por ela.
+      # A Vercel marca o commit com "Vercel – ronrom" em segundos depois do push: pendente no
+      # build, verde quando o deploy fica pronto. Sem status nenhum em 3 minutos, o Ignored Build
+      # Step pulou o deploy (PR só de docs/, .github/ ou .md), e não há o que medir.
+      - name: espera o deploy da Vercel
+        if: env.SHA != ''
+        env:
+          CONTEXTO: Vercel – ronrom
+        run: |
+          for tentativa in $(seq 1 80); do
+            estado=$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/statuses" \
+              --jq "map(select(.context == env.CONTEXTO)) | first | .state // empty" || true)
+            case "$estado" in
+              success) echo "Deploy pronto."; exit 0 ;;
+              failure | error)
+                echo "::warning::O deploy da Vercel falhou ($estado): sem Lighthouse neste commit."
+                echo "PULAR=true" >> "$GITHUB_ENV"
+                exit 0 ;;
+              '')
+                if [ "$tentativa" -ge 12 ]; then
+                  echo "::notice::Sem deploy da Vercel neste commit (Ignored Build Step): sem Lighthouse."
+                  echo "PULAR=true" >> "$GITHUB_ENV"
+                  exit 0
+                fi ;;
+            esac
+            sleep 15
+          done
+          echo "::error::O deploy da Vercel não ficou pronto em 20 minutos."
+          exit 1
+
+      # Produção roda no domínio do site, o que o Google vê. O preview roda na URL da branch, que a
+      # Vercel publica no comentário do PR (a primeira linha traz, em base64, um JSON com o
+      # `previewUrl` de cada projeto) e que tem a Vercel Authentication: o segredo da Protection
+      # Bypass for Automation passa por ela.
       - name: define a URL base
+        if: env.PULAR != 'true'
         env:
           URL_MANUAL: ${{ inputs.url }}
-          URL_DO_DEPLOY: ${{ github.event.client_payload.url }}
+          PR: ${{ github.event.pull_request.number }}
           SITE_URL: ${{ vars.SITE_URL || 'https://ronrom-blog.vercel.app' }}
           SEGREDO: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
@@ -74,7 +99,14 @@ jobs:
           elif [ "$AMBIENTE" = producao ]; then
             base=$SITE_URL
           else
-            base=$URL_DO_DEPLOY
+            linha=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
+              --jq '.[] | select(.user.login == "vercel[bot]") | .body | split("\n")[0]' | head -n 1)
+            base=$(printf '%s' "${linha##*:}" | base64 -d 2>/dev/null |
+              jq -r '.projects[] | select(.name == "ronrom") | .previewUrl // empty' || true)
+            if [ -z "$base" ]; then
+              echo "::error::Não achei a URL do preview no comentário da Vercel no PR #$PR."
+              exit 1
+            fi
           fi
           case "$base" in http*) ;; *) base="https://$base" ;; esac
           if [ "$AMBIENTE" = preview ] && [ -z "$SEGREDO" ]; then
@@ -84,9 +116,10 @@ jobs:
           echo "BASE=${base%/}" >> "$GITHUB_ENV"
           echo "Deploy: ${base%/} ($AMBIENTE)"
 
-      # O evento chega quando o deploy fica pronto; o domínio de produção pode levar alguns
-      # segundos para apontar para ele. O /api/health diz o commit no ar.
+      # A URL da branch e o domínio de produção apontam para o deploy novo alguns segundos depois
+      # de ele ficar pronto. O /api/health diz o commit no ar.
       - name: espera o deploy responder com o commit certo
+        if: env.PULAR != 'true'
         env:
           SEGREDO: ${{ env.AMBIENTE == 'preview' && secrets.VERCEL_AUTOMATION_BYPASS_SECRET || '' }}
         run: |
@@ -107,6 +140,7 @@ jobs:
       # review e o pensamento são os mais recentes do /posts-index.json do próprio deploy, porque
       # o preview lê o dataset development e a produção, o production.
       - name: escolhe as páginas
+        if: env.PULAR != 'true'
         env:
           SEGREDO: ${{ env.AMBIENTE == 'preview' && secrets.VERCEL_AUTOMATION_BYPASS_SECRET || '' }}
         run: |
@@ -131,6 +165,7 @@ jobs:
 
       # Sem o temporary-public-storage: os relatórios ficam só no artifact, que é privado.
       - id: lhci
+        if: env.PULAR != 'true'
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # 12.6.2
         env:
           LHCI_AMBIENTE: ${{ env.AMBIENTE }}
@@ -176,17 +211,3 @@ jobs:
           include-hidden-files: true
           retention-days: 14
           if-no-files-found: ignore
-
-      - name: marca o commit com o resultado
-        if: always() && env.SHA != ''
-        env:
-          RESULTADO: ${{ job.status }}
-        run: |
-          case "$RESULTADO" in
-            success) estado=success; descricao="Acessibilidade, SEO, Best Practices e orçamento ok" ;;
-            failure) estado=failure; descricao="Abaixo do limite: veja o resumo da execução" ;;
-            *) estado=error; descricao="Execução cancelada" ;;
-          esac
-          gh api "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state="$estado" \
-            -f context="lighthouse ($AMBIENTE)" -f target_url="$EXECUCAO" \
-            -f description="$descricao" > /dev/null

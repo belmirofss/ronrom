@@ -20,6 +20,31 @@ const segredo = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 // esconder uma regressão.
 const aggregationMethod = 'median-run';
 
+// Páginas com noindex de propósito (docs/seo-urls.md#indexação): em produção, o `is-crawlable`
+// reprova a página e derruba a nota de SEO para uns 66. Nelas, no lugar da nota, cada auditoria
+// de SEO menos o `is-crawlable` tem de passar.
+const NOINDEX = '/busca/?(?:[?#]|$)';
+const AUDITORIAS_DE_SEO = [
+  'document-title',
+  'meta-description',
+  'http-status-code',
+  'link-text',
+  'crawlable-anchors',
+  'robots-txt',
+  'image-alt',
+  'hreflang',
+  'canonical',
+];
+
+const categorias = {
+  'categories:accessibility': ['error', { minScore: 0.95 }],
+  'categories:best-practices': ['error', { minScore: 0.95 }],
+  'categories:performance': [nivel, { minScore: 0.9 }],
+  'largest-contentful-paint': [nivel, { maxNumericValue: 2500 }],
+  'cumulative-layout-shift': [nivel, { maxNumericValue: 0.1 }],
+  'total-blocking-time': [nivel, { maxNumericValue: 200 }],
+};
+
 module.exports = {
   ci: {
     collect: {
@@ -27,28 +52,33 @@ module.exports = {
       // Sem `preset`: o padrão do Lighthouse é o celular (Moto G Power, 4G lento, CPU 4x mais lenta).
       settings: {
         skipAudits: preview ? ['is-crawlable'] : [],
+        // Em JSON: o LHCI repassa os settings ao Lighthouse como argumentos de linha de comando, e
+        // um valor como '1' chegaria como número, que o Chrome recusa como cabeçalho.
         extraHeaders: segredo
-          ? {
+          ? JSON.stringify({
               'x-vercel-protection-bypass': segredo,
+              // O Lighthouse baixa o robots.txt por fora da página, sem os cabeçalhos extras: sem o
+              // cookie que a navegação grava, ele receberia a tela de login da Vercel.
+              'x-vercel-set-bypass-cookie': 'true',
               // Sem a barra de ferramentas da Vercel, que só existe no preview e pesaria no JS.
               'x-vercel-skip-toolbar': '1',
-            }
-          : {},
+            })
+          : undefined,
       },
     },
     assert: {
       assertMatrix: [
         {
-          matchingUrlPattern: '.*',
+          matchingUrlPattern: `^(?!.*${NOINDEX})`,
+          aggregationMethod,
+          assertions: { ...categorias, 'categories:seo': ['error', { minScore: 0.95 }] },
+        },
+        {
+          matchingUrlPattern: NOINDEX,
           aggregationMethod,
           assertions: {
-            'categories:seo': ['error', { minScore: 0.95 }],
-            'categories:accessibility': ['error', { minScore: 0.95 }],
-            'categories:best-practices': ['error', { minScore: 0.95 }],
-            'categories:performance': [nivel, { minScore: 0.9 }],
-            'largest-contentful-paint': [nivel, { maxNumericValue: 2500 }],
-            'cumulative-layout-shift': [nivel, { maxNumericValue: 0.1 }],
-            'total-blocking-time': [nivel, { maxNumericValue: 200 }],
+            ...categorias,
+            ...Object.fromEntries(AUDITORIAS_DE_SEO.map((id) => [id, ['error', { minScore: 1 }]])),
           },
         },
         // O Lighthouse 12 tirou os budgets.json nativos; cada linha do budget.json vira uma
