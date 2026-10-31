@@ -1,0 +1,131 @@
+---
+import Container from '@/components/layout/Container.astro';
+import CorpoDoPost from '@/components/post/CorpoDoPost.astro';
+import EstadoVazio from '@/components/ui/EstadoVazio.astro';
+import ImagemSanity from '@/components/ui/ImagemSanity.astro';
+import LayoutBase from '@/layouts/LayoutBase.astro';
+import { navegacaoDaBarraLateral } from '@/lib/barra-lateral';
+import { buscarSobre, buscarTaxonomia } from '@/lib/sanity/conteudo';
+import { altDaFoto, seoDoSobre, sobreTemTexto, textoDoSobre, TITULO_DO_SOBRE } from '@/lib/sobre';
+
+const [sobre, taxonomia] = await Promise.all([buscarSobre(), buscarTaxonomia()]);
+
+const temTexto = sobreTemTexto(sobre);
+
+// Os mesmos menus da barra lateral, no fim do texto: por onde começar a ler.
+const { categorias, formatos } = navegacaoDaBarraLateral(taxonomia);
+const secoes = [
+  { titulo: 'Reviews', itens: categorias },
+  { titulo: 'Pensamentos', itens: formatos },
+].filter(({ itens }) => itens.length > 0);
+---
+
+<LayoutBase seo={seoDoSobre(sobre)}>
+  <Container as="article" largura="leitura" class="sobre">
+    <h1 class="sobre__titulo">{TITULO_DO_SOBRE}</h1>
+
+    {temTexto ? (
+      <>
+        {sobre?.foto?.asset && (
+          <ImagemSanity
+            class="sobre__foto"
+            imagem={sobre.foto}
+            alt={altDaFoto(sobre)}
+            proporcao={4 / 3}
+            sizes="(min-width: 48em) 720px, 100vw"
+            prioridade
+          />
+        )}
+        <CorpoDoPost corpo={textoDoSobre(sobre)} />
+      </>
+    ) : (
+      <EstadoVazio
+        mensagem="Esta apresentação ainda está sendo escrita."
+        link={{ rotulo: 'Enquanto isso, veja o início', href: '/' }}
+      />
+    )}
+
+    {secoes.length > 0 && (
+      <nav class="sobre__secoes" aria-labelledby="sobre-por-onde-comecar">
+        <h2 id="sobre-por-onde-comecar" class="sobre__subtitulo">
+          Por onde começar
+        </h2>
+        {secoes.map(({ titulo, itens }) => (
+          <section class="sobre__secao">
+            <h3 class="sobre__secao-titulo">{titulo}</h3>
+            <ul class="sobre__links">
+              {itens.map(({ rotulo, href }) => (
+                <li>
+                  <a href={href}>{rotulo}</a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </nav>
+    )}
+  </Container>
+</LayoutBase>
+
+<style>
+  :global(.sobre) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-6);
+    padding-block: var(--espaco-7) var(--espaco-8);
+  }
+
+  .sobre__titulo {
+    font-size: var(--texto-3xl);
+  }
+
+  :global(.sobre__foto) {
+    border-radius: var(--raio-lg);
+  }
+
+  .sobre__secoes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-4);
+    padding-block-start: var(--espaco-6);
+    border-block-start: 1px solid var(--cor-borda);
+  }
+
+  .sobre__subtitulo {
+    font-size: var(--texto-2xl);
+  }
+
+  .sobre__secao-titulo {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+    font-weight: var(--peso-medio);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* Pílulas com alvo de toque de 44px de altura. */
+  .sobre__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espaco-2);
+    margin-block-start: var(--espaco-2);
+    padding: 0;
+    list-style: none;
+  }
+
+  .sobre__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--espaco-4);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-pilula);
+    font-weight: var(--peso-medio);
+    text-decoration-line: none;
+  }
+
+  .sobre__links a:hover {
+    border-color: var(--cor-vinho);
+    background-color: var(--cor-creme);
+  }
+</style>

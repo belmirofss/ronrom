@@ -18,6 +18,7 @@ Poucos testes, nos lugares certos:
 | Formatação, lint e tipos                            | Prettier, ESLint, `astro check` | `ci / quality`, em todo PR                   | sim                      | #5       |
 | Testes unitários e de componente                    | Vitest + Container API do Astro | `ci / unit`, em todo PR                      | sim                      | #16      |
 | Build (variáveis, rotas, `urlDoPost` com slug ruim) | `astro build`                   | `ci / build`, em todo PR                     | sim                      | #5       |
+| Página 404 servida com status 404                   | `scripts/conferir-404.mjs`      | `ci / build`, depois do build                | sim                      | #47      |
 | Links internos e âncoras                            | lychee no HTML do build         | `ci / links`, em todo PR                     | depois de estabilizar    | #45      |
 | Smoke E2E dos caminhos principais                   | Playwright                      | Contra o preview da Vercel e a produção      | sim (check do PR)        | #49      |
 | Acessibilidade automatizada (WCAG 2.1 AA)           | `@axe-core/playwright`          | Junto com o E2E                              | sim (serious/critical)   | #49      |
@@ -211,6 +212,14 @@ As regras de [`web/src/lib/corpo.ts`](../web/src/lib/corpo.ts), aplicadas pelo `
 - [ ] Blocos sem texto (parágrafo, subtítulo ou item de lista vazio, ou só uma quebra de linha) saem; item de lista com estilo de subtítulo vira texto normal.
 - [ ] Link externo só com `http`, `https` ou `mailto`; `javascript:`, `tel:`, caminho relativo e vazio viram texto.
 - [ ] Link interno monta o caminho com o `urlDoPost`; destino fora do ar (`post: null`) vira texto.
+
+### Página Sobre (#47)
+
+As regras de [`web/src/lib/sobre.ts`](../web/src/lib/sobre.ts), com o documento `sobre` das fixtures:
+
+- [ ] Sem o documento, ou com o texto só de blocos vazios, a página mostra o estado vazio.
+- [ ] O alt da foto é o do Studio; sem ele, "Foto de {nome}".
+- [ ] Os metadados usam a description e a imagem do SEO; vazios, a bio e a foto (com o alt da foto); sem documento, os padrões do site.
 
 ### Componentes
 

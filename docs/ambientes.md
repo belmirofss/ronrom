@@ -47,7 +47,17 @@ Hoje a única rota sob demanda é [`/api/health`](../web/src/pages/api/health.ts
 
 Cada requisição a uma rota sob demanda é uma invocação de função e conta na cota do Hobby (1 milhão por mês). Prefira uma página estática sempre que o conteúdo puder ser gerado no build.
 
-**Página 404:** enquanto não existir `web/src/pages/404.astro`, qualquer URL inexistente cai na função, que renderiza o 404 padrão do Astro e gasta uma invocação. A página da #47 deve ser estática (sem `prerender = false`): com ela, o adapter passa a servir o `404.html` direto da CDN.
+### Página 404
+
+A [`404.astro`](../web/src/pages/404.astro) (#47) é estática: o build gera o `404.html`, e o adapter fecha o `config.json` com a rota `{ "src": "^/.*$", "dest": "/404.html", "status": 404 }`. Qualquer URL que não é arquivo nem rota sob demanda recebe a página customizada com status **404**, direto da CDN, sem gastar invocação. Se a página virar rota sob demanda (`prerender = false`) ou sumir, toda URL inexistente passa a cair na função; o `ci / build` roda o [`scripts/conferir-404.mjs`](../scripts/conferir-404.mjs) depois do build e quebra nesse caso.
+
+Para conferir num deploy:
+
+```bash
+curl -sI https://ronrom-blog.vercel.app/essa-pagina-nao-existe
+```
+
+A resposta esperada é `HTTP/2 404`, com o HTML do "Esse gato fugiu".
 
 ### Região e versão de Node
 

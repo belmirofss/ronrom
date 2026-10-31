@@ -88,6 +88,8 @@ jobs:
           # Sem as variáveis do Sanity, o build usa as fixtures: sem rede e sem segredo.
           # Veja docs/ambientes.md.
           SITE_URL: ${{ vars.SITE_URL }}
+      # URL inexistente recebe o 404.html com status 404, servido pela CDN (#47).
+      - run: node scripts/conferir-404.mjs
       # Usado pela checagem de links (#45) para não buildar de novo. Com o adapter da Vercel,
       # as páginas estáticas ficam em web/dist/client (a saída da Vercel é web/.vercel/output).
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
