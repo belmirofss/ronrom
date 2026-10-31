@@ -18,6 +18,8 @@ const {
 {/* A capa ocupa a primeira dobra toda (#141); a seta leva ao que vem depois dela, o
     #depois-do-topo do LayoutComBarraLateral. */}
 <div class="topo-home">
+  {/* Antes da capa e bloqueante: decide, antes da primeira pintura, se a abertura roda. */}
+  <script is:inline src="/abertura-da-home.js"></script>
   <div class="topo-home__capa">
     <div class="topo-home__textos">
       <h1 class="topo-home__nome">{NOME_DO_SITE}</h1>
@@ -149,6 +151,117 @@ const {
 
     :global(html:has(.topo-home__rolar)) {
       scroll-behavior: smooth;
+    }
+  }
+
+  /* Abertura (primeira visita da sessão; public/abertura-da-home.js): os quadrados do mosaico
+     entram em diagonal a partir do gato, cada forma gira e se encaixa, o nome sobe sem começar
+     invisível (é o LCP) e o texto aparece. No fim o gato ronrona, e só então a seta balança. Tudo
+     com fill-mode backwards, para o hover do mosaico seguir funcionando depois. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not(.home-ja-vista)) .topo-home {
+      --inicio: 0.1s;
+      --passo: 0.07s;
+    }
+
+    :global(html:not(.home-ja-vista)) .topo-home__nome {
+      animation: subir 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    }
+
+    :global(html:not(.home-ja-vista)) .topo-home__autora,
+    :global(html:not(.home-ja-vista)) .topo-home__subtitulo {
+      animation: aparecer 0.5s ease-out 0.25s backwards;
+    }
+
+    :global(html:not(.home-ja-vista)) .topo-home__subtitulo {
+      animation-delay: 0.35s;
+    }
+
+    :global(html:not(.home-ja-vista)) .topo-home__capa :global(.mosaico__quadrado) {
+      animation: quadrado-entra 0.45s cubic-bezier(0.2, 0.8, 0.2, 1)
+        calc(var(--inicio) + var(--diagonal, 0) * var(--passo)) backwards;
+    }
+
+    :global(html:not(.home-ja-vista)) .topo-home__capa :global(.mosaico__forma) {
+      animation: forma-encaixa 0.5s cubic-bezier(0.3, 1.4, 0.5, 1)
+        calc(var(--inicio) + var(--diagonal, 0) * var(--passo) + 0.12s) backwards;
+    }
+
+    /* A diagonal de cada quadrado na grade 3×3 (linha + coluna), que define o atraso. */
+    .topo-home__capa :global(.mosaico__quadrado:is(:nth-child(2), :nth-child(4))) {
+      --diagonal: 1;
+    }
+
+    .topo-home__capa :global(.mosaico__quadrado:is(:nth-child(3), :nth-child(5), :nth-child(7))) {
+      --diagonal: 2;
+    }
+
+    .topo-home__capa :global(.mosaico__quadrado:is(:nth-child(6), :nth-child(8))) {
+      --diagonal: 3;
+    }
+
+    .topo-home__capa :global(.mosaico__quadrado:nth-child(9)) {
+      --diagonal: 4;
+    }
+
+    /* O gato (o primeiro quadrado) ronrona quando o mosaico termina de montar. */
+    :global(html:not(.home-ja-vista))
+      .topo-home__capa
+      :global(.mosaico__quadrado:first-child .mosaico__forma) {
+      animation:
+        forma-encaixa 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) calc(var(--inicio) + 0.12s) backwards,
+        ronronar 0.45s ease-in-out 1.05s;
+    }
+
+    :global(html:not(.home-ja-vista)) .topo-home__rolar svg {
+      animation-delay: 1.5s;
+    }
+
+    :global(html:not(.home-ja-vista)) .topo-home__rolar {
+      animation: aparecer 0.4s ease-out 1.3s backwards;
+    }
+  }
+
+  @keyframes subir {
+    from {
+      transform: translateY(12px);
+    }
+  }
+
+  @keyframes aparecer {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes quadrado-entra {
+    from {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+  }
+
+  @keyframes forma-encaixa {
+    from {
+      opacity: 0;
+      transform: rotate(-25deg) scale(0.6);
+    }
+  }
+
+  @keyframes ronronar {
+    0%,
+    100% {
+      transform: rotate(0);
+    }
+
+    20%,
+    60% {
+      transform: rotate(-5deg);
+    }
+
+    40%,
+    80% {
+      transform: rotate(5deg);
     }
   }
 
