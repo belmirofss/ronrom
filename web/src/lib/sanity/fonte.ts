@@ -1,4 +1,4 @@
-import { createClient, type QueryParams } from '@sanity/client';
+import { type ClientConfig, createClient, type QueryParams } from '@sanity/client';
 
 // De onde vem o conteúdo e como consultá-lo, sem ler o astro:env: o config.ts e o cliente.ts
 // passam as variáveis do astro:env, e o astro.config.mjs, que roda antes dele, passa as do
@@ -45,11 +45,31 @@ export type Parametros = Record<string, string | number>;
 /** Executa uma consulta de consultas.ts. `Resultado` é o `<NOME>_RESULT` do typegen. */
 export type Consultar = <Resultado>(consulta: string, params?: Parametros) => Promise<Resultado>;
 
+// - `apiVersion` fixa (SANITY_API_VERSION): uma mudança da API não muda o site sem um PR.
+// - `useCdn: false`: o build roda logo depois da publicação (deploy hook, docs/deploy.md) e tem de
+//   ler o conteúdo novo; a API CDN pode devolver a versão anterior por alguns instantes. São
+//   poucas consultas por build, longe da cota da API.
+// - `leitura`: o padrão é `perspective: 'published'`, sem token (o dataset é público para o
+//   conteúdo publicado): nunca rascunho nem versão de release. Só a prévia de rascunhos (#43,
+//   cliente.ts) passa outra leitura, com a perspectiva `drafts`, o token viewer e o stega.
+export function criarCliente(
+  fonte: Extract<FonteDoConteudo, { tipo: 'sanity' }>,
+  leitura: ClientConfig = { perspective: 'published' },
+) {
+  return createClient({
+    projectId: fonte.projectId,
+    dataset: fonte.dataset,
+    apiVersion: fonte.apiVersion,
+    useCdn: false,
+    ...leitura,
+  });
+}
+
 /**
  * O `consultar` de uma fonte: no Sanity ou, no modo fixtures, no dataset local (fixtures/), com o
- * mesmo GROQ.
+ * mesmo GROQ. `leitura` vai para o `criarCliente`.
  */
-export function criarConsultar(fonte: FonteDoConteudo): Consultar {
+export function criarConsultar(fonte: FonteDoConteudo, leitura?: ClientConfig): Consultar {
   if (fonte.tipo === 'fixtures') {
     return async (consulta, params = {}) => {
       // Import dinâmico: o groq-js e o dataset de exemplo só são carregados no modo fixtures.
@@ -58,21 +78,7 @@ export function criarConsultar(fonte: FonteDoConteudo): Consultar {
     };
   }
 
-  // - `apiVersion` fixa (SANITY_API_VERSION): uma mudança da API não muda o site sem um PR.
-  // - `useCdn: false`: o build roda logo depois da publicação (deploy hook, docs/deploy.md) e tem
-  //   de ler o conteúdo novo; a API CDN pode devolver a versão anterior por alguns instantes. São
-  //   poucas consultas por build, longe da cota da API.
-  // - `perspective: 'published'`: nunca rascunho nem versão de release, mesmo com token.
-  // - Sem token: o dataset é público para o conteúdo publicado. O token viewer
-  //   (SANITY_API_READ_TOKEN) é só da pré-visualização de rascunhos (#43), que cria o próprio
-  //   cliente no servidor.
-  const cliente = createClient({
-    projectId: fonte.projectId,
-    dataset: fonte.dataset,
-    apiVersion: fonte.apiVersion,
-    useCdn: false,
-    perspective: 'published',
-  });
+  const cliente = criarCliente(fonte, leitura);
   // O tipo QueryParams do cliente proíbe nomes das opções do fetch, como `tag`, para pegar quem
   // misturava opções e parâmetros na API antiga. Aqui não há essa mistura: os parâmetros vão
   // sempre como `$nome`, e o `$tag` da CONSULTA_DOS_POSTS_DA_TAG chega certo ao Sanity.

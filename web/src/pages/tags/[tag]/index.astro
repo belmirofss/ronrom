@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import Listagem from '@/components/listagem/Listagem.astro';
 import { textosDaTag } from '@/lib/listagem';
+import { naoEncontrada } from '@/lib/previa';
 import { urlDaTag } from '@/lib/rotas';
 import { buscarPostsDaTag, buscarTaxonomia } from '@/lib/sanity/conteudo';
 import { trilhaDaTag } from '@/lib/trilha';
@@ -15,7 +16,7 @@ export const getStaticPaths = (async () => {
 
 const { tag: slug } = Astro.params;
 const { tag, posts, total } = await buscarPostsDaTag(slug);
-if (!tag) throw new Error(`Tag "${slug}" não encontrada na listagem.`);
+if (!tag) return naoEncontrada(Astro, `Tag "${slug}" não encontrada na listagem.`);
 ---
 
 <Listagem

@@ -13,6 +13,8 @@ vi.mock('astro:env/server', () => ({
   SANITY_PROJECT_ID: 'projeto',
   SANITY_DATASET: 'development',
   SANITY_API_VERSION: '2025-02-19',
+  STUDIO_URL: 'https://ronrom.sanity.studio',
+  PUBLIC_SANITY_VISUAL_EDITING_ENABLED: false,
   SANITY_API_READ_TOKEN: 'token-secreto',
 }));
 

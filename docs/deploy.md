@@ -2,13 +2,14 @@
 
 Como uma mudança chega ao ar, como conferir e o que fazer quando algo dá errado. A configuração do projeto na Vercel, os limites do Hobby e as variáveis de ambiente estão em [`ambientes.md`](ambientes.md).
 
-São dois caminhos independentes:
+São caminhos independentes:
 
-| O que muda       | Gatilho                                | Onde vai ao ar                                   |
-| ---------------- | -------------------------------------- | ------------------------------------------------ |
-| Código do site   | push numa branch ou merge na `main`    | Vercel: preview por branch, produção pela `main` |
-| Conteúdo do site | a autora publica no Studio             | Vercel: rebuild de produção pelo deploy hook     |
-| Studio           | `pnpm studio:deploy` ou push na `main` | Sanity: https://ronrom.sanity.studio             |
+| O que muda          | Gatilho                                   | Onde vai ao ar                                                                                    |
+| ------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Código do site      | push numa branch ou merge na `main`       | Vercel: preview por branch, produção pela `main`                                                  |
+| Conteúdo do site    | a autora publica no Studio                | Vercel: rebuild de produção pelo deploy hook                                                      |
+| Studio              | `pnpm studio:deploy` ou push na `main`    | Sanity: https://ronrom.sanity.studio                                                              |
+| Prévia de rascunhos | merge na `main` (lê os rascunhos na hora) | Vercel: https://ronrom-previa.vercel.app ([veja](ambientes.md#prévia-de-rascunhos-ronrom-previa)) |
 
 ## Código: preview e produção
 

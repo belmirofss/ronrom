@@ -1,4 +1,4 @@
-import { VERCEL_ENV } from 'astro:env/server';
+import { PUBLIC_SANITY_VISUAL_EDITING_ENABLED, VERCEL_ENV } from 'astro:env/server';
 import { ALTURA_OG, LARGURA_OG, ogImage, type ImagemDoSanity } from '@/lib/sanity/imagem';
 import type { CONSULTA_DO_POST_RESULT } from '@/lib/sanity/tipos.gerados';
 import { DESCRICAO_DO_SITE, URL_DO_SITE } from '@/lib/utils/site';
@@ -44,8 +44,9 @@ export const ROBOTS_NOINDEX = 'noindex,follow';
 export const ROBOTS_BLOQUEADO = 'noindex,nofollow';
 
 // Só o deploy de produção pode ser indexado (#52). Nos previews da Vercel, no build local e no CI,
-// o robots.txt bloqueia tudo e toda página sai com noindex,nofollow, mesmo as indexáveis.
-export const SITE_INDEXAVEL = VERCEL_ENV === 'production';
+// o robots.txt bloqueia tudo e toda página sai com noindex,nofollow, mesmo as indexáveis. A prévia
+// de rascunhos (#43) roda como produção no projeto ronrom-previa, mas também fica bloqueada.
+export const SITE_INDEXAVEL = VERCEL_ENV === 'production' && !PUBLIC_SANITY_VISUAL_EDITING_ENABLED;
 
 /** O `<meta name="robots">` de uma página: a prop `noindex` só vale onde o site é indexável. */
 export function robotsDaPagina(noindex: boolean, indexavel = SITE_INDEXAVEL): string {

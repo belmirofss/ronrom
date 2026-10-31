@@ -2,6 +2,7 @@
 import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
 import Listagem from '@/components/listagem/Listagem.astro';
 import { paginasExtras, TEXTOS_DAS_SECOES } from '@/lib/listagem';
+import { naoEncontrada, numeroDaPagina } from '@/lib/previa';
 import { buscarUltimos, totalDePaginas } from '@/lib/sanity/conteudo';
 import { trilhaDeTodosOsPosts } from '@/lib/trilha';
 
@@ -14,10 +15,14 @@ export const getStaticPaths = (async () => {
   }));
 }) satisfies GetStaticPaths;
 
-type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+type Props = Partial<InferGetStaticPropsType<typeof getStaticPaths>>;
 
-const { pagina } = Astro.props;
+const pagina = numeroDaPagina(Astro.props.pagina, Astro.params.n);
+if (!pagina) return naoEncontrada(Astro, `Página "${Astro.params.n}" inválida.`);
 const { posts, total } = await buscarUltimos(pagina);
+if (pagina > totalDePaginas(total)) {
+  return naoEncontrada(Astro, `Página ${pagina} além da última (${totalDePaginas(total)}).`);
+}
 ---
 
 <Listagem

@@ -33,6 +33,26 @@ if (ehProducao && env['SANITY_FIXTURES'] === 'true') {
   throw new Error('SANITY_FIXTURES=true não é permitido em produção (VERCEL_ENV=production).');
 }
 
+// Prévia de rascunhos (#43, docs/adr/0006): o mesmo código, publicado em outro projeto da Vercel
+// (ronrom-previa) com PUBLIC_SANITY_VISUAL_EDITING_ENABLED=true. Ali o site roda todo sob demanda,
+// lê os rascunhos com o token viewer e só abre para quem chega pelo Presentation do Studio.
+const ehPrevia = env['PUBLIC_SANITY_VISUAL_EDITING_ENABLED'] === 'true';
+
+if (ehPrevia) {
+  // Trava contra ligar a prévia no projeto do site: os rascunhos nunca saem no endereço público.
+  if (/^https:\/\/(ronrom-blog\.vercel\.app|(www\.)?ronrom\.com\.br)$/.test(urlDoSite)) {
+    throw new Error(`A prévia de rascunhos não pode ser publicada no site (${urlDoSite}).`);
+  }
+  if (!env['SANITY_API_READ_TOKEN'] || !env['SANITY_PROJECT_ID'] || !env['SANITY_DATASET']) {
+    throw new Error(
+      'A prévia de rascunhos precisa de SANITY_API_READ_TOKEN, SANITY_PROJECT_ID e SANITY_DATASET.',
+    );
+  }
+  if (env['SANITY_FIXTURES'] === 'true') {
+    throw new Error('A prévia de rascunhos não roda com SANITY_FIXTURES=true.');
+  }
+}
+
 // A mesma fonte do conteúdo que o site usa (src/lib/sanity/config.ts), para os redirects (#53).
 // Variável vazia conta como ausente, como no astro:env.
 const fonteDoConteudo = definirFonte({
@@ -54,6 +74,9 @@ const paginasSemParametro = caminhosDasPaginas(
 // https://astro.build/config
 export default defineConfig({
   site: urlDoSite,
+  // Na prévia, toda página roda sob demanda: um rascunho novo não existe no build. No site, a saída
+  // continua estática (o padrão do Astro).
+  ...(ehPrevia ? { output: 'server' } : {}),
   // Decidido na #1: URLs sem barra no final. Política completa: docs/seo-urls.md.
   trailingSlash: 'never',
   build: {
@@ -114,7 +137,8 @@ export default defineConfig({
   ],
   integrations: [
     // Índice da busca (#54): o Pagefind indexa os posts no fim do build. Detalhes: docs/busca.md.
-    pagefindIntegracao(),
+    // A prévia de rascunhos (#43) não tem índice: roda sob demanda, sem HTML gerado no build.
+    ...(ehPrevia ? [] : [pagefindIntegracao()]),
     // Redirects 301 dos endereços antigos dos posts (#53), só no `astro build`: busca no Sanity (ou
     // nas fixtures) os `slugsAnteriores`, junta com os fixos e, no fim, confere que todo destino
     // é uma página gerada. Cadeias são encurtadas; loop, destino inexistente ou redirect por cima
@@ -161,8 +185,35 @@ export default defineConfig({
         },
       },
     },
+    // Prévia de rascunhos (#43): as rotas do draft mode, o middleware que fecha o site para quem
+    // não passou por elas e o script da edição visual. Tudo só no build da prévia: o site nem tem
+    // essas rotas. Os arquivos ficam em src/previa, fora de src/pages e de src/middleware.ts.
+    {
+      name: 'ronrom:previa',
+      hooks: {
+        'astro:config:setup': ({ injectRoute, addMiddleware, injectScript }) => {
+          if (!ehPrevia) return;
+          injectRoute({
+            pattern: '/api/previa/ativar',
+            entrypoint: new URL('./src/previa/ativar.ts', import.meta.url),
+            prerender: false,
+          });
+          injectRoute({
+            pattern: '/api/previa/desativar',
+            entrypoint: new URL('./src/previa/desativar.ts', import.meta.url),
+            prerender: false,
+          });
+          addMiddleware({
+            entrypoint: new URL('./src/previa/middleware.ts', import.meta.url),
+            order: 'pre',
+          });
+          injectScript('page', `import '/src/previa/edicao-visual.ts';`);
+        },
+      },
+    },
     // /sitemap-index.xml (#52): só as URLs canônicas e indexáveis, com lastmod. Detalhes em sitemap.mjs.
-    ...sitemapDoSite(),
+    // A prévia de rascunhos (#43) não tem sitemap: roda sob demanda e não é indexada.
+    ...(ehPrevia ? [] : sitemapDoSite()),
   ],
   // Saída estática (o padrão do Astro): só as rotas com `export const prerender = false` viram
   // Vercel Function. Decisão no docs/adr/0001; como criar uma rota sob demanda: docs/ambientes.md.
@@ -221,11 +272,19 @@ export default defineConfig({
         optional: true,
         default: false,
       }),
-      // Token viewer: só para o preview de rascunhos (#43). Sem ele, só o conteúdo publicado.
+      // Token viewer: só para a prévia de rascunhos (#43). O site não usa; a prévia exige (acima).
       SANITY_API_READ_TOKEN: envField.string({
         context: 'server',
         access: 'secret',
         optional: true,
+      }),
+      // Liga a prévia de rascunhos (#43): só no projeto ronrom-previa da Vercel. Fica fixa no build,
+      // que é quando o Astro decide entre a saída estática e a sob demanda.
+      PUBLIC_SANITY_VISUAL_EDITING_ENABLED: envField.boolean({
+        context: 'server',
+        access: 'public',
+        optional: true,
+        default: false,
       }),
 
       // Contador de visualizações (#56): Upstash Redis instalado pelo Marketplace da Vercel, que
