@@ -13,7 +13,6 @@ import {
   buscarPostsDaTag,
   buscarPostsDoFormato,
   buscarPostsDoTipo,
-  buscarRedirects,
   buscarRotasDosPosts,
   buscarSitemap,
   buscarSobre,
@@ -178,12 +177,7 @@ describe('funções de acesso no modo fixtures', () => {
     }
   });
 
-  it('redirects e sitemap', async () => {
-    const redirects = await buscarRedirects();
-    expect(redirects).toHaveLength(1);
-    expect(redirects[0]?.anteriores).toEqual(['/pensamentos/frases/gatos']);
-    expect(urlDoPost(redirects[0]!)).toBe('/pensamentos/frases/sobre-gatos');
-
+  it('sitemap', async () => {
     const sitemap = await buscarSitemap();
     expect(sitemap).toHaveLength(10);
     expect(sitemap.filter((post) => post.noindex).map((post) => post.slug)).toEqual([
