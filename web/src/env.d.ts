@@ -5,3 +5,8 @@ declare module '*.astro' {
   const Componente: import('astro/runtime/server/index.js').AstroComponentFactory;
   export default Componente;
 }
+
+// Os `_id` publicados que a /api/views aceita (#56), gerados no build (src/lib/sanity/ids-publicados.ts).
+declare module 'virtual:ronrom/ids-publicados' {
+  export const IDS_PUBLICADOS: ReadonlySet<string>;
+}

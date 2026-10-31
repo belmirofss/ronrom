@@ -1,8 +1,14 @@
 // @ts-check
+import { readdirSync } from 'node:fs';
+
 import vercel from '@astrojs/vercel';
 import { defineConfig, envField, fontProviders } from 'astro/config';
 import { loadEnv } from 'vite';
+import { idsPublicados } from './src/lib/sanity/ids-publicados';
 import { redirects } from './redirects.mjs';
+import { caminhosDasPaginas, conferirRedirects, montarRedirects } from './src/lib/redirects.ts';
+import { definirFonte, VERSAO_PADRAO_DA_API } from './src/lib/sanity/fonte.ts';
+import { buscarDadosDosRedirects } from './src/lib/sanity/redirects.ts';
 
 // O astro.config roda antes do astro:env, então o que decide a configuração é lido direto do
 // .env / ambiente. As variáveis, onde vivem e quem é dona: docs/ambientes.md.
@@ -25,6 +31,24 @@ if (ehProducao && env['SANITY_FIXTURES'] === 'true') {
   throw new Error('SANITY_FIXTURES=true não é permitido em produção (VERCEL_ENV=production).');
 }
 
+// A mesma fonte do conteúdo que o site usa (src/lib/sanity/config.ts), para os redirects (#53).
+// Variável vazia conta como ausente, como no astro:env.
+const fonteDoConteudo = definirFonte({
+  SANITY_FIXTURES: env['SANITY_FIXTURES'] === 'true',
+  SANITY_PROJECT_ID: env['SANITY_PROJECT_ID'] || undefined,
+  SANITY_DATASET: env['SANITY_DATASET'] || undefined,
+  SANITY_API_VERSION: env['SANITY_API_VERSION'] || VERSAO_PADRAO_DA_API,
+});
+
+/** @type {Record<string, import('./src/lib/redirects.ts').Redirect>} */
+let redirectsDoBuild = {};
+// Páginas sem parâmetro (/sobre), dos arquivos: o Astro nem gera a que um redirect esconde.
+const paginasSemParametro = caminhosDasPaginas(
+  readdirSync(new URL('./src/pages', import.meta.url), { recursive: true, encoding: 'utf8' }).map(
+    (arquivo) => arquivo.replaceAll('\\', '/'),
+  ),
+);
+
 // https://astro.build/config
 export default defineConfig({
   site: urlDoSite,
@@ -36,8 +60,16 @@ export default defineConfig({
     format: 'directory',
   },
   // Redirects fixos (#41); o adapter da Vercel os transforma em rotas. Lista e regras: redirects.mjs.
+  // No build, a integração ronrom:redirects junta a eles os dos slugs antigos dos posts (#53).
   redirects,
   vite: {
+    // Os `_id` publicados que a /api/views (#56) aceita, lidos do Sanity (ou das fixtures) no build.
+    plugins: [idsPublicados(env)],
+    ssr: {
+      // O isbot (da /api/views) entra no bundle da função, como o resto. Externo, o adapter o
+      // copiaria para a função com symlinks do pnpm, que falham no Windows sem o modo desenvolvedor.
+      noExternal: ['isbot'],
+    },
     build: {
       // O Astro põe inline, dentro do HTML, todo script menor que 4 kB. A CSP (#41) só libera
       // script-src 'self', sem 'unsafe-inline', então JS sempre vai para um arquivo em /_astro.
@@ -79,6 +111,33 @@ export default defineConfig({
     },
   ],
   integrations: [
+    // Redirects 301 dos endereços antigos dos posts (#53), só no `astro build`: busca no Sanity (ou
+    // nas fixtures) os `slugsAnteriores`, junta com os fixos e, no fim, confere que todo destino
+    // é uma página gerada. Cadeias são encurtadas; loop, destino inexistente ou redirect por cima
+    // de uma página derrubam o build.
+    // Regras: docs/cabecalhos.md#redirects.
+    {
+      name: 'ronrom:redirects',
+      hooks: {
+        'astro:config:setup': async ({ command, updateConfig, logger }) => {
+          if (command !== 'build') return;
+          const { redirects: todos, avisos } = montarRedirects({
+            fixos: redirects,
+            paginas: paginasSemParametro,
+            ...(await buscarDadosDosRedirects(fonteDoConteudo)),
+          });
+          for (const aviso of avisos) logger.warn(aviso);
+          logger.info(`${Object.keys(todos).length} redirect(s), fixos e de posts.`);
+          redirectsDoBuild = todos;
+          updateConfig({ redirects: todos });
+        },
+        'astro:build:done': ({ pages }) => {
+          // `pathname` vem sem a barra inicial e, no build.format directory, com a barra final.
+          const geradas = pages.map(({ pathname }) => `/${pathname.replace(/\/$/, '')}`);
+          conferirRedirects(redirectsDoBuild, geradas);
+        },
+      },
+    },
     // Vitrine dos componentes (#35) em /vitrine e do texto do post (#39) em /vitrine/corpo, só no
     // `astro dev`: as rotas não existem no build, então não chegam a produção, ao sitemap nem à
     // busca. Os arquivos ficam fora de src/pages.
@@ -147,7 +206,7 @@ export default defineConfig({
         context: 'server',
         access: 'public',
         optional: true,
-        default: '2025-02-19',
+        default: VERSAO_PADRAO_DA_API,
       }),
       // Força as fixtures mesmo com o Sanity configurado. Proibido em produção (acima).
       SANITY_FIXTURES: envField.boolean({
@@ -163,8 +222,8 @@ export default defineConfig({
         optional: true,
       }),
 
-      // Contador de visualizações (#56): Upstash Redis instalado pelo Marketplace da Vercel.
-      // Nomes que o @upstash/redis lê no Redis.fromEnv(); conferir na Vercel ao provisionar.
+      // Contador de visualizações (#56): Upstash Redis instalado pelo Marketplace da Vercel, que
+      // injeta estes nomes. Sem as duas, a /api/views não grava nada (docs/visualizacoes.md).
       KV_REST_API_URL: envField.string({
         context: 'server',
         access: 'secret',
@@ -174,6 +233,15 @@ export default defineConfig({
       KV_REST_API_TOKEN: envField.string({
         context: 'server',
         access: 'secret',
+        optional: true,
+      }),
+
+      // Variável de sistema da Vercel (sem cadastro): o ambiente do deploy. A /api/views só conta
+      // em production; fora da Vercel fica ausente e nada é contado.
+      VERCEL_ENV: envField.enum({
+        context: 'server',
+        access: 'public',
+        values: ['production', 'preview', 'development'],
         optional: true,
       }),
 

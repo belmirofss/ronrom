@@ -59,6 +59,12 @@ const ultimo = itens.length - 1;
 
   /* Texto secundário (7,38:1), sublinhado só no hover; a página atual fica em --cor-texto. */
   .trilha__link {
+    display: inline-flex;
+    align-items: center;
+    /* Alvo de toque de 44 × 44px ("Início" é mais estreito); quando a trilha quebra linha, as
+       linhas não se sobrepõem. */
+    min-width: 44px;
+    min-height: 44px;
     color: var(--cor-texto-2);
     text-decoration-line: none;
     overflow-wrap: anywhere;

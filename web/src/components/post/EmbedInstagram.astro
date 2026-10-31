@@ -103,11 +103,16 @@ const link = `https://www.instagram.com/p/${codigo}/`;
     margin-block-start: var(--espaco-2);
   }
 
+  /* O link e o botão têm 44px de altura, o alvo de toque mínimo. */
   .embed-instagram__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     font-weight: var(--peso-medio);
   }
 
   .embed-instagram__carregar {
+    min-height: 44px;
     padding: var(--espaco-2) var(--espaco-4);
     border: 0;
     border-radius: var(--raio-pilula);

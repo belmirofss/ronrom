@@ -1,0 +1,71 @@
+---
+// Conta a leitura do post no "Mais lidos" (#56, #57): depois de 5 s com a página visível, o script
+// manda o `_id` do post para a /api/views com sendBeacon, uma vez por aba (sessionStorage). O
+// servidor ainda ignora bots e repetições em 30 minutos. Sem JS, nada é contado. Detalhes em
+// docs/visualizacoes.md.
+
+interface Props {
+  /** O `_id` do post. */
+  id: string;
+}
+
+const { id } = Astro.props;
+---
+
+{/* Sem estilo nem conteúdo, não ocupa espaço. */}
+<div data-visualizacoes={id}></div>
+
+<script>
+  const TEMPO_DE_LEITURA_MS = 5000;
+
+  const id = document.querySelector<HTMLElement>('[data-visualizacoes]')?.dataset['visualizacoes'];
+  const chave = `ronrom:visto:${id}`;
+
+  // O sessionStorage pode não existir ou recusar (modo privado, cookies bloqueados): aí a
+  // anti-duplicação fica só no servidor.
+  const jaContou = () => {
+    try {
+      return sessionStorage.getItem(chave) !== null;
+    } catch {
+      return false;
+    }
+  };
+  const marcarComoContado = () => {
+    try {
+      sessionStorage.setItem(chave, '1');
+    } catch {
+      // Sem sessionStorage, só o servidor evita a repetição.
+    }
+  };
+
+  if (id && !jaContou() && 'sendBeacon' in navigator) {
+    // Só conta o tempo com a aba visível: trocar de aba pausa, voltar continua de onde parou.
+    let restante = TEMPO_DE_LEITURA_MS;
+    let inicio = 0;
+    let espera: ReturnType<typeof setTimeout> | undefined;
+
+    const registrar = () => {
+      document.removeEventListener('visibilitychange', aoMudarDeVisibilidade);
+      marcarComoContado();
+      navigator.sendBeacon('/api/views', JSON.stringify({ id }));
+    };
+    const continuar = () => {
+      if (espera !== undefined) return;
+      inicio = performance.now();
+      espera = setTimeout(registrar, restante);
+    };
+    const pausar = () => {
+      if (espera === undefined) return;
+      clearTimeout(espera);
+      espera = undefined;
+      restante -= performance.now() - inicio;
+    };
+    function aoMudarDeVisibilidade() {
+      if (document.visibilityState === 'visible') continuar();
+      else pausar();
+    }
+
+    document.addEventListener('visibilitychange', aoMudarDeVisibilidade);
+    if (document.visibilityState === 'visible') continuar();
+  }
+</script>

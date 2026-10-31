@@ -23,7 +23,8 @@
     "astro": "^7.4.4",
     "astro-portabletext": "^1.0.1",
     "groq": "^6.20.0",
-    "groq-js": "^2.0.1"
+    "groq-js": "^2.0.1",
+    "isbot": "^5.2.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
