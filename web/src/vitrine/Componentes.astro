@@ -8,6 +8,7 @@ import Container from '@/components/layout/Container.astro';
 import CardDePost from '@/components/post/CardDePost.astro';
 import Destaque from '@/components/post/Destaque.astro';
 import ItemDeLista from '@/components/post/ItemDeLista.astro';
+import Abas from '@/components/ui/Abas.astro';
 import Breadcrumb from '@/components/ui/Breadcrumb.astro';
 import ChipCategoria from '@/components/ui/ChipCategoria.astro';
 import Coracoes from '@/components/ui/Coracoes.astro';
@@ -259,6 +260,32 @@ const casosExtremos = [
         />
       </section>
 
+      <section aria-labelledby="titulo-abas">
+        <h2 id="titulo-abas">Abas</h2>
+        <p class="vitrine__nota">
+          ←/→ trocam de aba (dando a volta), Home e End vão para as pontas e Tab leva ao painel. Sem
+          JS, os painéis ficam um embaixo do outro, com os títulos visíveis.
+        </p>
+        <Abas
+          abas={[
+            { id: 'vitrine-cafe', titulo: 'Café' },
+            { id: 'vitrine-cha', titulo: 'Chá' },
+            { id: 'vitrine-chocolate', titulo: 'Chocolate quente' },
+          ]}
+          rotulo="Bebidas"
+          nivelTitulo={3}
+        >
+          <p slot="ao-lado" class="vitrine__nota">
+            Slot ao-lado
+          </p>
+          <p slot="vitrine-cafe">Passado na hora, sem açúcar.</p>
+          <p slot="vitrine-cha">De camomila, para depois do jantar.</p>
+          <p slot="vitrine-chocolate">
+            Com canela. <a href="/posts">Um link dentro do painel</a>.
+          </p>
+        </Abas>
+      </section>
+
       <section aria-labelledby="titulo-frase">
         <h2 id="titulo-frase">FraseDaSemana</h2>
         <div class="vitrine__grade vitrine__grade--larga">
@@ -289,7 +316,8 @@ const casosExtremos = [
 </LayoutBase>
 
 <style>
-  .vitrine section {
+  /* Só as seções da vitrine: os painéis das Abas também são <section>. */
+  .vitrine > section {
     margin-block-start: var(--espaco-7);
   }
 

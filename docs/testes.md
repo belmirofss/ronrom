@@ -7,7 +7,7 @@ O que é conferido automaticamente, o que é conferido à mão e como escrever o
 Poucos testes, nos lugares certos:
 
 - **Teste unitário só onde existe lógica pura que pode quebrar sem ninguém ver:** cálculos, formatação e mapeamentos. Uma data no dia errado ou uma URL canônica com barra sobrando passam despercebidas no preview e só aparecem no Google semanas depois.
-- **Componente só é testado quando tem lógica condicional relevante:** hoje, apenas o `<Seo>`, a nota em corações, a ficha da review e o texto do post. O resto é markup e já é coberto pelo E2E, pelo axe e pela revisão visual.
+- **Componente só é testado quando tem lógica condicional relevante:** hoje, apenas o `<Seo>`, a nota em corações, a ficha da review, o texto do post e as abas. O resto é markup e já é coberto pelo E2E, pelo axe e pela revisão visual.
 - **Sem teste de snapshot de HTML inteiro** e sem teste do que o próprio Astro ou o Sanity garantem.
 - **O teste nasce no PR do utilitário.** As issues que criam utilitários (#33, #34, #40, #51) escrevem os testes junto, cobrindo os [casos listados abaixo](#casos-por-utilitário).
 
@@ -188,6 +188,13 @@ As funções de [`web/src/lib/card.ts`](../web/src/lib/card.ts), usadas pelo Des
 - [ ] O rótulo junta o tipo e a seção (`["Review", "Restaurantes e cafés"]`, `["Pensamento", "Frases soltas"]`).
 - [ ] O botão do destaque diz "Ler review" na review e "Ler texto" no pensamento.
 
+### Abas e home (#44)
+
+A tecla das [abas](../web/src/lib/abas.ts) e a lista da [home](../web/src/lib/home.ts):
+
+- [ ] ←/→ andam uma aba e dão a volta nas pontas; Home e End vão para a primeira e a última; outras teclas não movem o foco.
+- [ ] "Últimos posts" tira o destaque e completa com o post seguinte, mantém a ordem, funciona com o destaque fora da lista e devolve menos posts quando não há o bastante.
+
 ### Categoria para tipo do JSON-LD (#51)
 
 - [ ] Uma linha por categoria (com `it.each`), com fixture de ficha preenchida: `filmes` → `Movie`, `series` → `TVSeries`, `livros` → `Book`, `restaurantes-e-cafes` → `Restaurant` ou `CafeOrCoffeeShop`, `lugares` → `TouristAttraction`, `comidas` → `Product` (com marca) ou `Thing`.
@@ -223,9 +230,10 @@ As regras de [`web/src/lib/sobre.ts`](../web/src/lib/sobre.ts), com o documento 
 
 ### Componentes
 
-Teste de componente (Container API) existe só para estes quatro:
+Teste de componente (Container API) existe só para estes cinco:
 
 - **`Seo.astro` (#32):** uma tag de cada (`<title>`, description, canonical, robots, `og:title`, `og:image`, `twitter:card`), canonical e `og:image` absolutos, a tagline na home, `noindex,follow` pela prop, as metas `article:*` só em `type="article"` e o aviso no build com título acima de 65 caracteres.
 - **`Coracoes.astro` (#35):** um único `role="img"` com o `aria-label` da nota, os SVGs internos com `aria-hidden="true"`, e o número de corações cheios, meios e vazios renderizados para `4.5` e `5`.
 - **`FichaDaReview.astro` (#42):** os rótulos certos para cada modelo de ficha (filme, série, livro, lugar, comida), campos vazios ocultos (sem `<dt>` sem `<dd>`), a nota em corações presente e nada renderizado para quem não é review.
+- **`Abas.astro` (#44):** um `tablist` com `aria-label` e um `tab` por aba, a primeira com `aria-selected="true"` e `tabindex="0"` e as outras com `"false"` e `-1`, o `aria-controls` de cada aba apontando para o painel, cada painel com o próprio título (para funcionar sem JS) e o conteúdo do slot, nada `hidden` no HTML do build e o slot `ao-lado` fora do `tablist`.
 - **`CorpoDoPost.astro` (#39):** com o artigo das fixtures que tem todos os blocos, só elementos semânticos (nenhuma `<div>` além do invólucro), subtítulos h2/h3 com âncora e sem h1, a lista de subnível dentro do `<li>`, o `rel="noopener noreferrer"` no link externo, o link interno resolvido (e só texto fora do ar), toda imagem com `loading="lazy"` e `alt`, as aspas da citação em destaque com `aria-hidden`, o vídeo do YouTube e o post do Instagram só como fachada (nenhum iframe nem `src` do YouTube ou do Instagram, com o link para o original e o rótulo "Reproduzir vídeo: …") e um tipo de bloco desconhecido sem quebrar nem aparecer.

@@ -73,7 +73,7 @@ O anel de foco (3px, offset 2px) é vinho sobre os fundos claros (9,70:1) e crem
 Toda página usa um dos layouts de [`src/layouts`](src/layouts), que montam a casca comum: skip link, cabeçalho, `<main>` e rodapé.
 
 - [`LayoutBase.astro`](src/layouts/LayoutBase.astro): `<html lang="pt-BR">`, o `<head>` com a fonte e o [`<Seo>`](#seo-meta-tags-e-ícones), o slot nomeado `head` (para o JSON-LD da página), o link "Pular para o conteúdo", o [`Cabecalho`](src/components/layout/Cabecalho.astro), o `<main id="conteudo" tabindex="-1">` com o conteúdo da página e o [`Rodape`](src/components/layout/Rodape.astro). Prop `seo` (obrigatória), repassada ao `<Seo>`.
-- [`LayoutComBarraLateral.astro`](src/layouts/LayoutComBarraLateral.astro): o `LayoutBase` com uma grade conteúdo + `<aside>`. A barra lateral entra pelo slot `barra-lateral` e cai para baixo do conteúdo abaixo de 960px; sem esse slot, o conteúdo ocupa a largura toda e não há `<aside>`.
+- [`LayoutComBarraLateral.astro`](src/layouts/LayoutComBarraLateral.astro): o `LayoutBase` com uma grade conteúdo + `<aside>`. A barra lateral entra pelo slot `barra-lateral` e cai para baixo do conteúdo abaixo de 960px; sem esse slot, o conteúdo ocupa a largura toda e não há `<aside>`. O slot `topo` fica acima da grade, na largura toda (o `TopoHome` da [home](#home)).
 - [`Container.astro`](src/components/layout/Container.astro): centraliza o conteúdo em `--container-max` com o `--gutter` nas laterais. `largura="leitura"` usa a `--coluna-leitura` (texto do post) e `as` troca o elemento (padrão `div`).
 
 ```astro
@@ -159,6 +159,7 @@ Os componentes genéricos ficam em [`src/components/ui`](src/components/ui). A l
 <Paginacao base={urlDaCategoria('filmes')} atual={pagina} total={totalDePaginas(total)} />
 ```
 
+- [`Abas.astro`](src/components/ui/Abas.astro): abas no padrão [WAI-ARIA Tabs](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/). Props `abas` (`{ id, titulo }[]`, na ordem; a primeira começa selecionada), `rotulo` (o `aria-label` do `tablist`) e `nivelTitulo` (padrão 2). O conteúdo de cada painel entra pelo slot com o `id` da aba, e o slot `ao-lado` fica ao lado da lista, fora do `tablist` (o campo de busca da home). Detalhes abaixo, em [Abas](#abas).
 - [`EstadoVazio.astro`](src/components/ui/EstadoVazio.astro): listagem sem post. Props `mensagem` (padrão "Ainda não tem nada por aqui.") e `link` (`{ rotulo, href }`, padrão "Que tal ver todos os posts?" para `/posts`), com o gato do mosaico decorativo em cima.
 
 ### Cards de post
@@ -178,22 +179,55 @@ Regras:
 - **Corações só em review**, e subtítulo ausente não deixa espaço: o parágrafo não é renderizado. O rótulo e o chip saem de [`src/lib/card.ts`](src/lib/card.ts) (`rotuloDoCard`, `secaoDoCard` e `chamadaDoCard`), que quebra o build com review sem categoria ou pensamento sem formato.
 - **Largura do próprio card**, não da tela: o Destaque e o ItemDeLista usam container queries, porque a coluna principal muda de largura com a barra lateral. Estreito, como no celular, a capa fica em cima do texto; título de 3 linhas ou mais e categoria longa ("Restaurantes e cafés") cabem em 320px. A prop `sizes` ajusta o `sizes` da capa quando o card fica numa coluna diferente da padrão.
 
+A [`ListaDePosts.astro`](src/components/post/ListaDePosts.astro) é a lista de `ItemDeLista` com os divisores: props `posts` e `nivelTitulo` (padrão 2), repassado a cada item.
+
 ```astro
 <Destaque post={destaque} />
-<ul role="list">
-  {posts.map((post) => (
-    <li>
-      <ItemDeLista post={post} nivelTitulo={3} />
-    </li>
-  ))}
-</ul>
+<ListaDePosts posts={posts} nivelTitulo={3} />
 <CardDePost post={post} />
 <EstadoVazio link={{ rotulo: 'Ver todas as reviews', href: '/reviews' }} />
 ```
 
+### Abas
+
+```astro
+<Abas
+  abas={[
+    { id: 'ultimos', titulo: 'Últimos posts' },
+    { id: 'mais-lidos', titulo: 'Mais lidos' },
+  ]}
+  rotulo="Posts"
+>
+  <form slot="ao-lado" role="search">
+    ...
+  </form>
+  <ListaDePosts slot="ultimos" posts={ultimos} nivelTitulo={3} />
+  <MaisLidos slot="mais-lidos" />
+</Abas>
+```
+
+- **Teclado:** Tab entra na aba selecionada (roving tabindex: só ela tem `tabindex="0"`) e, de novo, vai para o painel. ←/→ trocam de aba, dando a volta nas pontas, e Home e End vão para a primeira e a última. A ativação é automática: a aba que recebe o foco já mostra o painel. A tecla → índice está em [`src/lib/abas.ts`](src/lib/abas.ts), com teste.
+- **Aprimoramento progressivo:** o HTML do build traz todos os painéis, cada um num `<section>` com o próprio título (`h{nivelTitulo}`). Sem JS, a lista de abas some e os painéis ficam um embaixo do outro, com os títulos visíveis. Com JS, o script liga `role="tabpanel"`, `aria-labelledby` (a aba) e o `hidden` dos painéis, e os títulos ficam só para o leitor de tela: os cards de dentro continuam um nível abaixo deles.
+- **Sem pulo na carga:** com o JS ligado no navegador, a media query `(scripting: enabled)` já desenha as abas e esconde os outros painéis antes de o script rodar (sem CLS). Navegador sem essa media query mostra os painéis empilhados até o script rodar.
+- **Evento:** a cada troca, a raiz dispara `abas:selecionada` (com `detail.painel`), para quem só carrega o conteúdo quando o painel abre, como o "Mais lidos" (#57).
+
 ### Vitrine
 
-Com o `pnpm dev` rodando, http://localhost:4321/vitrine/corpo mostra o [texto do post](#texto-do-post-portable-text) com todos os blocos, e http://localhost:4321/vitrine mostra todos os estados desses componentes: as 10 notas, os 3 tamanhos, os chips nos dois tons (link, estático e sobre a miniatura), trilhas de review, pensamento, categoria e formato, a paginação na primeira, no meio e na última página, os cards de post com o conteúdo do Sanity (ou das fixtures), inclusive título e categoria longos e pensamento sem subtítulo em 320px, o estado vazio, a frase da semana (com e sem autoria, longa e vazia) e a barra lateral com o conteúdo das fixtures. A página ([`src/vitrine/Componentes.astro`](src/vitrine/Componentes.astro)) fica fora de `src/pages`: uma integração no `astro.config.mjs` injeta a rota só no `astro dev`, então ela não existe no build. Componente novo em `ui/` entra na vitrine no mesmo PR.
+Com o `pnpm dev` rodando, http://localhost:4321/vitrine/corpo mostra o [texto do post](#texto-do-post-portable-text) com todos os blocos, e http://localhost:4321/vitrine mostra todos os estados desses componentes: as 10 notas, os 3 tamanhos, os chips nos dois tons (link, estático e sobre a miniatura), trilhas de review, pensamento, categoria e formato, a paginação na primeira, no meio e na última página, os cards de post com o conteúdo do Sanity (ou das fixtures), inclusive título e categoria longos e pensamento sem subtítulo em 320px, o estado vazio, as abas, a frase da semana (com e sem autoria, longa e vazia) e a barra lateral com o conteúdo das fixtures. A página ([`src/vitrine/Componentes.astro`](src/vitrine/Componentes.astro)) fica fora de `src/pages`: uma integração no `astro.config.mjs` injeta a rota só no `astro dev`, então ela não existe no build. Componente novo em `ui/` entra na vitrine no mesmo PR.
+
+## Home
+
+A [`src/pages/index.astro`](src/pages/index.astro) usa o `LayoutComBarraLateral`, de cima para baixo:
+
+1. **Topo** (slot `topo`, na largura toda): o [`TopoHome`](src/components/home/TopoHome.astro), com o único h1 da página, "Ronrom", e o mosaico de formas.
+2. **Destaque:** o post escolhido em Configurações do site ou, sem escolha, o mais recente (`buscarDestaque()`). A capa dele é a imagem do LCP (`prioridade`).
+3. **Abas** "Últimos posts" e "Mais lidos", com o lugar do campo de busca ao lado (vazio até a WEB-15, #61; só a partir de 640px).
+   - **Últimos posts:** os `POSTS_NA_HOME` (6) mais recentes, sem o destaque (`ultimosSemODestaque`, em [`src/lib/home.ts`](src/lib/home.ts), com teste), com título h3 embaixo do h2 da aba.
+   - **Mais lidos:** o [`MaisLidos.astro`](src/components/home/MaisLidos.astro). Por enquanto mostra o estado vazio ("Ainda estamos contando as leituras."); o ranking entra na #57 e o visual final (carregando, erro) na WEB-15. **Contrato:** prop `posts`, a lista dos posts no ar do mais lido para o menos lido, sem repetir, no formato das listagens (`CardComLeitura`); vazia, o painel mostra o estado vazio.
+4. **"Ver todos os posts"**, para `/posts`.
+5. **Barra lateral** (slot `barra-lateral`), que cai para baixo de tudo abaixo de 960px.
+
+Sem nenhum post publicado, a home mostra o topo, um estado vazio com link para `/sobre` e a barra lateral, sem destaque, abas nem o botão.
 
 ## Listagens
 

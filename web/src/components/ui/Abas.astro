@@ -1,0 +1,214 @@
+---
+import type { NivelDoTitulo } from '@/lib/card';
+
+interface Aba {
+  /** Nome do slot com o conteúdo do painel e base dos ids (`aba-{id}`, `painel-{id}`). */
+  id: string;
+  /** Texto da aba e do título do painel. */
+  titulo: string;
+}
+
+interface Props {
+  /** Na ordem de exibição. A primeira começa selecionada. */
+  abas: readonly Aba[];
+  /** Nome acessível da lista de abas. */
+  rotulo: string;
+  /** Nível do título de cada painel. Padrão: 2. */
+  nivelTitulo?: NivelDoTitulo;
+  class?: string;
+}
+
+const { abas, rotulo, nivelTitulo = 2, class: classe } = Astro.props;
+
+if (abas.length === 0) throw new Error('<Abas> sem nenhuma aba.');
+
+const Titulo = `h${nivelTitulo}` as const;
+const temAoLado = Astro.slots.has('ao-lado');
+---
+
+{/* Aprimoramento progressivo: sem JS, a lista de abas some e os painéis ficam um embaixo do
+    outro, cada um com o próprio título. Com JS, o script abaixo liga o padrão WAI-ARIA Tabs. */}
+<div class:list={['abas', classe]} data-abas>
+  <div class="abas__barra">
+    <div class="abas__lista" role="tablist" aria-label={rotulo}>
+      {abas.map(({ id, titulo }, i) => (
+        <button
+          class="abas__aba"
+          type="button"
+          role="tab"
+          id={`aba-${id}`}
+          aria-controls={`painel-${id}`}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          tabindex={i === 0 ? 0 : -1}
+        >
+          {titulo}
+        </button>
+      ))}
+    </div>
+    {/* Fora do tablist, que só pode ter abas: o campo de busca da home (WEB-15, #61). */}
+    {temAoLado && (
+      <div class="abas__ao-lado">
+        <slot name="ao-lado" />
+      </div>
+    )}
+  </div>
+  {abas.map(({ id, titulo }) => (
+    <section class="abas__painel" id={`painel-${id}`} aria-labelledby={`titulo-${id}`}>
+      {/* Com as abas ligadas, o título fica só para o leitor de tela: quem navega por títulos
+          continua achando a seção, e os cards de dentro ficam um nível abaixo dele. */}
+      <Titulo class="abas__titulo" id={`titulo-${id}`}>
+        {titulo}
+      </Titulo>
+      <slot name={id} />
+    </section>
+  ))}
+</div>
+
+<script>
+  import { abaDaTecla } from '@/lib/abas';
+
+  for (const raiz of document.querySelectorAll<HTMLElement>('[data-abas]')) {
+    const abas = [
+      ...raiz.querySelectorAll<HTMLButtonElement>(':scope > .abas__barra [role="tab"]'),
+    ];
+    const paineis = abas.map((aba) => {
+      const painel = document.getElementById(aba.getAttribute('aria-controls') ?? '');
+      if (!painel) throw new Error(`<Abas> sem o painel de "${aba.id}".`);
+      return painel;
+    });
+
+    const selecionar = (indice: number, focar: boolean) => {
+      abas.forEach((aba, i) => {
+        const ativa = i === indice;
+        aba.setAttribute('aria-selected', String(ativa));
+        aba.tabIndex = ativa ? 0 : -1;
+        if (paineis[i]) paineis[i].hidden = !ativa;
+      });
+      if (focar) abas[indice]?.focus();
+      // Para quem carrega o conteúdo do painel só quando ele abre, como o "Mais lidos" (#57).
+      raiz.dispatchEvent(
+        new CustomEvent('abas:selecionada', { bubbles: true, detail: { painel: paineis[indice] } }),
+      );
+    };
+
+    paineis.forEach((painel, i) => {
+      painel.setAttribute('role', 'tabpanel');
+      painel.setAttribute('aria-labelledby', abas[i]?.id ?? '');
+      painel.tabIndex = 0;
+      painel.hidden = abas[i]?.getAttribute('aria-selected') !== 'true';
+    });
+
+    abas.forEach((aba, i) => aba.addEventListener('click', () => selecionar(i, false)));
+
+    // Ativação automática: a aba que recebe o foco pelas setas, Home ou End já fica selecionada.
+    raiz
+      .querySelector(':scope > .abas__barra [role="tablist"]')
+      ?.addEventListener('keydown', (e) => {
+        const evento = e as KeyboardEvent;
+        const atual = abas.indexOf(evento.target as HTMLButtonElement);
+        if (atual === -1) return;
+        const proxima = abaDaTecla(evento.key, atual, abas.length);
+        if (proxima === null) return;
+        evento.preventDefault();
+        selecionar(proxima, true);
+      });
+
+    raiz.dataset['pronto'] = '';
+  }
+</script>
+
+<style>
+  .abas {
+    display: grid;
+    gap: var(--espaco-5);
+  }
+
+  .abas__barra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--espaco-4);
+  }
+
+  /* Sem JS, as abas não fazem nada: a lista some e os painéis aparecem todos. Com o JS ligado no
+     navegador (scripting: enabled), o CSS já começa no estado de abas, antes de o script rodar,
+     para a página não pular quando ele roda. Navegador sem essa media query espera o script. */
+  .abas__lista {
+    display: none;
+    gap: var(--espaco-5);
+    border-block-end: 1px solid var(--cor-borda);
+  }
+
+  @media (scripting: enabled) {
+    .abas__lista {
+      display: flex;
+    }
+
+    .abas:not([data-pronto]) .abas__painel ~ .abas__painel {
+      display: none;
+    }
+
+    .abas__titulo {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+
+  .abas[data-pronto] .abas__lista {
+    display: flex;
+  }
+
+  .abas[data-pronto] .abas__titulo {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .abas__painel[hidden] {
+    display: none;
+  }
+
+  /* Sem JS, os painéis ficam um embaixo do outro, separados como seções. */
+  @media (scripting: none) {
+    .abas {
+      gap: var(--espaco-7);
+    }
+  }
+
+  .abas__titulo {
+    margin-block-end: var(--espaco-5);
+    font-size: var(--texto-2xl);
+  }
+
+  /* Alvo de toque de 44px. A aba selecionada tem texto escuro e o traço vinho embaixo (9,70:1),
+     não só a cor. */
+  .abas__aba {
+    min-height: 44px;
+    margin-block-end: -1px;
+    padding: var(--espaco-2) 0;
+    border: 0;
+    border-block-end: 3px solid transparent;
+    background: none;
+    color: var(--cor-texto-2);
+    font-size: var(--texto-lg);
+    font-weight: var(--peso-medio);
+    cursor: pointer;
+  }
+
+  .abas__aba:hover {
+    color: var(--cor-vinho-hover);
+  }
+
+  .abas__aba[aria-selected='true'] {
+    border-block-end-color: var(--cor-vinho);
+    color: var(--cor-texto);
+  }
+</style>

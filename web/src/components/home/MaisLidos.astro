@@ -1,0 +1,26 @@
+---
+import ListaDePosts from '@/components/post/ListaDePosts.astro';
+import EstadoVazio from '@/components/ui/EstadoVazio.astro';
+import type { CardComLeitura } from '@/lib/card';
+
+interface Props {
+  /**
+   * Contrato com a #57 e a WEB-15 (#61): os posts no ar, do mais lido para o menos lido, sem
+   * repetir, no formato das listagens. Vazio (o padrão, até o ranking existir), o painel mostra o
+   * estado vazio.
+   */
+  posts?: readonly CardComLeitura[];
+}
+
+const { posts = [] } = Astro.props;
+---
+
+{/* Provisório: os estados de carregando e de erro e o visual final entram na WEB-15 (#61). */}
+{posts.length > 0 ? (
+  <ListaDePosts posts={posts} nivelTitulo={3} />
+) : (
+  <EstadoVazio
+    mensagem="Ainda estamos contando as leituras."
+    link={{ rotulo: 'Enquanto isso, veja todos os posts', href: '/posts' }}
+  />
+)}

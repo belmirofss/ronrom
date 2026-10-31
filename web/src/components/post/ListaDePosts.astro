@@ -1,0 +1,37 @@
+---
+import ItemDeLista from '@/components/post/ItemDeLista.astro';
+import type { CardComLeitura, NivelDoTitulo } from '@/lib/card';
+
+interface Props {
+  /** Na ordem de exibição. */
+  posts: readonly CardComLeitura[];
+  /** Nível do título de cada item. Padrão: 2, embaixo do h1; nas abas da home, 3. */
+  nivelTitulo?: NivelDoTitulo;
+  class?: string;
+}
+
+const { posts, nivelTitulo = 2, class: classe } = Astro.props;
+---
+
+<ul class:list={['lista-de-posts', classe]}>
+  {posts.map((post) => (
+    <li>
+      <ItemDeLista post={post} nivelTitulo={nivelTitulo} />
+    </li>
+  ))}
+</ul>
+
+<style>
+  .lista-de-posts {
+    display: grid;
+    gap: var(--espaco-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .lista-de-posts > li + li {
+    padding-block-start: var(--espaco-6);
+    border-block-start: 1px solid var(--cor-borda);
+  }
+</style>
