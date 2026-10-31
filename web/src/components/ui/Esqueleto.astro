@@ -1,0 +1,152 @@
+---
+interface Props {
+  /** Quantos itens desenhar. Use o mesmo número que a lista de verdade vai ter. */
+  quantidade: number;
+  /**
+   * `lista`: as medidas do ItemDeLista (miniatura em cima no estreito, à esquerda a partir de
+   * 30rem), para o "Mais lidos". `resultado`: as do resultado da /busca (texto e miniatura ao lado).
+   */
+  variante?: 'lista' | 'resultado';
+  class?: string;
+}
+
+const { quantidade, variante = 'lista', class: classe } = Astro.props;
+---
+
+{/* O "carregando" de uma lista (WEB-15, #61): blocos com as mesmas medidas dos itens que vão
+    entrar, para a troca não empurrar a página (sem CLS). Só visual: quem anuncia o carregando é o
+    role="status" de quem usa o componente. */}
+<ul class:list={['esqueleto', `esqueleto--${variante}`, classe]} aria-hidden="true">
+  {Array.from({ length: quantidade }, () => (
+    <li class="esqueleto__item">
+      <div class="esqueleto__grade">
+        <div class="esqueleto__textos">
+          <span class="esqueleto__bloco esqueleto__rotulo" />
+          <span class="esqueleto__bloco esqueleto__titulo" />
+          <span class="esqueleto__bloco esqueleto__linha" />
+          <span class="esqueleto__bloco esqueleto__linha esqueleto__linha--curta" />
+        </div>
+        <span class="esqueleto__bloco esqueleto__miniatura" />
+      </div>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .esqueleto {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .esqueleto__item {
+    container-type: inline-size;
+  }
+
+  .esqueleto__grade {
+    display: grid;
+    gap: var(--espaco-4);
+  }
+
+  .esqueleto__textos {
+    display: grid;
+    gap: var(--espaco-2);
+    align-content: start;
+  }
+
+  /* Cada bloco tem a altura de uma linha do texto que substitui. */
+  .esqueleto__bloco {
+    display: block;
+    border-radius: var(--raio-sm);
+    background-color: var(--cor-creme);
+  }
+
+  .esqueleto__rotulo {
+    width: 8rem;
+    height: calc(var(--texto-xs) * var(--altura-linha-base));
+  }
+
+  .esqueleto__titulo {
+    width: 85%;
+    height: calc(var(--texto-xl) * var(--altura-linha-titulo));
+  }
+
+  .esqueleto__linha {
+    width: 100%;
+    height: calc(var(--texto-base) * var(--altura-linha-base));
+  }
+
+  .esqueleto__linha--curta {
+    width: 55%;
+  }
+
+  .esqueleto__miniatura {
+    aspect-ratio: 4 / 3;
+    border-radius: var(--raio-md);
+  }
+
+  /* lista: o ItemDeLista, separado como no ListaDePosts. */
+  .esqueleto--lista {
+    gap: var(--espaco-6);
+  }
+
+  .esqueleto--lista .esqueleto__item + .esqueleto__item {
+    padding-block-start: var(--espaco-6);
+    border-block-start: 1px solid var(--cor-borda);
+  }
+
+  .esqueleto--lista .esqueleto__miniatura {
+    order: -1;
+  }
+
+  @container (min-width: 30rem) {
+    .esqueleto--lista .esqueleto__grade {
+      grid-template-columns: min(40%, 15rem) minmax(0, 1fr);
+      gap: var(--espaco-5);
+    }
+  }
+
+  /* resultado: o item da /busca. */
+  .esqueleto--resultado {
+    gap: var(--espaco-4);
+  }
+
+  .esqueleto--resultado .esqueleto__item {
+    padding-block-end: var(--espaco-4);
+    border-block-end: 1px solid var(--cor-borda);
+  }
+
+  .esqueleto--resultado .esqueleto__grade {
+    grid-template-columns: 1fr auto;
+  }
+
+  .esqueleto--resultado .esqueleto__miniatura {
+    width: clamp(5rem, 22vw, 10rem);
+  }
+
+  /* Um brilho que atravessa os blocos. Com movimento reduzido, os blocos ficam parados. */
+  @media (prefers-reduced-motion: no-preference) {
+    .esqueleto__bloco {
+      background-image: linear-gradient(
+        90deg,
+        transparent 0%,
+        color-mix(in srgb, var(--cor-superficie) 60%, transparent) 50%,
+        transparent 100%
+      );
+      background-repeat: no-repeat;
+      background-size: 50% 100%;
+      animation: esqueleto-brilho 1.4s ease-in-out infinite;
+    }
+  }
+
+  @keyframes esqueleto-brilho {
+    from {
+      background-position: -100% 0;
+    }
+
+    to {
+      background-position: 200% 0;
+    }
+  }
+</style>

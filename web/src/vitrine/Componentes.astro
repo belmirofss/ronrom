@@ -12,6 +12,7 @@ import Abas from '@/components/ui/Abas.astro';
 import Breadcrumb from '@/components/ui/Breadcrumb.astro';
 import ChipCategoria from '@/components/ui/ChipCategoria.astro';
 import Coracoes from '@/components/ui/Coracoes.astro';
+import Esqueleto from '@/components/ui/Esqueleto.astro';
 import EstadoVazio from '@/components/ui/EstadoVazio.astro';
 import Paginacao from '@/components/ui/Paginacao.astro';
 import LayoutBase from '@/layouts/LayoutBase.astro';
@@ -258,6 +259,14 @@ const casosExtremos = [
           mensagem="Nenhuma review de livros por enquanto."
           link={{ rotulo: 'Ver todas as reviews', href: '/reviews' }}
         />
+      </section>
+
+      <section aria-labelledby="titulo-esqueleto">
+        <h2 id="titulo-esqueleto">Esqueleto</h2>
+        <h3>Lista (o carregando dos mais lidos)</h3>
+        <Esqueleto quantidade={2} />
+        <h3>Resultado (o carregando da busca)</h3>
+        <Esqueleto quantidade={2} variante="resultado" />
       </section>
 
       <section aria-labelledby="titulo-abas">

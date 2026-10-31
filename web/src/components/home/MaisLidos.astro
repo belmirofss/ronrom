@@ -1,5 +1,6 @@
 ---
 import ListaDePosts from '@/components/post/ListaDePosts.astro';
+import Esqueleto from '@/components/ui/Esqueleto.astro';
 import EstadoVazio from '@/components/ui/EstadoVazio.astro';
 import type { CardComLeitura } from '@/lib/card';
 import { LIMITE_PADRAO } from '@/lib/views/ranking';
@@ -30,8 +31,11 @@ const MODELO: CardComLeitura = {
 };
 ---
 
-{/* Provisório: o visual dos estados de carregando, erro e vazio é da WEB-15 (#61). */}
+{/* Os estados (#61): o carregando é um esqueleto com as medidas dos 10 cards, para a lista não
+    empurrar a página ao chegar; erro e vazio usam o EstadoVazio. */}
 <div class="mais-lidos" data-mais-lidos data-limite={LIMITE_PADRAO}>
+  {/* Fora dos estados, para existir antes de o texto mudar: só assim o leitor de tela anuncia. */}
+  <p class="visualmente-oculto" role="status" data-status></p>
   {/* Sem JS, não há como buscar o ranking: os painéis ficam um embaixo do outro, e este avisa. */}
   <div class="mais-lidos__sem-js">
     <EstadoVazio
@@ -39,14 +43,18 @@ const MODELO: CardComLeitura = {
       link={{ rotulo: 'Enquanto isso, veja todos os posts', href: '/posts' }}
     />
   </div>
-  <p class="mais-lidos__carregando" role="status" data-estado="carregando" hidden>
-    Carregando os mais lidos…
-  </p>
+  <div data-estado="carregando" hidden>
+    <Esqueleto quantidade={LIMITE_PADRAO} />
+  </div>
   <div data-estado="erro" hidden>
     <EstadoVazio
       mensagem="Não deu para carregar os mais lidos agora."
       link={{ rotulo: 'Veja todos os posts', href: '/posts' }}
-    />
+    >
+      <button class="mais-lidos__tentar" slot="acao" type="button" data-tentar>
+        Tentar de novo
+      </button>
+    </EstadoVazio>
   </div>
   <div data-estado="vazio" hidden>
     <EstadoVazio
@@ -68,6 +76,13 @@ const MODELO: CardComLeitura = {
 
   type Estado = 'carregando' | 'erro' | 'vazio' | 'lista';
 
+  // O que o role="status" anuncia em cada estado. A lista anuncia quantos posts entraram.
+  const ANUNCIO: Record<Exclude<Estado, 'lista'>, string> = {
+    carregando: 'Carregando os mais lidos…',
+    erro: 'Não deu para carregar os mais lidos agora.',
+    vazio: 'Ainda estamos contando as leituras.',
+  };
+
   function achar<T extends Element = Element>(raiz: ParentNode, seletor: string): T {
     const elemento = raiz.querySelector<T>(seletor);
     if (!elemento) throw new Error(`[mais-lidos] sem "${seletor}" no modelo.`);
@@ -86,6 +101,7 @@ const MODELO: CardComLeitura = {
     const limite = Number(raiz.dataset['limite']);
     const estados = [...raiz.querySelectorAll<HTMLElement>('[data-estado]')];
     const lista = achar<HTMLElement>(raiz, '[data-estado="lista"]');
+    const status = achar<HTMLElement>(raiz, '[data-status]');
 
     // As peças do card de modelo: a lista, o item e um coração de cada tipo (nota 1.5).
     const modelo = achar<HTMLTemplateElement>(raiz, 'template[data-modelo]').content;
@@ -94,8 +110,10 @@ const MODELO: CardComLeitura = {
     const [cheio, meio, vazio] = itemModelo.querySelectorAll('.coracoes__coracao');
     const coracao = { cheio, meio, vazio };
 
-    const mostrar = (estado: Estado) => {
+    const mostrar = (estado: Estado, anuncio = estado === 'lista' ? '' : ANUNCIO[estado]) => {
       for (const elemento of estados) elemento.hidden = elemento.dataset['estado'] !== estado;
+      raiz.toggleAttribute('aria-busy', estado === 'carregando');
+      status.textContent = anuncio;
     };
 
     const montarItem = (item: ItemDoIndice): HTMLLIElement => {
@@ -162,14 +180,20 @@ const MODELO: CardComLeitura = {
         const ul = listaModelo.cloneNode(false) as HTMLUListElement;
         ul.append(...itens.map(montarItem));
         lista.replaceChildren(ul);
-        mostrar('lista');
+        mostrar('lista', `${itens.length} ${itens.length === 1 ? 'post' : 'posts'} mais lidos.`);
       } catch (erro) {
         console.error('[mais-lidos] não deu para montar a lista', erro);
         mostrar('erro');
-        // Voltar para a aba tenta de novo.
+        // O botão ou voltar para a aba tenta de novo.
         carregado = false;
       }
     };
+
+    // O foco ia ficar no botão, que some: ele vai para o painel, que recebe o esqueleto e a lista.
+    achar<HTMLButtonElement>(raiz, '[data-tentar]').addEventListener('click', () => {
+      raiz.closest<HTMLElement>('[role="tabpanel"]')?.focus();
+      void carregar();
+    });
 
     // Só busca quando a aba abre (o evento é do Abas.astro): quem fica nos "Últimos posts" não
     // faz requisição nenhuma.
@@ -188,7 +212,20 @@ const MODELO: CardComLeitura = {
     }
   }
 
-  .mais-lidos__carregando {
-    color: var(--cor-texto-2);
+  /* Botão secundário, como o "Ver todos os posts" da home. */
+  .mais-lidos__tentar {
+    min-height: 44px;
+    padding: var(--espaco-3) var(--espaco-5);
+    border: 2px solid var(--cor-vinho);
+    border-radius: var(--raio-pilula);
+    background: none;
+    color: var(--cor-vinho);
+    font-weight: var(--peso-medio);
+    cursor: pointer;
+  }
+
+  .mais-lidos__tentar:hover {
+    background-color: var(--cor-creme);
+    color: var(--cor-vinho-hover);
   }
 </style>

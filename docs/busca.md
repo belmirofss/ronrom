@@ -1,6 +1,6 @@
 # Busca
 
-O índice da busca do site, gerado pelo [Pagefind](https://pagefind.app) no build, sem servidor (#54, SEO-07), e a página `/busca` e o campo da home que o usam (#55, SEO-08). O visual definitivo dos resultados vem na WEB-15 (#61).
+O índice da busca do site, gerado pelo [Pagefind](https://pagefind.app) no build, sem servidor (#54, SEO-07), e a página `/busca` e o campo da home que o usam (#55, SEO-08). Os estados e o visual dos resultados são da WEB-15 (#61), [mais abaixo](#estados-da-página).
 
 ## Como o índice é gerado
 
@@ -102,6 +102,20 @@ Digitar troca a entrada do histórico (`replaceState`); enviar e trocar filtro c
 O `excerpt` vai para o `innerHTML`: o Pagefind escapa o texto do post e só acrescenta os `<mark>`. Os outros campos entram como texto. A página mostra 10 resultados e um botão "Carregar mais", que busca os dados só dos 10 seguintes e leva o foco ao primeiro deles.
 
 **Contagem, filtros e estados.** A contagem ("3 resultados para “café”.", "Nenhum resultado para “x”.") e os estados de carregando e erro saem num `role="status"` com `aria-live="polite"`. Os selects de tipo, categoria e tag são montados com o `pagefind.filters()` do índice inteiro, com o total de posts de cada valor; categorias e formatos ficam numa lista só.
+
+### Estados da página
+
+O visual da WEB-15 (#61), todo com os tokens do site. A página usa a API JS do Pagefind e monta os resultados ela mesma, sem a UI pronta (`pagefind-ui`), então não há variáveis CSS do Pagefind para mapear: os estilos ficam no `busca.astro`.
+
+| Estado           | Na tela                                                                                                                                     | No `role="status"`                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Digite algo      | só o texto do status                                                                                                                        | "Digite algo para buscar nas reviews e nos pensamentos."   |
+| Carregando       | 3 resultados de [`Esqueleto`](../web/src/components/ui/Esqueleto.astro) na primeira busca; depois, a lista anterior esmaecida (`aria-busy`) | "Buscando…"                                                |
+| Resultados       | a lista, com o termo em `<mark>` creme                                                                                                      | "3 resultados para “café”."                                |
+| Nenhum resultado | o `EstadoVazio` com o termo buscado (ou "com esses filtros", sem termo)                                                                     | "Nenhum resultado para “x”.", visível só ao leitor de tela |
+| Erro             | só o texto do status                                                                                                                        | "A busca não carregou. Recarregue a página…"               |
+
+Cada resultado é um card clicável com um link só, o do título: o Tab passa de resultado em resultado, e o anel de foco contorna o card inteiro (`.card-clicavel`). O campo de busca (`CampoDeBusca`) é o mesmo da home: pílula com a lupa decorativa, borda vinho no hover e no foco, e o botão "Buscar".
 
 **Sem JS** a parte interativa fica `hidden`, e um `<noscript>` explica que a busca precisa de JavaScript e lista as listagens (todos os posts, reviews e categorias, pensamentos e formatos).
 

@@ -261,9 +261,9 @@ A [`src/pages/index.astro`](src/pages/index.astro) usa o `LayoutComBarraLateral`
 
 1. **Topo** (slot `topo`, na largura toda): o [`TopoHome`](src/components/home/TopoHome.astro), com o único h1 da página, "Ronrom", e o mosaico de formas.
 2. **Destaque:** o post escolhido em Configurações do site ou, sem escolha, o mais recente (`buscarDestaque()`). A capa dele é a imagem do LCP (`prioridade`).
-3. **Abas** "Últimos posts" e "Mais lidos", com o lugar do campo de busca ao lado (vazio até a WEB-15, #61; só a partir de 640px).
+3. **Abas** "Últimos posts" e "Mais lidos", com o campo de busca ao lado a partir de 640px (embaixo das abas no celular).
    - **Últimos posts:** os `POSTS_NA_HOME` (6) mais recentes, sem o destaque (`ultimosSemODestaque`, em [`src/lib/home.ts`](src/lib/home.ts), com teste), com título h3 embaixo do h2 da aba.
-   - **Mais lidos:** o [`MaisLidos.astro`](src/components/home/MaisLidos.astro), montado no navegador na primeira vez que a aba abre (#57): junta o ranking da `/api/mais-lidos` com os cards do `/posts-index.json` e, com menos de 10 posts lidos, completa com os mais recentes. Os cards são cópias de um `ItemDeLista` de modelo num `<template>`, então ficam iguais aos dos "Últimos posts". Sem JS, o painel avisa e aponta para `/posts`. O visual final dos estados (carregando, erro, vazio) é da WEB-15. Detalhes em [`docs/visualizacoes.md`](../docs/visualizacoes.md#mais-lidos).
+   - **Mais lidos:** o [`MaisLidos.astro`](src/components/home/MaisLidos.astro), montado no navegador na primeira vez que a aba abre (#57): junta o ranking da `/api/mais-lidos` com os cards do `/posts-index.json` e, com menos de 10 posts lidos, completa com os mais recentes. Os cards são cópias de um `ItemDeLista` de modelo num `<template>`, então ficam iguais aos dos "Últimos posts". Sem JS, o painel avisa e aponta para `/posts`. Enquanto carrega, um [`Esqueleto`](src/components/ui/Esqueleto.astro) com as medidas dos 10 cards reserva a altura (sem CLS); o erro tem um "Tentar de novo", e o vazio diz "Ainda estamos contando as leituras" (#61). Detalhes em [`docs/visualizacoes.md`](../docs/visualizacoes.md#mais-lidos).
 4. **"Ver todos os posts"**, para `/posts`.
 5. **Barra lateral** (slot `barra-lateral`), que cai para baixo de tudo abaixo de 960px.
 

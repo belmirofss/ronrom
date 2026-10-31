@@ -3,7 +3,7 @@ import Gato from '@/assets/formas/gato.svg';
 import type { LinkDeNavegacao } from '@/lib/navegacao';
 
 interface Props {
-  /** O que falta. Padrão: "Ainda não tem nada por aqui." */
+  /** O que falta. Padrão: "Ainda não tem nada por aqui." O slot padrão, se houver, substitui. */
   mensagem?: string;
   /** Para onde ir. Padrão: "Que tal ver todos os posts?", para /posts. */
   link?: LinkDeNavegacao;
@@ -23,9 +23,11 @@ const {
     <Gato />
   </div>
   <p class="estado-vazio__mensagem">
-    {mensagem}
+    <slot>{mensagem}</slot>
     <a href={link.href}>{link.rotulo}</a>
   </p>
+  {/* Um botão de ação, como o "Tentar de novo" dos mais lidos. */}
+  <slot name="acao" />
 </div>
 
 <style>
