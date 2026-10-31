@@ -256,6 +256,18 @@ describe('CONSULTA_DAS_LISTAS_DO_ANO', () => {
   });
 });
 
+describe('CONSULTA_DOS_ANOS_DAS_LISTAS', () => {
+  it('traz das mesmas reviews só o tipo, a data e o modelo', async () => {
+    expect(await rodar(consultas.CONSULTA_DOS_ANOS_DAS_LISTAS)).toEqual(
+      expect.arrayContaining([
+        { tipo: 'review', dataDePublicacao: '2026-03-10T15:00:00-03:00', modelo: 'filme' },
+        { tipo: 'review', dataDePublicacao: '2026-01-01T12:00:00-03:00', modelo: 'filme' },
+      ]),
+    );
+    expect(await rodar(consultas.CONSULTA_DOS_ANOS_DAS_LISTAS)).toHaveLength(2);
+  });
+});
+
 describe('CONSULTA_DA_TAXONOMIA', () => {
   it('conta só os posts no ar', async () => {
     const { categorias, formatos } = (await rodar(
