@@ -1,0 +1,18 @@
+---
+import type { GetStaticPaths } from 'astro';
+import PaginaDoPost from '@/components/post/PaginaDoPost.astro';
+import { parametrosDosPosts } from '@/lib/post';
+import { buscarPost, buscarRotasDosPosts } from '@/lib/sanity/conteudo';
+
+// Uma página por review publicada, só no endereço da categoria atual (docs/seo-urls.md).
+export const getStaticPaths = (async () =>
+  parametrosDosPosts(await buscarRotasDosPosts(), 'review').map(({ secao, slug }) => ({
+    params: { categoria: secao, slug },
+  }))) satisfies GetStaticPaths;
+
+const { categoria, slug } = Astro.params;
+const post = await buscarPost({ tipo: 'review', secao: categoria, slug });
+if (!post) throw new Error(`Review "${categoria}/${slug}" não encontrada.`);
+---
+
+<PaginaDoPost post={post} />

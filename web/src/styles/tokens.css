@@ -17,6 +17,8 @@
   --cor-rosa: #d49a9a;
   --cor-creme: #f2dace;
   --cor-borda: #ebd3c8;
+  /* Fundo de cartão que se destaca do creme, como a ficha da review. */
+  --cor-superficie: #ffffff;
 
   /* Fontes. --fonte-dm-sans é gerada pelo componente <Font> (astro.config.mjs) e já inclui a
      fonte de fallback com métricas ajustadas. */

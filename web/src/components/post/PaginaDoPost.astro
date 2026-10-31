@@ -1,0 +1,183 @@
+---
+import Container from '@/components/layout/Container.astro';
+import CardDePost from '@/components/post/CardDePost.astro';
+import CorpoDoPost from '@/components/post/CorpoDoPost.astro';
+import FichaDaReview from '@/components/post/FichaDaReview.astro';
+import Breadcrumb from '@/components/ui/Breadcrumb.astro';
+import ChipCategoria from '@/components/ui/ChipCategoria.astro';
+import Data from '@/components/ui/Data.astro';
+import ImagemSanity from '@/components/ui/ImagemSanity.astro';
+import LayoutBase from '@/layouts/LayoutBase.astro';
+import { tituloDaTag } from '@/lib/listagem';
+import { urlDaTag, urlDoPost } from '@/lib/rotas';
+import { buscarLeiaTambem, buscarSobre } from '@/lib/sanity/conteudo';
+import type { CONSULTA_DO_POST_RESULT } from '@/lib/sanity/tipos.gerados';
+import { seoDoPost } from '@/lib/seo';
+import { trilhaDoPost } from '@/lib/trilha';
+import { tempoDeLeitura } from '@/lib/utils/leitura';
+
+// A página de um post (#42), review ou pensamento: trilha, título, subtítulo, autora, data e tempo
+// de leitura, a capa 21:9, a ficha (só em review), o texto, as tags e o "Leia também". As páginas
+// em src/pages só acham o post pelo endereço e passam para cá.
+
+interface Props {
+  /** O post da `CONSULTA_DO_POST`, já achado pelo endereço. */
+  post: NonNullable<CONSULTA_DO_POST_RESULT>;
+}
+
+const { post } = Astro.props;
+
+const [sobre, leiaTambem] = await Promise.all([buscarSobre(), buscarLeiaTambem(post._id)]);
+
+const autora = sobre?.nome?.trim();
+const tags = post.tags ?? [];
+---
+
+<LayoutBase seo={seoDoPost(post, urlDoPost(post))}>
+  {/* JSON-LD do post (#50, #51): a página passa pelo slot `head`, que termina no <Seo>. */}
+  <slot name="head" slot="head" />
+
+  <article class="post">
+    <Container as="header" largura="leitura" class="post__topo">
+      <Breadcrumb itens={trilhaDoPost(post)} />
+      <h1 class="post__titulo">{post.titulo}</h1>
+      {post.subtitulo && <p class="post__subtitulo">{post.subtitulo}</p>}
+      <p class="post__meta">
+        {autora && (
+          <>
+            <span>Por {autora}</span>
+            <span aria-hidden="true"> · </span>
+          </>
+        )}
+        <Data iso={post.dataDePublicacao} />
+        <span aria-hidden="true"> · </span>
+        <span>{tempoDeLeitura(post.corpo)}</span>
+      </p>
+      {/* Ponto de inserção do contador de visualizações (#56): o script dele acha o post por aqui.
+          Sem estilo nem conteúdo, não ocupa espaço. */}
+      <div data-visualizacoes={post._id}></div>
+    </Container>
+
+    {/* A capa é o LCP da página: carrega logo, com prioridade alta e proporção fixa (sem CLS). */}
+    {post.capa && (
+      <Container class="post__capa">
+        <ImagemSanity
+          class="post__imagem"
+          imagem={post.capa}
+          alt={post.capa.alt?.trim() ?? ''}
+          proporcao={21 / 9}
+          sizes="(min-width: 75em) 1120px, 100vw"
+          prioridade
+        />
+      </Container>
+    )}
+
+    <Container largura="leitura" class="post__leitura">
+      <FichaDaReview post={post} />
+      <CorpoDoPost corpo={post.corpo} />
+      {tags.length > 0 && (
+        <ul class="post__tags" aria-label="Tags">
+          {tags.map(({ nome, slug }) => (
+            <li>
+              <ChipCategoria nome={tituloDaTag(nome ?? '')} href={urlDaTag(slug ?? '')} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </Container>
+  </article>
+
+  {/* Com menos de 3 posts no site, mostra os que houver; sem nenhum, a seção some. */}
+  {leiaTambem.length > 0 && (
+    <Container class="leia-tambem">
+      <section aria-labelledby="leia-tambem-titulo">
+        <h2 id="leia-tambem-titulo" class="leia-tambem__titulo">
+          Leia também
+        </h2>
+        <ul class="leia-tambem__posts">
+          {leiaTambem.map((card) => (
+            <li>
+              <CardDePost post={card} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    </Container>
+  )}
+</LayoutBase>
+
+<style>
+  :global(.post__topo) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-3);
+    padding-block: var(--espaco-7) var(--espaco-6);
+  }
+
+  .post__titulo {
+    font-size: var(--texto-4xl);
+    letter-spacing: var(--espacamento-titulo);
+  }
+
+  .post__subtitulo {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-xl);
+    line-height: var(--altura-linha-titulo);
+  }
+
+  .post__meta {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+  }
+
+  :global(.post__imagem) {
+    border-radius: var(--raio-lg);
+  }
+
+  :global(.post__leitura) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-7);
+    padding-block: var(--espaco-7);
+  }
+
+  .post__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espaco-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :global(.leia-tambem) {
+    padding-block: var(--espaco-7) var(--espaco-8);
+    border-block-start: 1px solid var(--cor-borda);
+  }
+
+  .leia-tambem__titulo {
+    margin-block-end: var(--espaco-5);
+    font-size: var(--texto-2xl);
+  }
+
+  /* Um card por linha no celular, dois no tablet e três no desktop. */
+  .leia-tambem__posts {
+    display: grid;
+    gap: var(--espaco-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 40em) {
+    .leia-tambem__posts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 60em) {
+    .leia-tambem__posts {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

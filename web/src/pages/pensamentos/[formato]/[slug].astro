@@ -1,0 +1,18 @@
+---
+import type { GetStaticPaths } from 'astro';
+import PaginaDoPost from '@/components/post/PaginaDoPost.astro';
+import { parametrosDosPosts } from '@/lib/post';
+import { buscarPost, buscarRotasDosPosts } from '@/lib/sanity/conteudo';
+
+// Uma página por pensamento publicado, só no endereço do formato atual (docs/seo-urls.md).
+export const getStaticPaths = (async () =>
+  parametrosDosPosts(await buscarRotasDosPosts(), 'pensamento').map(({ secao, slug }) => ({
+    params: { formato: secao, slug },
+  }))) satisfies GetStaticPaths;
+
+const { formato, slug } = Astro.params;
+const post = await buscarPost({ tipo: 'pensamento', secao: formato, slug });
+if (!post) throw new Error(`Pensamento "${formato}/${slug}" não encontrado.`);
+---
+
+<PaginaDoPost post={post} />

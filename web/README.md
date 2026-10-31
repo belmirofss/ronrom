@@ -24,6 +24,7 @@ O layout "Caderno" vive em dois arquivos, importados uma vez pelo `LayoutBase`:
 | `--cor-rosa`        | `#D49A9A` | **Só decorativo**. Nunca texto sobre fundo claro        |
 | `--cor-creme`       | `#F2DACE` | Superfícies (cards), texto e foco sobre vinho, seleção  |
 | `--cor-borda`       | `#EBD3C8` | Bordas e divisórias (não é cor de texto)                |
+| `--cor-superficie`  | `#FFFFFF` | Cartão que se destaca do fundo (ficha da review)        |
 
 ### Regra de contraste
 
@@ -35,16 +36,16 @@ Toda combinação de texto e fundo precisa de **4,5:1** (WCAG AA, texto normal).
 
 Contrastes medidos (fórmula de luminância relativa do WCAG 2.1):
 
-| Texto ↓ / fundo →   | fundo | creme | borda | vinho | vinho-hover |
-| ------------------- | ----: | ----: | ----: | ----: | ----------: |
-| `--cor-texto`       | 15,88 | 12,83 | 12,00 |     — |           — |
-| `--cor-texto-2`     |  7,38 |  5,96 |  5,58 |     — |           — |
-| `--cor-vinho`       |  9,70 |  7,83 |  7,33 |     — |           — |
-| `--cor-vinho-hover` | 13,93 | 11,25 | 10,53 |     — |           — |
-| `--cor-creme`       |     — |     — |     — |  7,83 |       11,25 |
-| `--cor-fundo`       |     — |     — |     — |  9,70 |       13,93 |
-| `--cor-malva` ✗     |  4,23 |  3,42 |  3,20 |  2,29 |        3,29 |
-| `--cor-rosa` ✗      |  2,19 |  1,77 |  1,65 |  4,44 |        6,37 |
+| Texto ↓ / fundo →   | fundo | creme | borda | superfície | vinho | vinho-hover |
+| ------------------- | ----: | ----: | ----: | ---------: | ----: | ----------: |
+| `--cor-texto`       | 15,88 | 12,83 | 12,00 |      17,16 |     — |           — |
+| `--cor-texto-2`     |  7,38 |  5,96 |  5,58 |       7,98 |     — |           — |
+| `--cor-vinho`       |  9,70 |  7,83 |  7,33 |      10,48 |     — |           — |
+| `--cor-vinho-hover` | 13,93 | 11,25 | 10,53 |      15,06 |     — |           — |
+| `--cor-creme`       |     — |     — |     — |          — |  7,83 |       11,25 |
+| `--cor-fundo`       |     — |     — |     — |          — |  9,70 |       13,93 |
+| `--cor-malva` ✗     |  4,23 |  3,42 |  3,20 |       4,57 |  2,29 |        3,29 |
+| `--cor-rosa` ✗      |  2,19 |  1,77 |  1,65 |       2,36 |  4,44 |        6,37 |
 
 O anel de foco (3px, offset 2px) é vinho sobre os fundos claros (9,70:1) e creme dentro de `.superficie-vinho` (7,83:1).
 
@@ -237,6 +238,14 @@ As listagens paginadas (#46) ficam em `src/pages`: `/posts`, `/reviews`, `/revie
 - **Quais categorias, formatos e tags:** toda categoria e todo formato publicados, mesmo sem post (é o que a barra lateral lista); tag só com post, porque não há índice de tags.
 - **Textos:** o h1 é "Todos os posts", "Reviews", "Pensamentos", "Reviews de {categoria}", o nome do formato ou "#{tag}" (`TEXTOS_DAS_SECOES`, `textosDaCategoria`, `textosDoFormato` e `textosDaTag`). Da página 2 em diante, o título e o h1 terminam em " — página N" e a trilha ganha o item "Página N".
 - **Fixtures:** os 10 posts cabem numa página. Para ver a paginação em local, baixe o `POSTS_POR_PAGINA` temporariamente (com 2, saem `/posts/pagina/2` a `/posts/pagina/5`).
+
+## Página do post
+
+`/reviews/[categoria]/[slug]` e `/pensamentos/[formato]/[slug]` (#42) só acham o post pelo endereço (`buscarPost`) e passam para a [`PaginaDoPost.astro`](src/components/post/PaginaDoPost.astro): trilha, h1, subtítulo, "Por {autora} · data · X min de leitura", a capa 21:9 (o LCP, com `fetchpriority="high"`), a ficha, o texto na coluna de leitura, as tags como chips e o "Leia também" com até 3 `CardDePost` (some sem nenhum).
+
+- **Páginas geradas:** o `getStaticPaths` usa o `parametrosDosPosts` ([`src/lib/post.ts`](src/lib/post.ts)): um post só ganha página no endereço da categoria (ou formato) atual. Post cuja categoria não existe não gera página, e qualquer outra combinação dá 404.
+- **Ficha:** a [`FichaDaReview.astro`](src/components/post/FichaDaReview.astro) aparece só em review: a nota em corações e os campos do modelo da categoria num `<dl>`, com os rótulos e valores de `itensDaFicha` ([`src/lib/ficha.ts`](src/lib/ficha.ts)). Campo vazio não aparece; endereço linka para o mapa e o Instagram para o perfil.
+- **Pontos de inserção:** o slot `head` da `PaginaDoPost` vai para o fim do `<Seo>` (o JSON-LD do post, #50 e #51), e o `<div data-visualizacoes="{_id}">`, sem estilo nem conteúdo, é onde o contador de visualizações (#56) se pendura.
 
 ## Imagens, datas e tempo de leitura
 
