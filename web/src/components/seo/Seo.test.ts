@@ -4,6 +4,12 @@ import Seo from '@/components/seo/Seo.astro';
 import type { Metadados } from '@/lib/seo';
 
 vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
+// Como no build de produção: fora dele, toda página sai com noindex,nofollow (robotsDaPagina,
+// testado em seo.test.ts).
+vi.mock('astro:env/server', async (original) => ({
+  ...(await original<object>()),
+  VERCEL_ENV: 'production',
+}));
 
 async function renderizar(props: Metadados): Promise<string> {
   const container = await AstroContainer.create();

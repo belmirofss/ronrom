@@ -116,17 +116,17 @@ No celular (abaixo de 960px) a barra lateral vem depois do conteúdo principal, 
 
 O [`<Seo>`](src/components/seo/Seo.astro) concentra o `<head>` de todas as páginas, uma tag de cada: `<title>`, description, canonical, robots, Open Graph, Twitter card, o `<link>` do RSS e os ícones. Quem o renderiza é o `LayoutBase`, com a prop `seo`; a página não coloca outro `<title>` nem meta tag no slot `head`, que fica só para o JSON-LD (#50, #51).
 
-| Prop                            | Uso                                                                                                                         |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `title`                         | Título sem o nome do site. Vira `"{title} · Ronrom"`; sem ele (a home), `"Ronrom · Reviews e pensamentos"`                  |
-| `description`                   | Obrigatória. Vazia, vale a `DESCRICAO_DO_SITE` (`src/lib/utils/site.ts`)                                                    |
-| `canonical`                     | Obrigatória: o caminho da página (`/sobre`). O `<Seo>` monta a URL absoluta com o `canonicalUrl`, também usada no `og:url`  |
-| `image`, `imageAlt`             | Imagem do Sanity (capa, foto, imagem de compartilhamento). Sem ela, ou com o arquivo apagado, vale a `public/og-padrao.jpg` |
-| `type`                          | `website` (padrão) ou `article`. Só `article` emite `article:published_time`, `modified_time`, `section` e um `tag` por tag |
-| `noindex`                       | `noindex,follow` no lugar do padrão `index,follow,max-image-preview:large`                                                  |
-| `publishedTime`, `modifiedTime` | Datas ISO 8601 do post (`dataDePublicacao` e `_updatedAt`)                                                                  |
-| `tags`, `section`               | Nomes das tags e da categoria (review) ou do formato (pensamento)                                                           |
-| `prev`, `next`                  | Caminhos das páginas vizinhas de uma listagem paginada; viram `<link rel="prev">` e `<link rel="next">` absolutos           |
+| Prop                            | Uso                                                                                                                                                                               |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`                         | Título sem o nome do site. Vira `"{title} · Ronrom"`; sem ele (a home), `"Ronrom · Reviews e pensamentos"`                                                                        |
+| `description`                   | Obrigatória. Vazia, vale a `DESCRICAO_DO_SITE` (`src/lib/utils/site.ts`)                                                                                                          |
+| `canonical`                     | Obrigatória: o caminho da página (`/sobre`). O `<Seo>` monta a URL absoluta com o `canonicalUrl`, também usada no `og:url`                                                        |
+| `image`, `imageAlt`             | Imagem do Sanity (capa, foto, imagem de compartilhamento). Sem ela, ou com o arquivo apagado, vale a `public/og-padrao.jpg`                                                       |
+| `type`                          | `website` (padrão) ou `article`. Só `article` emite `article:published_time`, `modified_time`, `section` e um `tag` por tag                                                       |
+| `noindex`                       | `noindex,follow` no lugar do padrão `index,follow,max-image-preview:large`. Fora de produção, toda página sai com `noindex,nofollow` ([indexação](../docs/seo-urls.md#indexação)) |
+| `publishedTime`, `modifiedTime` | Datas ISO 8601 do post (`dataDePublicacao` e `_updatedAt`)                                                                                                                        |
+| `tags`, `section`               | Nomes das tags e da categoria (review) ou do formato (pensamento)                                                                                                                 |
+| `prev`, `next`                  | Caminhos das páginas vizinhas de uma listagem paginada; viram `<link rel="prev">` e `<link rel="next">` absolutos                                                                 |
 
 Regras:
 

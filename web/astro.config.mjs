@@ -6,6 +6,7 @@ import { defineConfig, envField, fontProviders } from 'astro/config';
 import { loadEnv } from 'vite';
 import { idsPublicados } from './src/lib/sanity/ids-publicados';
 import { redirects } from './redirects.mjs';
+import { sitemapDoSite } from './sitemap.mjs';
 import { caminhosDasPaginas, conferirRedirects, montarRedirects } from './src/lib/redirects.ts';
 import { definirFonte, VERSAO_PADRAO_DA_API } from './src/lib/sanity/fonte.ts';
 import { buscarDadosDosRedirects } from './src/lib/sanity/redirects.ts';
@@ -157,6 +158,8 @@ export default defineConfig({
         },
       },
     },
+    // /sitemap-index.xml (#52): só as URLs canônicas e indexáveis, com lastmod. Detalhes em sitemap.mjs.
+    ...sitemapDoSite(),
   ],
   // Saída estática (o padrão do Astro): só as rotas com `export const prerender = false` viram
   // Vercel Function. Decisão no docs/adr/0001; como criar uma rota sob demanda: docs/ambientes.md.
@@ -236,8 +239,9 @@ export default defineConfig({
         optional: true,
       }),
 
-      // Variável de sistema da Vercel (sem cadastro): o ambiente do deploy. A /api/views só conta
-      // em production; fora da Vercel fica ausente e nada é contado.
+      // Variável de sistema da Vercel (sem cadastro): o ambiente do deploy. Só em production a
+      // /api/views conta visualizações e o site é indexável; fora dela, o robots.txt bloqueia
+      // tudo e toda página sai com noindex,nofollow (#52).
       VERCEL_ENV: envField.enum({
         context: 'server',
         access: 'public',
