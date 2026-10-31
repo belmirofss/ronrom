@@ -98,3 +98,40 @@ jobs:
           path: web/dist/client
           retention-days: 3
           if-no-files-found: error
+
+  # Links internos e âncoras quebrados no HTML do build (#45). Usa o artifact do `build`, sem
+  # buildar de novo, e não depende do preview protegido da Vercel. Configuração: lychee.toml.
+  links:
+    name: links
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      # A mesma URL base do build: o padrão vem do astro.config.mjs.
+      SITE_URL: ${{ vars.SITE_URL || 'https://ronrom-blog.vercel.app' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: web-dist
+          path: web/dist/client
+      # Links absolutos para o próprio site (canonical, RSS) também são internos: a URL do site
+      # é remapeada para a pasta do build. O lychee resolve os links que começam com / a partir
+      # do --root-dir.
+      - name: remapeia a URL do site para o build
+        run: |
+          site=$(printf '%s' "${SITE_URL%/}" | sed 's/[.]/\\./g')
+          echo "REMAP=^${site}(/.*)?\$ file://$GITHUB_WORKSPACE/web/dist/client\${1}" >> "$GITHUB_ENV"
+      - id: lychee
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        # Ainda não bloqueante: o relatório sai no resumo da execução, e o check fica verde.
+        # Remova esta linha quando o site estiver estável (docs/testes.md#links-internos).
+        continue-on-error: true
+        with:
+          args: >-
+            --root-dir "$GITHUB_WORKSPACE/web/dist/client"
+            --remap "$REMAP"
+            web/dist/client
+      - name: aviso de link quebrado
+        if: steps.lychee.outcome == 'failure'
+        run: echo "::warning::Há links internos quebrados. Veja o relatório no resumo da execução."
