@@ -27,14 +27,27 @@ const caminhos = SECOES.filter(({ href }) => href !== '/sobre');
 >
   <Container class="nao-encontrada">
     <div class="nao-encontrada__topo">
-      {/* O gato do mosaico, só decorativo. */}
-      <div class="nao-encontrada__forma" aria-hidden="true">
-        <Gato />
+      {/* A cena, só decorativa: o "0" do 404 é o gato do mosaico, que empurra a página da mesa. */}
+      <div class="cena" aria-hidden="true">
+        <div class="cena__numero">
+          <span>4</span>
+          <span class="cena__gato">
+            <Gato />
+          </span>
+          <span>4</span>
+        </div>
+        <div class="cena__mesa">
+          <span class="cena__folha">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </div>
       </div>
-      <h1 class="nao-encontrada__titulo">Esse gato fugiu</h1>
+      <h1 class="nao-encontrada__titulo">O gato derrubou esta página</h1>
       <p class="nao-encontrada__texto">
-        A página que você procurou não existe ou mudou de endereço. Talvez ela esteja num destes
-        cantos:
+        Ela não existe mais, mudou de endereço ou foi parar embaixo do sofá. Enquanto isso, tente um
+        destes cantos:
       </p>
       <nav aria-label="Seções do site">
         <ul class="nao-encontrada__caminhos">
@@ -80,14 +93,143 @@ const caminhos = SECOES.filter(({ href }) => href !== '/sobre');
     text-align: center;
   }
 
-  /* Rosa sobre vinho, como o primeiro quadrado do mosaico. */
-  .nao-encontrada__forma {
-    width: 7rem;
-    padding: var(--espaco-4);
-    border-radius: var(--raio-lg);
+  /* O número em vinho, com o gato no lugar do "0" (rosa sobre vinho, como no mosaico). A mesa é
+     uma linha embaixo dele; a folha fica no chão, caída. A animação (só com movimento liberado)
+     conta como ela chegou lá: o gato dá um tapinha e a folha escorrega da beirada. */
+  .cena {
+    --tamanho: clamp(5rem, 22vw, 10rem);
+
+    display: grid;
+    justify-items: center;
+    margin-block-end: var(--espaco-4);
+    /* Na largura toda: no meio da queda, a folha passa da mesa, e no celular a página rolaria de
+       lado sem o clip. */
+    align-self: stretch;
+    overflow-x: clip;
+  }
+
+  .cena__numero {
+    display: flex;
+    align-items: center;
+    gap: 0.06em;
+    color: var(--cor-vinho);
+    font-size: var(--tamanho);
+    font-weight: var(--peso-negrito);
+    letter-spacing: var(--espacamento-ronrom);
+    line-height: 1;
+  }
+
+  .cena__gato {
+    display: grid;
+    place-items: center;
+    width: 0.78em;
+    aspect-ratio: 1;
+    border-radius: 0.12em;
     background-color: var(--cor-vinho);
     color: var(--cor-rosa);
-    transform: rotate(-8deg);
+    transform-origin: 50% 100%;
+  }
+
+  .cena__gato :global(svg) {
+    width: 62%;
+  }
+
+  /* A mesa: uma tábua creme do tamanho do número, com espaço embaixo para a folha cair. */
+  .cena__mesa {
+    position: relative;
+    width: calc(var(--tamanho) * 2.4);
+    height: calc(var(--tamanho) * 0.7);
+    border-block-start: 6px solid var(--cor-rosa);
+    border-block-end: 2px solid var(--cor-borda);
+  }
+
+  /* As pernas da mesa, um pouco para dentro das pontas; a borda de baixo é o chão. */
+  .cena__mesa::before,
+  .cena__mesa::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 8%;
+    width: 6px;
+    background-color: var(--cor-rosa);
+  }
+
+  .cena__mesa::after {
+    inset-inline: auto 30%;
+  }
+
+  .cena__folha {
+    position: absolute;
+    inset-block-end: 0;
+    /* Deitada no chão, encostada no fim da mesa: gira 90° em torno do canto de baixo à direita,
+       então a borda direita fica uma altura de folha antes do fim. */
+    inset-inline-end: calc(var(--tamanho) * 0.56);
+    display: grid;
+    align-content: center;
+    gap: calc(var(--tamanho) * 0.05);
+    width: calc(var(--tamanho) * 0.42);
+    aspect-ratio: 3 / 4;
+    padding-inline: calc(var(--tamanho) * 0.06);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-sm);
+    background-color: var(--cor-superficie);
+    box-shadow: var(--sombra-md);
+    transform: rotate(88deg);
+    transform-origin: 100% 100%;
+  }
+
+  .cena__folha span {
+    height: 3px;
+    border-radius: 2px;
+    background-color: var(--cor-borda);
+  }
+
+  .cena__folha span:last-child {
+    width: 60%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .cena__gato {
+      animation: tapinha 1.4s ease-in-out 0.3s backwards;
+    }
+
+    .cena__folha {
+      animation: cair 1.1s cubic-bezier(0.5, 0, 0.6, 1) 0.75s backwards;
+    }
+  }
+
+  /* O gato se inclina para a direita (o tapinha), balança e volta reto. */
+  @keyframes tapinha {
+    30% {
+      transform: rotate(12deg) translateX(6%);
+    }
+
+    55% {
+      transform: rotate(-6deg);
+    }
+
+    75% {
+      transform: rotate(2deg);
+    }
+  }
+
+  @keyframes cair {
+    0% {
+      transform: translate(calc(var(--tamanho) * -0.3), calc(-1 * var(--tamanho) * 0.7 - 6px));
+    }
+
+    35% {
+      transform: translate(calc(var(--tamanho) * 0.5), calc(-1 * var(--tamanho) * 0.7 - 6px))
+        rotate(20deg);
+    }
+
+    80% {
+      transform: translate(calc(var(--tamanho) * 0.1), 0) rotate(96deg);
+    }
+
+    100% {
+      transform: rotate(88deg);
+    }
   }
 
   .nao-encontrada__titulo {
