@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import Listagem from '@/components/listagem/Listagem.astro';
 import { textosDoFormato } from '@/lib/listagem';
+import { naoEncontrada } from '@/lib/previa';
 import { urlDoFormato } from '@/lib/rotas';
 import { buscarPostsDoFormato, buscarTaxonomia } from '@/lib/sanity/conteudo';
 import { trilhaDoFormato } from '@/lib/trilha';
@@ -15,7 +16,7 @@ export const getStaticPaths = (async () => {
 
 const { formato: slug } = Astro.params;
 const { formato, posts, total } = await buscarPostsDoFormato(slug);
-if (!formato) throw new Error(`Formato "${slug}" não encontrado na listagem.`);
+if (!formato) return naoEncontrada(Astro, `Formato "${slug}" não encontrado na listagem.`);
 ---
 
 <Listagem

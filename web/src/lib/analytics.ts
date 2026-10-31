@@ -30,19 +30,22 @@ export interface ConfiguracaoDoUmami {
 }
 
 /**
- * O script só entra no HTML do build de produção com o website-id cadastrado. Previews, `pnpm dev`
- * e CI ficam sem ele, e o `data-domains` ainda barra uma cópia do build servida em outro host.
+ * O script só entra no HTML do build de produção com o website-id cadastrado. Previews, `pnpm dev`,
+ * CI e a prévia de rascunhos (o projeto `ronrom-previa`, que também é `production`) ficam sem ele,
+ * e o `data-domains` ainda barra uma cópia do build servida em outro host.
  */
 export function configurarUmami({
   websiteId,
   ambiente,
+  previa,
   urlDoSite,
 }: {
   websiteId: string | undefined;
   ambiente: string | undefined;
+  previa: boolean;
   urlDoSite: string;
 }): ConfiguracaoDoUmami | null {
-  if (ambiente !== 'production' || !websiteId) return null;
+  if (ambiente !== 'production' || previa || !websiteId) return null;
   return { websiteId, dominio: new URL(urlDoSite).hostname };
 }
 

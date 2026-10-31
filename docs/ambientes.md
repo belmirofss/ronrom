@@ -26,6 +26,70 @@ Install, build, Ignored Build Step e região das funções ficam versionados em 
 
 [`scripts/vercel-ignorar-build.sh`](../scripts/vercel-ignorar-build.sh) só age nos previews: compara o commit com o último deploy da branch (`VERCEL_GIT_PREVIOUS_SHA`) e cancela o build quando só mudaram `docs/`, `studio/`, `.github/` ou arquivos `.md`. Produção (`VERCEL_ENV=production`) sempre builda, para não cancelar o rebuild de conteúdo pelo deploy hook ([por quê](deploy.md#por-que-a-produção-não-pula-o-build)). Na dúvida (primeiro deploy da branch ou commit anterior fora do clone raso), builda. O deploy cancelado aparece como `CANCELED` na Vercel e **ainda conta na cota diária**, mas não gasta minutos de build.
 
+No projeto da prévia (abaixo), o mesmo script cancela todo deploy que não é da `main` e, na `main`, compara commits como num preview: a prévia lê o conteúdo na hora e não recebe o deploy hook.
+
+## Prévia de rascunhos (`ronrom-previa`)
+
+A aba **Apresentação** do Studio (o Presentation do Sanity) mostra o rascunho no layout do site, ao lado do editor, e um clique num texto da prévia abre o campo dele. O site da prévia é um **segundo projeto da Vercel**, com o mesmo repositório e o mesmo `web/vercel.json`, e o build muda de modo pela variável `PUBLIC_SANITY_VISUAL_EDITING_ENABLED=true`. A decisão está no [ADR 0006](adr/0006-previa-de-rascunhos-em-projeto-separado.md).
+
+| Configuração          | Valor                                                                         |
+| --------------------- | ----------------------------------------------------------------------------- |
+| Projeto               | `ronrom-previa`, no mesmo time do `ronrom`                                    |
+| Root Directory        | `web` (install, build, Ignored Build Step e região vêm do `web/vercel.json`)  |
+| Production Branch     | `main` → https://ronrom-previa.vercel.app                                     |
+| Preview               | nenhum: o Ignored Build Step cancela as outras branches                       |
+| Deployment Protection | Vercel Authentication (padrão) nos previews; o domínio de produção fica livre |
+| Deploy hook           | nenhum: as páginas leem o Sanity a cada acesso                                |
+
+**O que muda no build com a variável** ([`astro.config.mjs`](../web/astro.config.mjs)):
+
+- `output: 'server'`: toda página roda sob demanda na função, porque um rascunho novo não existe no build. As páginas com parâmetro funcionam sem o `getStaticPaths` ([`web/src/lib/previa.ts`](../web/src/lib/previa.ts)): endereço inexistente responde 404 e a paginação lê o número da URL.
+- O cliente do Sanity lê a perspectiva `drafts` com o token viewer e marca os textos com o stega ([README do conteúdo](../web/src/lib/sanity/README.md#prévia-de-rascunhos)).
+- Entram, só neste build, os arquivos de [`web/src/previa`](../web/src/previa): as rotas `/api/previa/ativar` e `/api/previa/desativar`, o middleware e o script da edição visual (`@sanity/visual-editing`).
+- O build recusa a prévia sem `SANITY_API_READ_TOKEN`, `SANITY_PROJECT_ID` e `SANITY_DATASET`, com `SANITY_FIXTURES=true` ou com o `SITE_URL` do site (`ronrom-blog.vercel.app` ou `ronrom.com.br`).
+
+**Como a prévia abre.** O Presentation grava no dataset um segredo que vale por uma hora e abre `/api/previa/ativar?sanity-preview-secret=...` no iframe. A rota confere o segredo com o token viewer (`@sanity/preview-url-secret`), grava o cookie `ronrom-previa` e leva ao endereço pedido. O cookie é `HttpOnly`, `Secure`, `SameSite=None` e `Partitioned` (vale só dentro do Studio, mesmo com cookies de terceiros bloqueados) e traz a validade (8 horas) assinada com HMAC, usando o próprio token como chave: trocar o token derruba as sessões. Sem o cookie, toda página responde **401** com "abra pela aba Apresentação do Studio"; só `/api/health` e as rotas `/api/previa/*` ficam livres. Toda resposta da prévia sai com `X-Robots-Tag: noindex, nofollow` e `Cache-Control: private, no-store`; os arquivos estáticos ganham o mesmo `X-Robots-Tag` por um cabeçalho do `web/vercel.json` que só vale no host `ronrom-previa.vercel.app`. A prévia não tem sitemap próprio: o sitemap (#52) é o do site.
+
+### Criar o projeto na Vercel
+
+Feito uma vez, pelo dono do repositório:
+
+1. Em [vercel.com/new](https://vercel.com/new), importe `belmirofss/ronrom` de novo, com o nome **`ronrom-previa`** e o Root Directory **`web`**. O resto vem do `web/vercel.json`.
+2. Em Settings → Environment Variables, ambiente **Production**:
+
+   | Variável                               | Valor                              |
+   | -------------------------------------- | ---------------------------------- |
+   | `PUBLIC_SANITY_VISUAL_EDITING_ENABLED` | `true`                             |
+   | `SITE_URL`                             | `https://ronrom-previa.vercel.app` |
+   | `SANITY_PROJECT_ID`                    | `fq2685cq`                         |
+   | `SANITY_DATASET`                       | `production`                       |
+   | `SANITY_API_READ_TOKEN`                | o token `viewer`, como **Secret**  |
+   | `STUDIO_URL`                           | não precisa (padrão: Studio no ar) |
+
+3. Em Settings → Domains, confira que o domínio de produção é `ronrom-previa.vercel.app`. Se o nome estiver ocupado, use outro e troque o padrão em [`studio/lib/previa.ts`](../studio/lib/previa.ts) (`URL_DA_PREVIA_PADRAO`) e o host no `web/vercel.json`.
+4. Faça o primeiro deploy da `main` (Deployments → Redeploy, ou um merge).
+5. No Sanity, libere o domínio da prévia no CORS, com credenciais (o comando pede `sanity login`):
+
+   ```bash
+   pnpm --filter studio sanity cors add https://ronrom-previa.vercel.app --credentials
+   ```
+
+6. Publique o Studio (`pnpm studio:deploy`, ou o merge na `main` que mexe em `studio/`) e abra a aba **Apresentação**.
+
+O projeto `ronrom` (o site) não precisa do `SANITY_API_READ_TOKEN`: pode tirar a variável de lá. Com ou sem ela, o site não lê rascunho, porque sem `PUBLIC_SANITY_VISUAL_EDITING_ENABLED` o cliente usa a perspectiva `published` sem token.
+
+### Conferir a prévia
+
+```bash
+curl -sI https://ronrom-previa.vercel.app/
+```
+
+Deve responder `401`, com `x-robots-tag: noindex, nofollow`. O `/api/health` responde `200` com o commit da `main`. No Studio, abra um rascunho que nunca foi publicado, clique em **Apresentação** e confira o post no layout do site; clicar no título da prévia deve focar o campo Título no editor.
+
+### Testar a prévia localmente
+
+Com o token viewer em `web/.env.local` (veja [Puxar as variáveis da Vercel](#puxar-as-variáveis-da-vercel-para-o-local)) e, no `web/.env`, `PUBLIC_SANITY_VISUAL_EDITING_ENABLED=true` e `SITE_URL=http://localhost:4321`, rode `pnpm dev`. No `studio/.env`, ponha `SANITY_STUDIO_PREVIEW_URL=http://localhost:4321` e rode `pnpm studio:dev`: a aba Apresentação do Studio local abre o site local. O `pnpm build` local no modo prévia pode falhar no Windows ao criar links da função (`EPERM: symlink`); na Vercel, que builda no Linux, não acontece.
+
 ## Saída estática e rotas sob demanda
 
 O site usa o [`@astrojs/vercel`](https://docs.astro.build/en/guides/integrations-guide/vercel/) com a saída estática, que é o padrão do Astro (não há `output` no `astro.config.mjs`). Toda página é gerada no build e servida pela CDN; só as rotas com `export const prerender = false` rodam sob demanda, numa Vercel Function. A decisão está no [ADR 0001](adr/0001-site-estatico-com-rotas-sob-demanda.md).
@@ -128,29 +192,31 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 
 ### Onde vive cada variável
 
-| Variável                | Tipo    | Obrigatória   | Local (`web/.env*`) | Vercel Production                 | Vercel Preview e Development | GitHub Actions           | Dona         |
-| ----------------------- | ------- | ------------- | ------------------- | --------------------------------- | ---------------------------- | ------------------------ | ------------ |
-| `SITE_URL`              | pública | em produção   | opcional            | `https://ronrom-blog.vercel.app`  | não definida (\*)            | variável, não cadastrada | `area:infra` |
-| `STUDIO_URL`            | pública | não (padrão)  | opcional            | não definida                      | não definida                 | não usada                | `area:cms`   |
-| `SANITY_PROJECT_ID`     | pública | em produção   | opcional            | `fq2685cq`                        | `fq2685cq`                   | não usada (fixtures)     | `area:cms`   |
-| `SANITY_DATASET`        | pública | em produção   | opcional            | `production`                      | `development`                | não usada (fixtures)     | `area:cms`   |
-| `SANITY_API_VERSION`    | pública | não (padrão)  | opcional            | não definida                      | não definida                 | não usada                | `area:cms`   |
-| `SANITY_FIXTURES`       | pública | não (`false`) | opcional            | proibida (`true` derruba o build) | não definida                 | não usada                | `area:cms`   |
-| `SANITY_API_READ_TOKEN` | segredo | não           | opcional            | Secret                            | Secret                       | Secret, já cadastrado    | `area:cms`   |
-| `KV_REST_API_URL`       | segredo | não           | opcional            | injetada pelo Marketplace (#56)   | não definida                 | não usada                | `area:dados` |
-| `KV_REST_API_TOKEN`     | segredo | não           | opcional            | injetada pelo Marketplace (#56)   | não definida                 | não usada                | `area:dados` |
-| `PUBLIC_UMAMI_ID`       | pública | não           | não definida        | website-id do Umami (#58)         | não definida                 | não usada                | `area:dados` |
-| `VERCEL_ENV`            | pública | não           | não definida        | sistema da Vercel                 | sistema da Vercel            | não usada                | `area:infra` |
-| `VERCEL_GIT_COMMIT_SHA` | pública | não           | não definida        | sistema da Vercel                 | sistema da Vercel            | não usada                | `area:infra` |
+| Variável                               | Tipo    | Obrigatória   | Local (`web/.env*`) | Vercel Production                           | Vercel Preview e Development | GitHub Actions           | Dona         |
+| -------------------------------------- | ------- | ------------- | ------------------- | ------------------------------------------- | ---------------------------- | ------------------------ | ------------ |
+| `SITE_URL`                             | pública | em produção   | opcional            | `https://ronrom-blog.vercel.app`            | não definida (\*)            | variável, não cadastrada | `area:infra` |
+| `STUDIO_URL`                           | pública | não (padrão)  | opcional            | não definida                                | não definida                 | não usada                | `area:cms`   |
+| `SANITY_PROJECT_ID`                    | pública | em produção   | opcional            | `fq2685cq`                                  | `fq2685cq`                   | não usada (fixtures)     | `area:cms`   |
+| `SANITY_DATASET`                       | pública | em produção   | opcional            | `production`                                | `development`                | não usada (fixtures)     | `area:cms`   |
+| `SANITY_API_VERSION`                   | pública | não (padrão)  | opcional            | não definida                                | não definida                 | não usada                | `area:cms`   |
+| `SANITY_FIXTURES`                      | pública | não (`false`) | opcional            | proibida (`true` derruba o build)           | não definida                 | não usada                | `area:cms`   |
+| `SANITY_API_READ_TOKEN`                | segredo | só na prévia  | opcional            | Secret (dispensável)                        | Secret (dispensável)         | Secret, já cadastrado    | `area:cms`   |
+| `PUBLIC_SANITY_VISUAL_EDITING_ENABLED` | pública | não (`false`) | opcional            | não definida (só `true` no `ronrom-previa`) | não definida                 | não usada                | `area:cms`   |
+| `KV_REST_API_URL`                      | segredo | não           | opcional            | injetada pelo Marketplace (#56)             | não definida                 | não usada                | `area:dados` |
+| `KV_REST_API_TOKEN`                    | segredo | não           | opcional            | injetada pelo Marketplace (#56)             | não definida                 | não usada                | `area:dados` |
+| `PUBLIC_UMAMI_ID`                      | pública | não           | não definida        | website-id do Umami (#58)                   | não definida                 | não usada                | `area:dados` |
+| `VERCEL_ENV`                           | pública | não           | não definida        | sistema da Vercel                           | sistema da Vercel            | não usada                | `area:infra` |
+| `VERCEL_GIT_COMMIT_SHA`                | pública | não           | não definida        | sistema da Vercel                           | sistema da Vercel            | não usada                | `area:infra` |
 
 (\*) Sem `SITE_URL`, o `astro.config.mjs` usa `https://` + `VERCEL_URL` nos previews (a URL do próprio deploy) e `https://ronrom-blog.vercel.app` no resto (local e CI). `VERCEL_ENV` e `VERCEL_URL` são variáveis de sistema da Vercel, expostas no build sem cadastro.
 
 **Dona** é a área (label) que decide o nome, o formato e o valor da variável. Quem cadastra segredos na Vercel e no GitHub é sempre o dono do repositório, porque o valor não deve passar por outras mãos.
 
 - **`STUDIO_URL`** é o link "Área da autora" do rodapé (#15). O padrão (`https://ronrom.sanity.studio`) é o Studio publicado; só precisa ser cadastrada se o Studio mudar de endereço.
-- **`SANITY_API_READ_TOKEN`** é o token `viewer` do Sanity, só para o preview de rascunhos (#43). Sem ele, o site lê só o conteúdo publicado. Cadastrado na Vercel como **Secret** em Production e Preview (29/10/2026).
+- **`SANITY_API_READ_TOKEN`** é o token `viewer` do Sanity, só para a [prévia de rascunhos](#prévia-de-rascunhos-ronrom-previa) (#43), onde é obrigatório. O site não o usa: sem a prévia ligada, o cliente lê só o conteúdo publicado, sem token. Foi cadastrado como **Secret** em Production e Preview do projeto `ronrom` (29/10/2026), antes de a prévia ir para o projeto `ronrom-previa`, e pode sair de lá.
+- **`PUBLIC_SANITY_VISUAL_EDITING_ENABLED`** liga o modo prévia no build: `true` só no projeto `ronrom-previa`. O build recusa a prévia com o `SITE_URL` do site.
 - **`KV_REST_API_URL` e `KV_REST_API_TOKEN`** são o endereço e o token da API REST do Upstash Redis do contador de visualizações (#56), injetados pela integração do Marketplace só em Production. Sem eles, a `/api/views` não grava nada. Ao provisionar, confira se a integração usa exatamente esses nomes ([`visualizacoes.md`](visualizacoes.md#provisionar-o-upstash-dono-do-repositório)).
-- **`PUBLIC_UMAMI_ID`** é o website-id do site no Umami Cloud (#58), um UUID de 36 caracteres. Não é segredo: aparece no HTML. O script do analytics só entra no build de produção com ela cadastrada; nos previews, nada é coletado mesmo que ela exista ([`analytics.md`](analytics.md)).
+- **`PUBLIC_UMAMI_ID`** é o website-id do site no Umami Cloud (#58), um UUID de 36 caracteres. Não é segredo: aparece no HTML. O script do analytics só entra no build de produção com ela cadastrada; nos previews e na prévia de rascunhos (`ronrom-previa`), nada é coletado mesmo que ela exista ([`analytics.md`](analytics.md)).
 - **`VERCEL_ENV`** é variável de sistema da Vercel, sem cadastro. Entra no schema para dois usos que só valem em `production`: a `/api/views` contar visualizações e o site ser indexável (o `/robots.txt` libera os buscadores e as páginas saem indexáveis; no resto, previews, local e CI, tudo sai bloqueado e com `noindex,nofollow`, [seo-urls.md](seo-urls.md#indexação)). O `astro.config.mjs` também a lê, direto do ambiente.
 - **`VERCEL_GIT_COMMIT_SHA`** é variável de sistema da Vercel, sem cadastro. Entra no schema só para o `/api/health` ler o commit pelo `astro:env`.
 - **Os tokens do Studio** (`SANITY_AUTH_TOKEN`) e as variáveis `SANITY_STUDIO_*` não são do site: veja [`studio/README.md`](../studio/README.md).
@@ -175,4 +241,4 @@ vercel link --project ronrom
 vercel env pull .env.local
 ```
 
-O `link` é feito uma vez e cria `web/.vercel/` (não versionado). O `env pull` traz as variáveis do ambiente **Development** para `web/.env.local`, que o Astro lê sozinho; para outro ambiente, use `--environment=preview` ou `--environment=production`. Segredos podem chegar vazios no pull; nesse caso o site segue sem o recurso opcional (o preview de rascunhos, por exemplo). Para sobrescrever algo só na sua máquina, use `web/.env`, que tem prioridade menor que o `.env.local`, ou edite o próprio `.env.local`.
+O `link` é feito uma vez e cria `web/.vercel/` (não versionado). O `env pull` traz as variáveis do ambiente **Development** para `web/.env.local`, que o Astro lê sozinho; para outro ambiente, use `--environment=preview` ou `--environment=production`. Segredos podem chegar vazios no pull; nesse caso o site segue sem o recurso opcional. Para sobrescrever algo só na sua máquina, use `web/.env`, que tem prioridade menor que o `.env.local`, ou edite o próprio `.env.local`.

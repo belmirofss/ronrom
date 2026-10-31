@@ -9,18 +9,30 @@ describe('configurarUmami', () => {
       configurarUmami({
         websiteId: ID,
         ambiente: 'production',
+        previa: false,
         urlDoSite: 'https://ronrom-blog.vercel.app',
       }),
     ).toEqual({ websiteId: ID, dominio: 'ronrom-blog.vercel.app' });
   });
 
-  it('não liga fora de produção nem sem o website-id', () => {
+  it('não liga fora de produção, na prévia nem sem o website-id', () => {
     const urlDoSite = 'https://ronrom-blog.vercel.app';
 
-    expect(configurarUmami({ websiteId: ID, ambiente: 'preview', urlDoSite })).toBeNull();
-    expect(configurarUmami({ websiteId: ID, ambiente: 'development', urlDoSite })).toBeNull();
-    expect(configurarUmami({ websiteId: ID, ambiente: undefined, urlDoSite })).toBeNull();
-    expect(configurarUmami({ websiteId: undefined, ambiente: 'production', urlDoSite })).toBeNull();
+    expect(
+      configurarUmami({ websiteId: ID, ambiente: 'preview', previa: false, urlDoSite }),
+    ).toBeNull();
+    expect(
+      configurarUmami({ websiteId: ID, ambiente: 'development', previa: false, urlDoSite }),
+    ).toBeNull();
+    expect(
+      configurarUmami({ websiteId: ID, ambiente: 'production', previa: true, urlDoSite }),
+    ).toBeNull();
+    expect(
+      configurarUmami({ websiteId: ID, ambiente: undefined, previa: false, urlDoSite }),
+    ).toBeNull();
+    expect(
+      configurarUmami({ websiteId: undefined, ambiente: 'production', previa: false, urlDoSite }),
+    ).toBeNull();
   });
 });
 

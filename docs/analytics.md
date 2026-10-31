@@ -19,7 +19,7 @@ Conferidos na abertura da #58 (out/2026). Reconfira antes de trocar de serviço.
 
 O [`Umami.astro`](../web/src/components/layout/Umami.astro) fica no `<head>` do [`LayoutBase`](../web/src/layouts/LayoutBase.astro) e só gera a tag quando as duas condições valem ([`configurarUmami`](../web/src/lib/analytics.ts)):
 
-- o build é o de produção (`VERCEL_ENV=production`): previews, `pnpm dev` e o CI saem sem o script;
+- o build é o de produção (`VERCEL_ENV=production`) do site: previews, `pnpm dev`, o CI e a prévia de rascunhos (projeto `ronrom-previa`, com `PUBLIC_SANITY_VISUAL_EDITING_ENABLED=true`) saem sem o script;
 - a variável `PUBLIC_UMAMI_ID` (o website-id do Umami, um UUID) está cadastrada.
 
 ```html

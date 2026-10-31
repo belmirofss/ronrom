@@ -7,6 +7,7 @@ const ID = '3f2b8c1e-7a4d-4e9b-9c1a-2d5e6f7a8b9c';
 const ambiente = vi.hoisted(() => ({
   PUBLIC_UMAMI_ID: undefined as string | undefined,
   VERCEL_ENV: undefined as string | undefined,
+  PUBLIC_SANITY_VISUAL_EDITING_ENABLED: false,
 }));
 
 vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
@@ -21,6 +22,7 @@ describe('<Umami>', () => {
   beforeEach(() => {
     ambiente.PUBLIC_UMAMI_ID = ID;
     ambiente.VERCEL_ENV = 'production';
+    ambiente.PUBLIC_SANITY_VISUAL_EDITING_ENABLED = false;
   });
 
   it('em produção, carrega o script sem cookies, com Do Not Track e só no host do site', async () => {
@@ -34,11 +36,15 @@ describe('<Umami>', () => {
     expect(html).toContain('data-exclude-search="true"');
   });
 
-  it('não sai nos previews nem sem o website-id', async () => {
+  it('não sai nos previews, na prévia de rascunhos nem sem o website-id', async () => {
     ambiente.VERCEL_ENV = 'preview';
     expect(await renderizar()).not.toContain('<script');
 
     ambiente.VERCEL_ENV = 'production';
+    ambiente.PUBLIC_SANITY_VISUAL_EDITING_ENABLED = true;
+    expect(await renderizar()).not.toContain('<script');
+
+    ambiente.PUBLIC_SANITY_VISUAL_EDITING_ENABLED = false;
     ambiente.PUBLIC_UMAMI_ID = undefined;
     expect(await renderizar()).not.toContain('<script');
   });

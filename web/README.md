@@ -140,12 +140,12 @@ Regras:
 
 O [`<JsonLd>`](src/components/seo/JsonLd.astro) (#50) vai no slot `head` do layout e publica um único `<script type="application/ld+json">` com um `@graph`. A página só diz o que ela é, na prop `pagina`; o componente busca o Sobre e as Configurações do site e monta o grafo com o `grafoDaPagina` ([`src/lib/jsonld.ts`](src/lib/jsonld.ts), tipado com o `schema-dts`):
 
-| `pagina`                               | Onde                            | Entidades além do `WebSite` e da `Person`           |
-| -------------------------------------- | ------------------------------- | --------------------------------------------------- |
-| `{ tipo: 'home' }`                     | `/`                             | nenhuma                                             |
-| `{ tipo: 'sobre' }`                    | `/sobre`                        | `ProfilePage` com a autora como `mainEntity`        |
-| `{ tipo: 'post', post }`               | `PaginaDoPost`                  | `WebPage`, `BlogPosting` (só pensamento) e a trilha |
-| `{ tipo: 'listagem', titulo, trilha }` | `Listagem` (todas as listagens) | `CollectionPage` e a trilha                         |
+| `pagina`                               | Onde                            | Entidades além do `WebSite` e da `Person`       |
+| -------------------------------------- | ------------------------------- | ----------------------------------------------- |
+| `{ tipo: 'home' }`                     | `/`                             | nenhuma                                         |
+| `{ tipo: 'sobre' }`                    | `/sobre`                        | `ProfilePage` com a autora como `mainEntity`    |
+| `{ tipo: 'post', post }`               | `PaginaDoPost`                  | `WebPage`, `BlogPosting` ou `Review` e a trilha |
+| `{ tipo: 'listagem', titulo, trilha }` | `Listagem` (todas as listagens) | `CollectionPage` e a trilha                     |
 
 Regras:
 
@@ -153,6 +153,19 @@ Regras:
 - **Autora:** nome, bio e foto (600×600) do Sobre e os links de `redes` de Configurações como `sameAs`. Sem nome no Sobre, não há `Person` e nada cita a autora.
 - **WebSite:** nome `Ronrom`, `alternateName` `Ronrom Blog` (o que conta para os [nomes de site](https://developers.google.com/search/docs/appearance/site-names) do Google) e um `SearchAction` para `/busca?q=`, que o Google não mostra mais, mas o schema.org aceita.
 - **Artigo:** `headline`, a description do `<Seo>`, a imagem de compartilhamento em 1200×630, 1200×900 e 1200×1200 (fora do CDN, a `og-padrao.jpg`), as tags em `keywords`, o formato em `articleSection` e o `wordCount` do `contarPalavras`.
+- **Review (#51):** `name` (o título), `reviewBody` (a description do `<Seo>`), as imagens e as datas do artigo, a autora como `author` e `publisher` e o `reviewRating` com a nota dos corações (`validarNota`), `bestRating` 5 e `worstRating` 0,5. Sem `AggregateRating`, porque a nota é de uma pessoa só. Sem nome no Sobre, a review fica sem a `Review`, que o Google não aceita sem autor.
+- **Item avaliado:** o `itemReviewed` tem o título do post como nome, a capa em 1200×630 e o tipo do modelo da ficha, só com os campos preenchidos (`itemAvaliado`):
+
+  | Categoria            | Tipo                                                    | Campos                                                                                  | Snippet      |
+  | -------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------ |
+  | Filmes               | `Movie`                                                 | `director`, `dateCreated` (ano), `duration`                                             | sim          |
+  | Séries               | `TVSeries`                                              | `creator`, `startDate`, `endDate`                                                       | sim          |
+  | Livros               | `Book`                                                  | `author`, `datePublished`, `publisher` (editora), `numberOfPages`, `bookFormat`         | sim          |
+  | Restaurantes e cafés | `CafeOrCoffeeShop` (cozinha com "café") ou `Restaurant` | `address` (`PostalAddress`), `hasMap`, `priceRange`, `servesCuisine`, `url` (Instagram) | sim          |
+  | Lugares              | `TouristAttraction`                                     | `address`, `hasMap`                                                                     | não          |
+  | Comidas              | `Product` com `brand` (com marca) ou `Thing`            | `brand`                                                                                 | só `Product` |
+  | Sem modelo de ficha  | `Thing`                                                 | só o nome                                                                               | não          |
+
 - **Datas:** ISO 8601 no fuso de Brasília, com o deslocamento (`2026-03-14T23:30:00-03:00`), pelo `isoNoFuso` ([`src/lib/utils/data.ts`](src/lib/utils/data.ts)).
 - **Trilha:** o `BreadcrumbList` usa os mesmos itens do `Breadcrumb` da página (@/lib/trilha), com `canonicalUrl(href)`.
 - **Seguro no HTML:** o `serializarJsonLd` troca `<`, `>`, `&`, U+2028 e U+2029 por escapes Unicode, então um `</script>` no texto de um post não fecha a tag.
@@ -271,7 +284,7 @@ As listagens paginadas (#46) ficam em `src/pages`: `/posts`, `/reviews`, `/revie
 
 - **Páginas geradas:** o `getStaticPaths` usa o `parametrosDosPosts` ([`src/lib/post.ts`](src/lib/post.ts)): um post só ganha página no endereço da categoria (ou formato) atual. Post cuja categoria não existe não gera página, e qualquer outra combinação dá 404.
 - **Ficha:** a [`FichaDaReview.astro`](src/components/post/FichaDaReview.astro) aparece só em review: a nota em corações e os campos do modelo da categoria num `<dl>`, com os rótulos e valores de `itensDaFicha` ([`src/lib/ficha.ts`](src/lib/ficha.ts)). Campo vazio não aparece; endereço linka para o mapa e o Instagram para o perfil.
-- **Pontos de inserção:** o `<JsonLd>` da `PaginaDoPost` vai para o fim do `<Seo>` (o JSON-LD do post, #50; a Review entra na #51), e o `<div data-visualizacoes="{_id}">`, sem estilo nem conteúdo, é onde o contador de visualizações (#56) se pendura.
+- **Pontos de inserção:** o `<JsonLd>` da `PaginaDoPost` vai para o fim do `<Seo>` (o JSON-LD do post: BlogPosting no pensamento, #50, e Review na review, #51), e o `<div data-visualizacoes="{_id}">`, sem estilo nem conteúdo, é onde o contador de visualizações (#56) se pendura.
 
 ## Imagens, datas e tempo de leitura
 
