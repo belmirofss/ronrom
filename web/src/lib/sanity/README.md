@@ -46,6 +46,7 @@ const rotas = await buscarRotasDosPosts();
 | `buscarPostsDoFormato(slug, pagina?)`   | `CONSULTA_DOS_POSTS_DO_FORMATO`   |
 | `buscarTaxonomia()`                     | `CONSULTA_DA_TAXONOMIA`           |
 | `buscarListasDoAno()`                   | `CONSULTA_DAS_LISTAS_DO_ANO`      |
+| `buscarAnosDasListas()`                 | `CONSULTA_DOS_ANOS_DAS_LISTAS`    |
 | `buscarPost({ tipo, secao, slug })`     | `CONSULTA_DO_POST`                |
 | `buscarRotasDosPosts()`                 | `CONSULTA_DAS_ROTAS_DOS_POSTS`    |
 | `buscarLeiaTambem(id)`                  | `CONSULTA_DO_LEIA_TAMBEM`         |
@@ -173,6 +174,7 @@ O projeto e o dataset saem da URL do próprio asset (`https://cdn.sanity.io/imag
 | `CONSULTA_DOS_POSTS_DO_FORMATO`   | `$formato`, `$inicio`, `$fim`   | Página de listagem e `formato: { nome, slug, descricao }`, `null` se o slug não existe                                                                                                                                                           |
 | `CONSULTA_DA_TAXONOMIA`           | —                               | `{ categorias, formatos }`, cada item com `_id`, `nome`, `slug` e `total` de posts no ar. Categorias e formatos (com `descricao`) na ordem do menu, inclusive sem post                                                                           |
 | `CONSULTA_DAS_LISTAS_DO_ANO`      | —                               | Card com leitura e `modelo` (`livro`, `filme` ou `serie`) de cada review de livro, filme ou série, da mais recente à mais antiga. O site agrupa por ano em `@/lib/listas` (#137)                                                                 |
+| `CONSULTA_DOS_ANOS_DAS_LISTAS`    | —                               | `tipo`, `dataDePublicacao` e `modelo` das mesmas reviews, sem os cards: os anos com lista, no rodapé                                                                                                                                             |
 | `CONSULTA_DO_POST`                | `$tipo`, `$secao`, `$slug`      | Post inteiro ou `null` (abaixo). `$secao` é o slug da categoria (review) ou do formato (pensamento)                                                                                                                                              |
 | `CONSULTA_DAS_ROTAS_DOS_POSTS`    | —                               | Rota de cada post, para o `getStaticPaths`                                                                                                                                                                                                       |
 | `CONSULTA_DO_LEIA_TAMBEM`         | `$id`                           | Até 3 cards: mesma categoria (ou formato), depois mesmo tipo, depois os mais recentes, sem o próprio post. `[]` se o `$id` não existe                                                                                                            |

@@ -127,10 +127,19 @@ export const CONSULTA_DA_TAXONOMIA = defineQuery(`{
 // /listas/[ano] (#137): as reviews de livros, filmes e séries, com o modelo de ficha da categoria
 // para separar "lidos" de "assistidos". O ano sai da data de publicação, no fuso de Brasília
 // (web/src/lib/listas.ts): o GROQ não converte fuso, então o agrupamento fica no site.
+const REVIEW_DAS_LISTAS = `${POST_PUBLICADO} && tipo == "review" && categoria->modeloFicha in ["livro", "filme", "serie"]`;
 export const CONSULTA_DAS_LISTAS_DO_ANO = defineQuery(`*[
-  ${POST_PUBLICADO} && tipo == "review" && categoria->modeloFicha in ["livro", "filme", "serie"]
+  ${REVIEW_DAS_LISTAS}
 ] | ${MAIS_RECENTES} {${CAMPOS_DO_CARD},
   "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } },
+  "modelo": categoria->modeloFicha
+}`);
+
+// Rodapé: só o que o `listasPorAno` precisa para saber quais anos têm lista, sem os cards. Roda
+// em toda página do build, então fica leve.
+export const CONSULTA_DOS_ANOS_DAS_LISTAS = defineQuery(`*[${REVIEW_DAS_LISTAS}]{
+  tipo,
+  dataDePublicacao,
   "modelo": categoria->modeloFicha
 }`);
 
