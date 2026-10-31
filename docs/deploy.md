@@ -28,7 +28,7 @@ A rota de fumaça devolve o commit que está no ar:
 curl -s https://ronrom-blog.vercel.app/api/health
 ```
 
-O `commit` da resposta tem que ser o hash do merge na `main` (`git log -1 --format=%H origin/main`). Num preview, abra `/api/health` no navegador logado na Vercel. Mais verificações (cabeçalhos, cache das páginas estáticas) em [`ambientes.md`](ambientes.md#conferir-em-produção).
+O `commit` da resposta tem que ser o hash do merge na `main` (`git log -1 --format=%H origin/main`). Num preview, abra `/api/health` no navegador logado na Vercel. Mais verificações (cabeçalhos, cache das páginas estáticas) em [`ambientes.md`](ambientes.md#conferir-em-produção) e, para os cabeçalhos de segurança e a CSP, em [`cabecalhos.md`](cabecalhos.md#conferir).
 
 ### Deploy com erro ou bloqueado
 

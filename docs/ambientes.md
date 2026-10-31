@@ -35,7 +35,7 @@ O build gera `web/.vercel/output`, que a Vercel publica como está:
 - `static/`: as páginas e os assets (as mesmas páginas ficam em `web/dist/client`, que o CI guarda como artifact).
 - `functions/_render.func`: **uma única função** com todas as rotas sob demanda. Uma rota nova não cria outra função, só entra nas `routes` do `config.json`, apontando para `_render`.
 
-Hoje a única rota sob demanda é [`/api/health`](../web/src/pages/api/health.ts), a rota de fumaça: responde `{ "ok": true, "commit": "<sha>" }` com `Cache-Control: no-store`. O `commit` vem da variável de sistema `VERCEL_GIT_COMMIT_SHA`, fixada no build; fora da Vercel, é `null`.
+Hoje há duas rotas sob demanda. A [`/api/health`](../web/src/pages/api/health.ts) é a rota de fumaça: responde `{ "ok": true, "commit": "<sha>" }` com `Cache-Control: no-store`. O `commit` vem da variável de sistema `VERCEL_GIT_COMMIT_SHA`, fixada no build; fora da Vercel, é `null`. A [`/api/csp-report`](../web/src/pages/api/csp-report.ts) recebe os relatórios de violação da CSP e os escreve no log ([`cabecalhos.md`](cabecalhos.md#report-only-e-a-passagem-para-enforce)). Cabeçalhos de segurança e de cache de todas as respostas: [`cabecalhos.md`](cabecalhos.md).
 
 ### Como adicionar uma rota sob demanda
 

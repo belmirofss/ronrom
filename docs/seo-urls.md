@@ -71,6 +71,7 @@ A resposta esperada é `308` com `location: /sobre`.
 | `/posts-index.json`                    | `posts-index.json.ts`                | Dados dos cards para "Mais lidos"          | —                        | #57   |
 | `/pagefind/*`                          | gerado no build                      | Índice da busca                            | —                        | #54   |
 | `/api/health`                          | `api/health.ts` (sob demanda)        | Fumaça do deploy                           | —                        | #9    |
+| `/api/csp-report`                      | `api/csp-report.ts` (sob demanda)    | Recebe os relatórios da CSP                | —                        | #41   |
 | `/api/views`                           | `api/views.ts` (sob demanda)         | Registra visualização (`POST {id}`)        | —                        | #56   |
 | `/api/mais-lidos`                      | `api/mais-lidos.ts` (sob demanda)    | Ranking (`?limite=10`)                     | —                        | #57   |
 
@@ -130,7 +131,7 @@ Fixas: o script da #18 ([`studio/scripts/criar-taxonomia.ts`](../studio/scripts/
 | Frases soltas | `frases`   | `formato-frases`   | `/pensamentos/frases`   |
 | Opiniões      | `opinioes` | `formato-opinioes` | `/pensamentos/opinioes` |
 
-O nome exibido pode mudar à vontade; o slug de categoria e de formato fica congelado, porque trocá-lo muda a URL de todos os posts daquela categoria. Se for inevitável, entra como redirect do caminho inteiro (`/reviews/antigo/[slug]` → `/reviews/novo/[slug]`) no mecanismo da #53, no mesmo PR.
+O nome exibido pode mudar à vontade; o slug de categoria e de formato fica congelado, porque trocá-lo muda a URL de todos os posts daquela categoria. Se for inevitável, entra como redirect do caminho inteiro (`/reviews/antigo/[slug]` → `/reviews/novo/[slug]`) no mecanismo da #53, no mesmo PR. Redirects fixos, fora dos posts: [`cabecalhos.md`](cabecalhos.md#redirects).
 
 ### Posts e tags
 
