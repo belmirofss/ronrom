@@ -60,7 +60,7 @@ const POSTS_NO_FEED = 30;
 
 // --- Site ---
 
-// Singleton `configuracoes`: frase da semana, SEO padrão e redes. O destaque tem consulta própria.
+// Singleton `configuracoes`: frase em destaque, SEO padrão e redes. O destaque tem consulta própria.
 export const CONSULTA_DAS_CONFIGURACOES = defineQuery(`*[_id == "configuracoes"][0]{
   fraseDaSemana,
   seo{ descricao, "imagem": imagem${IMAGEM_NO_GROQ} },

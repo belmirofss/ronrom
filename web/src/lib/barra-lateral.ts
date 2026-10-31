@@ -16,7 +16,7 @@ export interface ItemDaTaxonomia {
 type Taxonomia = Pick<CONSULTA_DA_TAXONOMIA_RESULT, 'categorias' | 'formatos'>;
 
 /**
- * A frase da semana pronta para mostrar, ou `null` quando não há texto (a autora apagou a frase,
+ * A frase em destaque pronta para mostrar, ou `null` quando não há texto (a autora apagou a frase,
  * ou só sobraram espaços): sem frase, o bloco vinho some. Autoria vazia vira `undefined`.
  */
 export function fraseParaMostrar(
