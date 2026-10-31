@@ -1,0 +1,93 @@
+---
+// O campo de busca (#55): um formulário GET para a /busca, que funciona sem JS (o navegador abre
+// /busca?q=termo). Na /busca, o script da página assume o envio e o slot recebe os filtros. O
+// visual definitivo vem na WEB-15 (#61).
+
+interface Props {
+  /** `id` do campo; o do rótulo e o do botão derivam dele. Único na página. */
+  id?: string;
+  /** Termo já preenchido. */
+  valor?: string;
+  /** Texto do rótulo. Fica só para o leitor de tela, a não ser com `rotuloVisivel`. */
+  rotulo?: string;
+  rotuloVisivel?: boolean;
+  class?: string;
+}
+
+const {
+  id = 'busca',
+  valor,
+  rotulo = 'Buscar no Ronrom',
+  rotuloVisivel = false,
+  class: classe,
+} = Astro.props;
+---
+
+<form class:list={['campo-de-busca', classe]} role="search" action="/busca" method="get">
+  <label class:list={['campo-de-busca__rotulo', { 'visualmente-oculto': !rotuloVisivel }]} for={id}>
+    {rotulo}
+  </label>
+  <div class="campo-de-busca__linha">
+    <input
+      class="campo-de-busca__campo"
+      id={id}
+      type="search"
+      name="q"
+      value={valor}
+      placeholder="Filmes, cafés, lugares…"
+      autocomplete="off"
+      enterkeyhint="search"
+    />
+    <button class="campo-de-busca__botao" type="submit">
+      Buscar
+    </button>
+  </div>
+  <slot />
+</form>
+
+<style>
+  .campo-de-busca {
+    display: grid;
+    gap: var(--espaco-2);
+  }
+
+  .campo-de-busca__rotulo {
+    font-weight: var(--peso-medio);
+  }
+
+  .campo-de-busca__linha {
+    display: flex;
+    gap: var(--espaco-2);
+  }
+
+  /* 44px de altura nos dois, o alvo de toque mínimo. */
+  .campo-de-busca__campo {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    padding-inline: var(--espaco-4);
+    border: 1px solid var(--cor-texto-2);
+    border-radius: var(--raio-pilula);
+    background-color: var(--cor-superficie);
+  }
+
+  .campo-de-busca__campo::placeholder {
+    color: var(--cor-texto-2);
+  }
+
+  .campo-de-busca__botao {
+    min-height: 44px;
+    padding-inline: var(--espaco-4);
+    border: 2px solid var(--cor-vinho);
+    border-radius: var(--raio-pilula);
+    background-color: var(--cor-vinho);
+    color: var(--cor-fundo);
+    font-weight: var(--peso-medio);
+    cursor: pointer;
+  }
+
+  .campo-de-busca__botao:hover {
+    border-color: var(--cor-vinho-hover);
+    background-color: var(--cor-vinho-hover);
+  }
+</style>
