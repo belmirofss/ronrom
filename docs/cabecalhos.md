@@ -100,7 +100,33 @@ O `astro.config.mjs` passa a lista para o `redirects` do Astro, e o adapter da V
 - Sem cadeias: aponte direto para o destino final, e ao mudar um destino atualize os redirects que apontavam para ele.
 - Não redirecione um caminho que ainda existe como página: o redirect ganha e a página some.
 
-Os redirects de post com slug, categoria ou formato alterados não entram aqui: saem do `slugsAnteriores` no Sanity, no build (#53), e se juntam a esta lista no `astro.config.mjs`. Redirect de domínio (`www` para o domínio sem `www`, `ronrom-blog.vercel.app` para o domínio próprio) é configurado em Settings → Domains da Vercel, na #63.
+Os redirects de post com slug, categoria ou formato alterados não entram aqui: saem do `slugsAnteriores` no Sanity (veja abaixo). Redirect de domínio (`www` para o domínio sem `www`, `ronrom-blog.vercel.app` para o domínio próprio) é configurado em Settings → Domains da Vercel, na #63.
+
+### Slug alterado
+
+Quando a autora muda o slug, a categoria ou o formato de um post publicado, o botão "Publicar" do Studio guarda o caminho antigo em `slugsAnteriores` ([`docs/seo-urls.md`](seo-urls.md#posts-e-tags)). A publicação dispara o deploy hook ([deploy](deploy.md#conteúdo-rebuild-ao-publicar)), e o build transforma cada caminho antigo num `301` para o endereço atual do post. Quem faz é a integração `ronrom:redirects` do [`astro.config.mjs`](../web/astro.config.mjs), só no `astro build` (no `astro dev` os caminhos antigos dão 404):
+
+1. No `astro:config:setup`, busca no Sanity (ou nas [fixtures](../web/src/lib/sanity/README.md#modo-fixtures)), com a mesma fonte do resto do site, os posts com `slugsAnteriores`, a rota de todos os posts e a taxonomia ([`web/src/lib/sanity/redirects.ts`](../web/src/lib/sanity/redirects.ts)).
+2. O `montarRedirects` ([`web/src/lib/redirects.ts`](../web/src/lib/redirects.ts)) junta os fixos de `redirects.mjs` com os dos posts e passa tudo ao `redirects` do Astro. O log do build mostra quantos são.
+3. No `astro:build:done`, o `conferirRedirects` confere que todo destino é uma página gerada.
+
+O que o build faz com cada caso:
+
+| Caso                                                                                          | Resultado                                                              |
+| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Cadeia (`/a` → `/b` e `/b` → `/c`), como um fixo que aponta para um post que mudou            | Encurtada para `/a` → `/c`, com aviso no log                           |
+| Caminho antigo de um post que hoje é o endereço de outra página (outro post ficou com o slug) | Sem redirect, com aviso no log: a página no ar ganha                   |
+| Loop (`/a` → `/b` → `/a`)                                                                     | **O build falha**                                                      |
+| Destino que não é uma página gerada                                                           | **O build falha**                                                      |
+| Redirect fixo por cima de uma página, de um post ou de uma listagem                           | **O build falha**: o Astro deixaria de gerar a página, só com um aviso |
+| O mesmo caminho levando a dois lugares (dois posts, ou um post e um fixo)                     | **O build falha**                                                      |
+| Caminho fora do formato (com domínio, barra no final, query)                                  | **O build falha**                                                      |
+
+A mensagem diz o caminho e de onde ele veio. Um problema num redirect fixo se corrige no `redirects.mjs`. Um no `slugsAnteriores`, que é só leitura no Studio, se corrige editando o documento pela API (no Vision do `pnpm studio:dev`, ou com `sanity documents`), tirando o caminho da lista de um dos posts. Enquanto isso, o deploy de produção anterior continua no ar.
+
+Um redirect com parâmetro, como o da troca do slug de uma categoria (`/reviews/antigo/[slug]` → `/reviews/novo/[slug]`, veja [`seo-urls.md`](seo-urls.md)), entra no `redirects.mjs` e não passa pela checagem da cadeia nem do destino.
+
+URL inexistente, que não é página nem redirect, recebe a página 404 customizada com status `404` de verdade, sem soft 404 (veja [`ambientes.md`](ambientes.md#página-404)); a 404 tem `noindex`.
 
 ## Conferir
 
@@ -112,6 +138,12 @@ curl -sI https://ronrom-blog.vercel.app/ | grep -iE "strict-transport|content-se
 
 ```bash
 curl -sI https://ronrom-blog.vercel.app/api/health | grep -i cache-control
+```
+
+Um caminho antigo de post deve responder `301` com o `Location` do endereço novo:
+
+```bash
+curl -sI https://ronrom-blog.vercel.app/reviews/filmes/slug-antigo | grep -iE "^HTTP|^location"
 ```
 
 E a nota em [securityheaders.com](https://securityheaders.com/?q=https%3A%2F%2Fronrom-blog.vercel.app&followRedirects=on), que deve ser A ou melhor (A+ só depois do modo enforce). Para um asset, pegue um `/_astro/*.css` do HTML da home e confira o `immutable`. Nos previews, por causa da Vercel Authentication, confira os cabeçalhos no DevTools do navegador logado (aba Network, o documento).
