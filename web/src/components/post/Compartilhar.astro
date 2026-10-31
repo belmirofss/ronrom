@@ -1,0 +1,118 @@
+---
+// Botão de compartilhar o post: no celular abre a folha de compartilhamento do sistema
+// (navigator.share); sem ela, copia o link e avisa. Sem JS, o botão não aparece.
+
+interface Props {
+  titulo: string;
+  /** Caminho do post (`urlDoPost`); vira URL absoluta no navegador. */
+  url: string;
+}
+
+const { titulo, url } = Astro.props;
+---
+
+<div class="compartilhar" data-compartilhar data-titulo={titulo} data-url={url} hidden>
+  <p class="compartilhar__texto">Gostou? Manda para alguém.</p>
+  <button class="compartilhar__botao" type="button">
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"></path>
+    </svg>
+    <span class="compartilhar__rotulo">Compartilhar</span>
+  </button>
+  <p class="compartilhar__aviso" role="status"></p>
+</div>
+
+<script>
+  for (const bloco of document.querySelectorAll<HTMLElement>('[data-compartilhar]')) {
+    const botao = bloco.querySelector('button');
+    const aviso = bloco.querySelector('[role="status"]');
+    const titulo = bloco.dataset.titulo ?? document.title;
+    const url = new URL(bloco.dataset.url ?? location.pathname, location.origin).href;
+    const podeCompartilhar = typeof navigator.share === 'function';
+    const podeCopiar = typeof navigator.clipboard?.writeText === 'function';
+    if (!botao || !aviso || (!podeCompartilhar && !podeCopiar)) continue;
+
+    bloco.hidden = false;
+    if (!podeCompartilhar) {
+      const rotulo = botao.querySelector('.compartilhar__rotulo');
+      if (rotulo) rotulo.textContent = 'Copiar link';
+    }
+
+    let limpar: number | undefined;
+    botao.addEventListener('click', async () => {
+      if (podeCompartilhar) {
+        try {
+          await navigator.share({ title: titulo, url });
+        } catch {
+          // Cancelado pela pessoa: nada a fazer.
+        }
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(url);
+        aviso.textContent = 'Link copiado!';
+      } catch {
+        aviso.textContent = 'Não deu para copiar. O endereço está na barra do navegador.';
+      }
+      window.clearTimeout(limpar);
+      limpar = window.setTimeout(() => (aviso.textContent = ''), 3000);
+    });
+  }
+</script>
+
+<style>
+  .compartilhar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espaco-3) var(--espaco-4);
+    padding-block-start: var(--espaco-6);
+    border-block-start: 1px solid var(--cor-borda);
+  }
+
+  .compartilhar[hidden] {
+    display: none;
+  }
+
+  .compartilhar__texto {
+    color: var(--cor-texto-2);
+  }
+
+  .compartilhar__botao {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--espaco-2);
+    min-height: 44px;
+    padding-inline: var(--espaco-4) var(--espaco-5);
+    border: 2px solid var(--cor-vinho);
+    border-radius: var(--raio-pilula);
+    background-color: transparent;
+    color: var(--cor-vinho);
+    font-weight: var(--peso-medio);
+    cursor: pointer;
+  }
+
+  .compartilhar__botao:hover {
+    background-color: var(--cor-vinho);
+    color: var(--cor-creme);
+  }
+
+  .compartilhar__botao svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .compartilhar__aviso {
+    color: var(--cor-vinho);
+    font-size: var(--texto-sm);
+    font-weight: var(--peso-medio);
+  }
+</style>

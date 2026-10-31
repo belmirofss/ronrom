@@ -53,19 +53,41 @@ const {
     padding-block: var(--espaco-5) var(--espaco-2);
   }
 
-  /* No celular, o mosaico fica embaixo do nome; a partir de 640px, à direita dele. */
+  /* Em tela em pé (celular e tablet), tudo centrado, com o mosaico embaixo do nome; deitada e a
+     partir de 640px, o mosaico vai à direita. */
   .topo-home__capa {
     display: grid;
     align-self: center;
-    gap: var(--espaco-5);
+    justify-items: center;
+    gap: var(--espaco-6);
+    text-align: center;
   }
 
-  /* No celular o mosaico também diminui em tela baixa, para a capa caber na primeira dobra. */
+  /* O mosaico diminui em tela baixa, para a capa caber na primeira dobra. */
   .topo-home__capa > :global(.mosaico) {
-    width: min(100%, 20rem, 30svh);
+    width: min(100%, 26rem, 36svh);
   }
 
-  @media (min-width: 40rem) {
+  .topo-home__subtitulo {
+    margin-inline: auto;
+  }
+
+  @media (min-width: 40rem) and (orientation: portrait) {
+    .topo-home__subtitulo {
+      font-size: var(--texto-xl);
+    }
+  }
+
+  @media (min-width: 40rem) and (orientation: landscape) {
+    .topo-home__capa {
+      justify-items: stretch;
+      text-align: start;
+    }
+
+    .topo-home__subtitulo {
+      margin-inline: 0;
+    }
+
     .topo-home__capa {
       grid-template-columns: 1fr auto;
       align-items: end;

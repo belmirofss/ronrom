@@ -6,12 +6,14 @@ import { NOME_DO_SITE } from '@/lib/utils/site';
 const { pathname } = Astro.url;
 ---
 
-<header class="cabecalho">
+{/* Fixo no topo: some ao rolar para baixo e volta ao rolar para cima (script no fim). No
+    celular, os links vão para uma gaveta (popover, funciona sem JS); a lupa leva à /busca. */}
+<header class="cabecalho" data-cabecalho>
   <Container class="cabecalho__conteudo">
     <a class="cabecalho__marca" href="/">
       {NOME_DO_SITE}
     </a>
-    <nav aria-label="Principal">
+    <nav class="cabecalho__nav" aria-label="Principal">
       <ul class="cabecalho__secoes">
         {SECOES.map(({ rotulo, href }) => (
           <li>
@@ -22,40 +24,163 @@ const { pathname } = Astro.url;
         ))}
       </ul>
     </nav>
+    <div class="cabecalho__acoes">
+      <a
+        class="cabecalho__icone"
+        href="/busca"
+        aria-current={estadoDaSecao('/busca', pathname)}
+        title="Buscar"
+      >
+        <span class="visualmente-oculto">Buscar</span>
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <circle cx="10.5" cy="10.5" r="6.5"></circle>
+          <path d="m15.5 15.5 5 5"></path>
+        </svg>
+      </a>
+      <button
+        class="cabecalho__icone cabecalho__abrir-menu"
+        type="button"
+        popovertarget="menu-celular"
+        aria-haspopup="true"
+      >
+        <span class="visualmente-oculto">Abrir menu</span>
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M4 7h16M4 12h16M4 17h16"></path>
+        </svg>
+      </button>
+    </div>
   </Container>
+
+  <div id="menu-celular" class="gaveta" popover>
+    <div class="gaveta__topo">
+      <span class="gaveta__marca" aria-hidden="true">
+        {NOME_DO_SITE}
+      </span>
+      <button
+        class="cabecalho__icone"
+        type="button"
+        popovertarget="menu-celular"
+        popovertargetaction="hide"
+      >
+        <span class="visualmente-oculto">Fechar menu</span>
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="m6 6 12 12M18 6 6 18"></path>
+        </svg>
+      </button>
+    </div>
+    <nav aria-label="Principal (celular)">
+      <ul class="gaveta__secoes">
+        {SECOES.map(({ rotulo, href }) => (
+          <li>
+            <a class="gaveta__link" href={href} aria-current={estadoDaSecao(href, pathname)}>
+              {rotulo}
+            </a>
+          </li>
+        ))}
+        <li>
+          <a class="gaveta__link" href="/busca" aria-current={estadoDaSecao('/busca', pathname)}>
+            Busca
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
 </header>
 
+<script>
+  // Esconde o cabeçalho ao rolar para baixo e mostra ao rolar para cima. Perto do topo, com o
+  // menu aberto ou com o foco de teclado dentro dele, fica sempre visível.
+  const cabecalho = document.querySelector<HTMLElement>('[data-cabecalho]');
+  if (cabecalho) {
+    const LIMIAR = 8;
+    let ultimoY = window.scrollY;
+    let agendado = false;
+
+    const atualizar = () => {
+      agendado = false;
+      const y = window.scrollY;
+      const delta = y - ultimoY;
+      if (Math.abs(delta) < LIMIAR) return;
+      const menuAberto = cabecalho.querySelector('.gaveta:popover-open') !== null;
+      const ocultar =
+        delta > 0 &&
+        y > cabecalho.offsetHeight &&
+        !menuAberto &&
+        !cabecalho.querySelector(':focus-visible');
+      cabecalho.classList.toggle('cabecalho--oculto', ocultar);
+      ultimoY = y;
+    };
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (agendado) return;
+        agendado = true;
+        requestAnimationFrame(atualizar);
+      },
+      { passive: true },
+    );
+    cabecalho.addEventListener('focusin', () => cabecalho.classList.remove('cabecalho--oculto'));
+  }
+</script>
+
 <style>
-  /* Altura do cabeçalho, para a capa da home ocupar o resto da tela (#141): 44px por linha, mais o
-     padding e a borda. Os links quebram em 2 linhas abaixo de ~520px e em 3 abaixo de ~350px; os
-     pontos de corte ficam um pouco acima disso, porque sobrar altura é melhor do que a seta da
-     capa cair para fora da tela. Mudou o cabeçalho, confira estes valores. */
+  /* Altura do cabeçalho, para a capa da home ocupar o resto da tela (#141): uma linha de 44px,
+     mais o padding e a borda. Mudou o cabeçalho, confira este valor. */
   :global(:root) {
-    --altura-cabecalho: calc(3 * 44px + 2 * var(--espaco-3) + 1px);
+    --altura-cabecalho: calc(44px + 2 * var(--espaco-3) + 1px);
   }
 
-  @media (min-width: 22.5em) {
-    :global(:root) {
-      --altura-cabecalho: calc(2 * 44px + 2 * var(--espaco-3) + 1px);
-    }
-  }
-
-  @media (min-width: 34em) {
-    :global(:root) {
-      --altura-cabecalho: calc(44px + 2 * var(--espaco-3) + 1px);
-    }
+  /* Âncoras (#conteudo, títulos) não param embaixo do cabeçalho quando ele está à mostra. */
+  :global(html) {
+    scroll-padding-block-start: var(--altura-cabecalho);
   }
 
   .cabecalho {
+    position: sticky;
+    z-index: 50;
+    inset-block-start: 0;
     border-block-end: 1px solid var(--cor-borda);
+    background-color: color-mix(in srgb, var(--cor-fundo) 92%, transparent);
+    backdrop-filter: blur(8px);
+    view-transition-name: cabecalho;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .cabecalho {
+      transition: transform 0.25s ease-out;
+    }
+  }
+
+  .cabecalho--oculto {
+    transform: translateY(-100%);
   }
 
   .cabecalho :global(.cabecalho__conteudo) {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    column-gap: var(--espaco-6);
+    column-gap: var(--espaco-4);
     padding-block: var(--espaco-3);
   }
 
@@ -63,6 +188,7 @@ const { pathname } = Astro.url;
     display: inline-flex;
     align-items: center;
     min-height: 44px;
+    margin-inline-end: auto;
     color: var(--cor-texto);
     font-size: var(--texto-xl);
     font-weight: var(--peso-negrito);
@@ -74,12 +200,14 @@ const { pathname } = Astro.url;
     color: var(--cor-vinho);
   }
 
-  /* No celular os 4 links ficam sempre visíveis (sem menu hambúrguer): a lista quebra linha
-     se não couber. O recuo negativo alinha o texto do primeiro link com a marca. */
+  /* No celular os links ficam na gaveta; a partir de 40rem, na linha do cabeçalho. */
+  .cabecalho__nav {
+    display: none;
+  }
+
   .cabecalho__secoes {
     display: flex;
-    flex-wrap: wrap;
-    margin: 0 calc(-1 * var(--espaco-3));
+    margin: 0;
     padding: 0;
     list-style: none;
   }
@@ -103,5 +231,136 @@ const { pathname } = Astro.url;
     color: var(--cor-vinho);
     text-decoration-line: underline;
     text-decoration-thickness: 0.12em;
+  }
+
+  .cabecalho__acoes {
+    display: flex;
+    margin-inline-end: calc(-1 * var(--espaco-2));
+  }
+
+  .cabecalho__icone {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--raio-pilula);
+    background: none;
+    color: var(--cor-texto);
+    cursor: pointer;
+  }
+
+  .cabecalho__icone:hover,
+  .cabecalho__icone[aria-current] {
+    background-color: var(--cor-creme);
+    color: var(--cor-vinho);
+  }
+
+  .cabecalho__icone svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  @media (min-width: 40rem) {
+    .cabecalho__nav {
+      display: block;
+    }
+
+    .cabecalho__abrir-menu {
+      display: none;
+    }
+  }
+
+  /* A gaveta entra pela direita, com o fundo escurecido. Sem suporte a popover, nada abre, mas os
+     links seguem no rodapé. */
+  .gaveta {
+    inset: 0 0 0 auto;
+    width: min(20rem, 85vw);
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: var(--espaco-3) var(--gutter) var(--espaco-6);
+    border: 0;
+    background-color: var(--cor-fundo);
+    box-shadow: var(--sombra-lg);
+    color: var(--cor-texto);
+  }
+
+  .gaveta::backdrop {
+    background-color: color-mix(in srgb, var(--cor-texto) 40%, transparent);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .gaveta,
+    .gaveta::backdrop {
+      transition:
+        transform 0.25s ease-out,
+        opacity 0.25s ease-out,
+        overlay 0.25s allow-discrete,
+        display 0.25s allow-discrete;
+    }
+
+    .gaveta {
+      transform: translateX(100%);
+    }
+
+    .gaveta:popover-open {
+      transform: translateX(0);
+    }
+
+    .gaveta::backdrop {
+      opacity: 0;
+    }
+
+    .gaveta:popover-open::backdrop {
+      opacity: 1;
+    }
+
+    @starting-style {
+      .gaveta:popover-open {
+        transform: translateX(100%);
+      }
+
+      .gaveta:popover-open::backdrop {
+        opacity: 0;
+      }
+    }
+  }
+
+  .gaveta__topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-end: var(--espaco-5);
+    margin-inline-end: calc(-1 * var(--espaco-2));
+  }
+
+  .gaveta__marca {
+    font-size: var(--texto-xl);
+    font-weight: var(--peso-negrito);
+    letter-spacing: var(--espacamento-titulo);
+  }
+
+  .gaveta__secoes {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .gaveta__link {
+    display: flex;
+    align-items: center;
+    min-height: 52px;
+    border-block-end: 1px solid var(--cor-borda);
+    color: var(--cor-texto);
+    font-size: var(--texto-xl);
+    font-weight: var(--peso-medio);
+    text-decoration: none;
+  }
+
+  .gaveta__link:hover,
+  .gaveta__link[aria-current] {
+    color: var(--cor-vinho);
   }
 </style>

@@ -22,16 +22,25 @@ const { posts, nivelTitulo = 2, class: classe } = Astro.props;
 </ul>
 
 <style>
+  /* No celular, com os itens compactos, o respiro entre eles também é menor. */
   .lista-de-posts {
+    --respiro: var(--espaco-5);
+
     display: grid;
-    gap: var(--espaco-6);
+    gap: var(--respiro);
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
   .lista-de-posts > li + li {
-    padding-block-start: var(--espaco-6);
+    padding-block-start: var(--respiro);
     border-block-start: 1px solid var(--cor-borda);
+  }
+
+  @media (min-width: 40em) {
+    .lista-de-posts {
+      --respiro: var(--espaco-6);
+    }
   }
 </style>
