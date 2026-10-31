@@ -17,6 +17,18 @@ A resposta é **sempre `204`**, sem corpo e com `Cache-Control: no-store`, conte
 
 A rota fala com a API REST do Upstash direto, com `fetch`, sem o `@upstash/redis`: são só dois comandos.
 
+## Mais lidos
+
+O período do ranking é **todo o tempo** (decidido na #1): a aba mostra os posts com mais visualizações desde que o contador existe, sem janela de 7 ou 30 dias.
+
+O site só é reconstruído quando há publicação, então um ranking calculado no build ficaria velho. Por isso ele é buscado no navegador, e a aba padrão da home continua sendo "Últimos posts", que sai no HTML (boa para SEO):
+
+1. **No build**, o [`/posts-index.json`](../web/src/pages/posts-index.json.ts) sai com um item por post publicado, do mais recente para o mais antigo: `id` (o `_id`), `url`, `titulo`, `subtitulo`, `capa` (uma miniatura 4:3 de 480 px), `alt`, `tipo`, `categoria` (a categoria ou o formato), `nota`, `data` e `leitura` ([`indice-de-posts.ts`](../web/src/lib/indice-de-posts.ts)).
+2. **Na rota sob demanda** [`GET /api/mais-lidos?limite=10`](../web/src/pages/api/mais-lidos.ts), um comando: `ZREVRANGE views:all 0 19 WITHSCORES`. A rota lê 10 a mais que o `limite`, descarta os ids que não estão publicados neste deploy e responde `[{ "id": "…", "views": 12 }, …]` com `Cache-Control: public, s-maxage=3600, stale-while-revalidate=86400` ([`ranking.ts`](../web/src/lib/views/ranking.ts)). Sem o Redis configurado (previews, `pnpm dev`), responde `[]`.
+3. **No navegador**, o [`MaisLidos.astro`](../web/src/components/home/MaisLidos.astro) só busca quando a aba abre pela primeira vez: pede os dois JSONs, junta pelo `id`, descarta ids que não estão no índice e, com menos de 10, completa com os mais recentes que ainda não entraram ([`mais-lidos.ts`](../web/src/lib/mais-lidos.ts)). Com erro, mostra o estado de erro; voltar para a aba tenta de novo.
+
+A rota só aceita `?limite=N`, com N de 1 a 20, e nenhum outro parâmetro: o CDN guarda uma cópia por query string, e um `?x=` diferente a cada pedido faria cada um chegar ao Redis. Fora disso, responde `400` com `no-store`, sem tocar no Redis. Um erro do Redis vira `503` com `no-store` (o CDN não guarda) e uma linha `[mais-lidos]` no log, e a aba mostra o estado de erro.
+
 ## Custo
 
 | Recurso                             | Por visualização                 | Cota grátis                             | Margem                             |
@@ -24,6 +36,8 @@ A rota fala com a API REST do Upstash direto, com `fetch`, sem o `@upstash/redis
 | Comandos do Upstash                 | 2 se nova, 1 se repetida         | 500 mil/mês, 256 MB, 1 banco            | cerca de 250 mil visualizações/mês |
 | Invocações de função (Vercel Hobby) | 1 por beacon, inclusive de bots  | 1 milhão/mês, junto com as outras rotas | sobra bem mais que a do Upstash    |
 | Memória do Redis                    | uma chave `seen:` por 30 minutos | 256 MB                                  | o ranking tem uma entrada por post |
+
+O "Mais lidos" quase não pesa: a resposta da `/api/mais-lidos` fica uma hora no CDN da Vercel, então o Redis recebe **no máximo uma leitura por hora** (cerca de 24 por dia, cerca de 720 comandos por mês), não importa quantas vezes a aba é aberta. Na hora seguinte, o primeiro pedido ainda recebe a cópia antiga (`STALE`) enquanto o CDN busca a nova em segundo plano. Cada região do CDN tem o próprio cache, mas com as funções em `gru1` e o público no Brasil, na prática é uma.
 
 Cota do Upstash conferida em [upstash.com/pricing/redis](https://upstash.com/pricing/redis); confira no painel se o plano grátis pelo Marketplace é o mesmo e se há arquivamento por inatividade. Se a cota estourar, o Upstash recusa os comandos, a rota registra o erro no log e o site segue normal; só o ranking para de subir até o mês virar.
 
@@ -54,3 +68,15 @@ No console do Upstash (aba **Data Browser** ou **CLI**), com o `_id` de um post:
    ```
 
 Para ver o ranking inteiro: `ZRANGE views:all 0 -1 REV WITHSCORES`.
+
+### Mais lidos
+
+1. Na home, abra a aba "Mais lidos". No DevTools aparecem o `GET /posts-index.json` e o `GET /api/mais-lidos?limite=10`, e a ordem da lista bate com o `ZRANGE views:all 0 9 REV WITHSCORES`. Um post despublicado não aparece, mesmo que ainda esteja no ranking.
+2. O cache, pelo `x-vercel-cache`: o primeiro pedido depois do deploy é `MISS`, os seguintes, por uma hora, `HIT`, e depois `STALE` uma vez (a cópia antiga, enquanto a nova é buscada).
+
+   ```bash
+   curl -sI https://ronrom-blog.vercel.app/api/mais-lidos?limite=10 | grep -iE 'x-vercel-cache|cache-control|age'
+   ```
+
+3. Para conferir o critério de "no máximo cerca de 24 leituras por dia": no console do Upstash, em **Usage**, os comandos de leitura do dia ficam na casa das dezenas, por mais que a home seja aberta.
+4. Um parâmetro estranho não chega ao Redis: `curl -i 'https://ronrom-blog.vercel.app/api/mais-lidos?limite=10&x=1'` responde `400`.

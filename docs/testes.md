@@ -290,6 +290,14 @@ As regras de [`web/src/lib/sobre.ts`](../web/src/lib/sobre.ts), com o documento 
 
 O script do navegador (5 s de leitura com a aba visível, `sendBeacon` e `sessionStorage`) é conferido à mão em produção ([`visualizacoes.md`](visualizacoes.md#conferir-em-produção)).
 
+### Mais lidos (#57)
+
+- [`ranking.test.ts`](../web/src/lib/views/ranking.test.ts), com um Redis em memória: o topo sai com um comando só (`ZREVRANGE views:all 0 N WITHSCORES`), do mais para o menos lido, sem posts despublicados; sem Redis, a lista vazia; o `?limite` só aceita de 1 a 20 e recusa qualquer outro parâmetro; o `Cache-Control` é o de uma hora no CDN.
+- [`mais-lidos.test.ts`](../web/src/lib/mais-lidos.test.ts): a junção do ranking com o índice segue a ordem do ranking, descarta ids que não estão no índice, não repete e completa com os mais recentes.
+- [`indice-de-posts.test.ts`](../web/src/lib/indice-de-posts.test.ts): cada item do `/posts-index.json` tem URL, seção, nota, miniatura e tempo de leitura resolvidos, sem o texto do corpo nem o lqip.
+
+O script da aba (busca preguiçosa, estados, montagem dos cards) é conferido à mão: abra a aba e veja os dois `GET` no DevTools.
+
 ### Componentes
 
 Teste de componente (Container API) existe só para estes cinco:

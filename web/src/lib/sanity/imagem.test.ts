@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fontesDaImagem, larguras, type ImagemDoSanity } from '@/lib/sanity/imagem';
+import { fontesDaImagem, larguras, versaoDaImagem, type ImagemDoSanity } from '@/lib/sanity/imagem';
 
 const CDN = 'https://cdn.sanity.io/images/teste/production/abc-2400x1600.jpg';
 
@@ -153,6 +153,41 @@ describe('fontesDaImagem', () => {
       srcset: undefined,
       width: 1920,
       height: 1440,
+    });
+  });
+});
+
+describe('versaoDaImagem', () => {
+  it('gera uma URL só, recortada na proporção e na largura pedida', () => {
+    const versao = versaoDaImagem(imagem(), 480, 4 / 3);
+    expect(versao).toMatchObject({ width: 480, height: 360 });
+
+    const url = new URL(versao?.src ?? '');
+    expect(url.searchParams.get('w')).toBe('480');
+    expect(url.searchParams.get('h')).toBe('360');
+    expect(url.searchParams.get('fit')).toBe('crop');
+    expect(url.searchParams.get('auto')).toBe('format');
+  });
+
+  it('não amplia uma imagem menor que a largura pedida', () => {
+    expect(versaoDaImagem(imagem({}, 400, 300), 480, 4 / 3)).toMatchObject({
+      width: 400,
+      height: 300,
+    });
+  });
+
+  it('devolve null se o asset foi apagado', () => {
+    expect(versaoDaImagem({ asset: null }, 480, 4 / 3)).toBeNull();
+  });
+
+  it('usa o url do asset direto fora do CDN (modo fixtures)', () => {
+    const placeholder = 'data:image/svg+xml,%3Csvg%3E%3C%2Fsvg%3E';
+    const base = imagem();
+    const fixture = { asset: base.asset && { ...base.asset, url: placeholder } };
+    expect(versaoDaImagem(fixture, 480, 4 / 3)).toEqual({
+      src: placeholder,
+      width: 480,
+      height: 360,
     });
   });
 });
