@@ -133,7 +133,7 @@ A resposta esperada é `HTTP/2 404`, com o HTML do "Esse gato fugiu".
 | Opção            | Valor                | Por quê                                                                                        |
 | ---------------- | -------------------- | ---------------------------------------------------------------------------------------------- |
 | `imageService`   | `false`              | As imagens vêm do CDN do Sanity, que já redimensiona; o otimizador da Vercel gastaria a cota   |
-| `webAnalytics`   | `{ enabled: false }` | O analytics é o Umami Cloud, sem cookies (#58)                                                 |
+| `webAnalytics`   | `{ enabled: false }` | O analytics é o Umami Cloud, sem cookies (#58, [`analytics.md`](analytics.md))                 |
 | `isr`            | não usado            | Nada é renderizado sob demanda com cache; o conteúdo novo entra por rebuild (deploy hook, #17) |
 | `maxDuration`    | padrão               | O health responde na hora; reavaliar se uma rota nova precisar de mais tempo                   |
 | `skewProtection` | não usado            | Só nos planos Pro e Enterprise                                                                 |
@@ -204,6 +204,7 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 | `PUBLIC_SANITY_VISUAL_EDITING_ENABLED` | pública | não (`false`) | opcional            | não definida (só `true` no `ronrom-previa`) | não definida                 | não usada                | `area:cms`   |
 | `KV_REST_API_URL`                      | segredo | não           | opcional            | injetada pelo Marketplace (#56)             | não definida                 | não usada                | `area:dados` |
 | `KV_REST_API_TOKEN`                    | segredo | não           | opcional            | injetada pelo Marketplace (#56)             | não definida                 | não usada                | `area:dados` |
+| `PUBLIC_UMAMI_ID`                      | pública | não           | não definida        | website-id do Umami (#58)                   | não definida                 | não usada                | `area:dados` |
 | `VERCEL_ENV`                           | pública | não           | não definida        | sistema da Vercel                           | sistema da Vercel            | não usada                | `area:infra` |
 | `VERCEL_GIT_COMMIT_SHA`                | pública | não           | não definida        | sistema da Vercel                           | sistema da Vercel            | não usada                | `area:infra` |
 
@@ -215,6 +216,7 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 - **`SANITY_API_READ_TOKEN`** é o token `viewer` do Sanity, só para a [prévia de rascunhos](#prévia-de-rascunhos-ronrom-previa) (#43), onde é obrigatório. O site não o usa: sem a prévia ligada, o cliente lê só o conteúdo publicado, sem token. Foi cadastrado como **Secret** em Production e Preview do projeto `ronrom` (29/10/2026), antes de a prévia ir para o projeto `ronrom-previa`, e pode sair de lá.
 - **`PUBLIC_SANITY_VISUAL_EDITING_ENABLED`** liga o modo prévia no build: `true` só no projeto `ronrom-previa`. O build recusa a prévia com o `SITE_URL` do site.
 - **`KV_REST_API_URL` e `KV_REST_API_TOKEN`** são o endereço e o token da API REST do Upstash Redis do contador de visualizações (#56), injetados pela integração do Marketplace só em Production. Sem eles, a `/api/views` não grava nada. Ao provisionar, confira se a integração usa exatamente esses nomes ([`visualizacoes.md`](visualizacoes.md#provisionar-o-upstash-dono-do-repositório)).
+- **`PUBLIC_UMAMI_ID`** é o website-id do site no Umami Cloud (#58), um UUID de 36 caracteres. Não é segredo: aparece no HTML. O script do analytics só entra no build de produção com ela cadastrada; nos previews e na prévia de rascunhos (`ronrom-previa`), nada é coletado mesmo que ela exista ([`analytics.md`](analytics.md)).
 - **`VERCEL_ENV`** é variável de sistema da Vercel, sem cadastro. Entra no schema para dois usos que só valem em `production`: a `/api/views` contar visualizações e o site ser indexável (o `/robots.txt` libera os buscadores e as páginas saem indexáveis; no resto, previews, local e CI, tudo sai bloqueado e com `noindex,nofollow`, [seo-urls.md](seo-urls.md#indexação)). O `astro.config.mjs` também a lê, direto do ambiente.
 - **`VERCEL_GIT_COMMIT_SHA`** é variável de sistema da Vercel, sem cadastro. Entra no schema só para o `/api/health` ler o commit pelo `astro:env`.
 - **Os tokens do Studio** (`SANITY_AUTH_TOKEN`) e as variáveis `SANITY_STUDIO_*` não são do site: veja [`studio/README.md`](../studio/README.md).

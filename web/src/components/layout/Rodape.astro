@@ -1,6 +1,7 @@
 ---
 import { STUDIO_URL } from 'astro:env/server';
 import Container from '@/components/layout/Container.astro';
+import { EVENTOS } from '@/lib/analytics';
 import { CATEGORIAS_PRINCIPAIS, SECOES } from '@/lib/navegacao';
 import { NOME_DO_SITE } from '@/lib/utils/site';
 
@@ -38,10 +39,16 @@ const grupos = [
       <p>
         © {ano} {NOME_DO_SITE}
       </p>
-      {/* O Studio pede login: nofollow evita que buscadores sigam o link. */}
-      <a href={STUDIO_URL} rel="nofollow">
-        Área da autora
-      </a>
+      <div class="rodape__fim-links">
+        {/* data-umami-event: o Umami conta o clique sozinho (#58). */}
+        <a href="/rss.xml" data-umami-event={EVENTOS.rss}>
+          RSS
+        </a>
+        {/* O Studio pede login: nofollow evita que buscadores sigam o link. */}
+        <a href={STUDIO_URL} rel="nofollow">
+          Área da autora
+        </a>
+      </div>
     </div>
   </Container>
 </footer>
@@ -112,6 +119,12 @@ const grupos = [
     padding-block-start: var(--espaco-5);
     border-block-start: 1px solid color-mix(in srgb, var(--cor-texto-2) 25%, transparent);
     color: var(--cor-texto-2);
+  }
+
+  .rodape__fim-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espaco-5);
   }
 
   .rodape__fim a {

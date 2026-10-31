@@ -301,6 +301,15 @@ export default defineConfig({
         optional: true,
       }),
 
+      // Website-id do site no Umami Cloud (#58), um UUID. Sem ele, ou fora de produção, o script
+      // do analytics não entra no HTML (docs/analytics.md).
+      PUBLIC_UMAMI_ID: envField.string({
+        context: 'server',
+        access: 'public',
+        optional: true,
+        length: 36,
+      }),
+
       // Variável de sistema da Vercel (sem cadastro): o ambiente do deploy. Só em production a
       // /api/views conta visualizações e o site é indexável; fora dela, o robots.txt bloqueia
       // tudo e toda página sai com noindex,nofollow (#52).

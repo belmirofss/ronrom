@@ -1,0 +1,34 @@
+---
+// Script do Umami Cloud (#58), no <head> de toda página. Só sai no build de produção com o
+// PUBLIC_UMAMI_ID cadastrado e fora da prévia de rascunhos (configurarUmami). Atributos e o que
+// cada um evita: docs/analytics.md.
+import {
+  PUBLIC_SANITY_VISUAL_EDITING_ENABLED,
+  PUBLIC_UMAMI_ID,
+  VERCEL_ENV,
+} from 'astro:env/server';
+import { configurarUmami, SCRIPT_DO_UMAMI } from '@/lib/analytics';
+import { URL_DO_SITE } from '@/lib/utils/site';
+
+const umami = configurarUmami({
+  websiteId: PUBLIC_UMAMI_ID,
+  ambiente: VERCEL_ENV,
+  previa: PUBLIC_SANITY_VISUAL_EDITING_ENABLED,
+  urlDoSite: URL_DO_SITE,
+});
+---
+
+{/* is:inline só para o Astro não tentar empacotar um script de outra origem: o código vem do
+    `src`, liberado no script-src da CSP, e nada roda inline. */}
+{umami && (
+  <script
+    is:inline
+    defer
+    src={SCRIPT_DO_UMAMI}
+    data-website-id={umami.websiteId}
+    data-domains={umami.dominio}
+    data-do-not-track="true"
+    data-exclude-search="true"
+    data-exclude-hash="true"
+  ></script>
+)}

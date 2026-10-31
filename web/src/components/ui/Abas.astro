@@ -1,4 +1,5 @@
 ---
+import type { Evento } from '@/lib/analytics';
 import type { NivelDoTitulo } from '@/lib/card';
 
 interface Aba {
@@ -15,10 +16,12 @@ interface Props {
   rotulo: string;
   /** Nível do título de cada painel. Padrão: 2. */
   nivelTitulo?: NivelDoTitulo;
+  /** Evento do analytics (#58) mandado quando a pessoa troca de aba, com o `id` da aba. */
+  evento?: Evento;
   class?: string;
 }
 
-const { abas, rotulo, nivelTitulo = 2, class: classe } = Astro.props;
+const { abas, rotulo, nivelTitulo = 2, evento, class: classe } = Astro.props;
 
 if (abas.length === 0) throw new Error('<Abas> sem nenhuma aba.');
 
@@ -28,7 +31,7 @@ const temAoLado = Astro.slots.has('ao-lado');
 
 {/* Aprimoramento progressivo: sem JS, a lista de abas some e os painéis ficam um embaixo do
     outro, cada um com o próprio título. Com JS, o script abaixo liga o padrão WAI-ARIA Tabs. */}
-<div class:list={['abas', classe]} data-abas>
+<div class:list={['abas', classe]} data-abas data-abas-evento={evento}>
   <div class="abas__barra">
     <div class="abas__lista" role="tablist" aria-label={rotulo}>
       {abas.map(({ id, titulo }, i) => (
@@ -66,6 +69,7 @@ const temAoLado = Astro.slots.has('ao-lado');
 
 <script>
   import { abaDaTecla } from '@/lib/abas';
+  import { registrarEvento, type Evento } from '@/lib/analytics';
 
   for (const raiz of document.querySelectorAll<HTMLElement>('[data-abas]')) {
     const abas = [
@@ -77,7 +81,16 @@ const temAoLado = Astro.slots.has('ao-lado');
       return painel;
     });
 
+    const eventoDaTroca = raiz.dataset['abasEvento'] as Evento | undefined;
+    let selecionada = abas.findIndex((aba) => aba.getAttribute('aria-selected') === 'true');
+
     const selecionar = (indice: number, focar: boolean) => {
+      // Só a troca conta no analytics: clicar de novo na aba aberta não manda nada.
+      // O `id` da aba sem o prefixo, como no Props: "mais-lidos", não "aba-mais-lidos".
+      if (eventoDaTroca && indice !== selecionada) {
+        registrarEvento(eventoDaTroca, { aba: abas[indice]?.id.replace(/^aba-/, '') ?? '' });
+      }
+      selecionada = indice;
       abas.forEach((aba, i) => {
         const ativa = i === indice;
         aba.setAttribute('aria-selected', String(ativa));

@@ -2,6 +2,7 @@
 import { Font } from 'astro:assets';
 import Cabecalho from '@/components/layout/Cabecalho.astro';
 import Rodape from '@/components/layout/Rodape.astro';
+import Umami from '@/components/layout/Umami.astro';
 import Seo from '@/components/seo/Seo.astro';
 import type { Metadados } from '@/lib/seo';
 import { IDIOMA } from '@/lib/utils/site';
@@ -27,6 +28,7 @@ const { seo } = Astro.props;
     <Seo {...seo}>
       <slot name="head" />
     </Seo>
+    <Umami />
   </head>
   <body>
     {/* Primeiro elemento focável: aparece só com o foco e leva o foco para o <main>. */}

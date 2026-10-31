@@ -120,7 +120,12 @@ const listagens = [
     type PaginaDeResultados,
     type ResultadoDeBusca,
   } from '@/lib/busca-cliente';
+  import { EVENTOS, registrarEvento } from '@/lib/analytics';
   import { formatarData } from '@/lib/utils/data';
+
+  // Uma busca só conta no analytics (#58) depois de 1 s parada: quem digita "gato" letra por letra
+  // gera uma busca no painel, não quatro. Vai só a quantidade de resultados, nunca o texto.
+  const PAUSA_PARA_CONTAR_MS = 1000;
 
   const raiz = document.querySelector<HTMLElement>('[data-busca]');
   const modelo = document.querySelector<HTMLTemplateElement>('[data-modelo]');
@@ -203,7 +208,10 @@ const listagens = [
       mais.hidden = !pagina?.temMais;
     };
 
+    let contagemPendente: ReturnType<typeof setTimeout> | undefined;
+
     const buscar = async (estado: EstadoDaBusca) => {
+      clearTimeout(contagemPendente);
       if (!temBusca(estado)) {
         pagina = null;
         lista.replaceChildren();
@@ -223,6 +231,10 @@ const listagens = [
         const termo = estado.q ? ` para “${estado.q}”` : '';
         mostrarStatus(`${rotuloDaContagem(resposta.total)}${termo}.`);
         raiz.removeAttribute('aria-busy');
+        contagemPendente = setTimeout(
+          () => registrarEvento(EVENTOS.busca, { resultados: resposta.total }),
+          PAUSA_PARA_CONTAR_MS,
+        );
       } catch (erro) {
         console.error('[busca]', erro);
         pagina = null;
@@ -249,7 +261,15 @@ const listagens = [
       aplicar('push');
     });
     campo.addEventListener('input', () => aplicar('replace'));
-    for (const select of selects) select.addEventListener('change', () => aplicar('push'));
+    for (const select of selects) {
+      select.addEventListener('change', () => {
+        registrarEvento(EVENTOS.filtro, {
+          filtro: select.dataset['filtro'] ?? '',
+          valor: select.value || 'todos',
+        });
+        aplicar('push');
+      });
+    }
 
     window.addEventListener('popstate', () => {
       const estado = lerEstado(new URLSearchParams(location.search));
