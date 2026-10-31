@@ -207,8 +207,8 @@ const galeria = defineArrayMember({
 });
 
 // Vídeo do YouTube ou post do Instagram no meio do texto. O `provedor` e o `idVideo` ficam
-// escondidos e são gravados pelo VideoInput a partir do link: o site usa os dois para montar o
-// player, sem interpretar a URL.
+// escondidos e são gravados pelo VideoInput a partir do link, para consultas e prévias. O player do
+// site tira os dois do próprio link, com o mesmo `videoDoLink` (lib/video.ts).
 const video = defineArrayMember({
   name: 'video',
   title: 'Vídeo',

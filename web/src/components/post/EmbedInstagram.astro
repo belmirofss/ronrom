@@ -1,0 +1,135 @@
+---
+interface Props {
+  /** O código do post ou reel, tirado do link pelo `videoDoLink` (studio/lib/video.ts). */
+  codigo: string;
+  /** Texto opcional embaixo do post. */
+  legenda?: string | undefined;
+}
+
+const { codigo, legenda } = Astro.props;
+
+// O Instagram resolve o código de reels também pelo caminho /p/.
+const link = `https://www.instagram.com/p/${codigo}/`;
+---
+
+<figure class="embed-instagram" data-embed-instagram={link}>
+  <p class="embed-instagram__cartao">
+    <strong class="embed-instagram__titulo">Post do Instagram</strong>
+    <span class="embed-instagram__aviso">
+      Ele só carrega aqui se você pedir, e só então o Instagram fica sabendo da sua visita.
+    </span>
+    <span class="embed-instagram__acoes">
+      <a class="embed-instagram__link" href={link} rel="noopener noreferrer">
+        Ver post no Instagram
+      </a>
+      <button class="embed-instagram__carregar" type="button" hidden>
+        Carregar post aqui
+      </button>
+    </span>
+  </p>
+  {legenda?.trim() && <figcaption class="embed-instagram__legenda">{legenda.trim()}</figcaption>}
+</figure>
+
+<script>
+  // Ilha do cartão: o botão só aparece com JS. No clique, o blockquote oficial entra no lugar do
+  // cartão e o embed.js, que o transforma no post, carrega uma vez só para a página toda.
+  type ComInstagram = Window & { instgrm?: { Embeds: { process(): void } } };
+  let embedJs: HTMLScriptElement | undefined;
+
+  for (const figura of document.querySelectorAll<HTMLElement>('[data-embed-instagram]')) {
+    const botao = figura.querySelector('button');
+    if (!botao) continue;
+    botao.hidden = false;
+    botao.addEventListener(
+      'click',
+      () => {
+        const link = figura.dataset.embedInstagram ?? '';
+        const citacao = document.createElement('blockquote');
+        citacao.className = 'instagram-media';
+        citacao.dataset.instgrmPermalink = link;
+        citacao.dataset.instgrmVersion = '14';
+        citacao.append(figura.querySelector('a') ?? link);
+        figura.querySelector('p')?.replaceWith(citacao);
+        // O embed.js troca o blockquote por um iframe: o foco fica na figura, logo antes dele.
+        figura.tabIndex = -1;
+        figura.focus();
+
+        const instgrm = (window as ComInstagram).instgrm;
+        if (instgrm) instgrm.Embeds.process();
+        else if (!embedJs) {
+          embedJs = document.createElement('script');
+          embedJs.src = 'https://www.instagram.com/embed.js';
+          embedJs.async = true;
+          document.body.append(embedJs);
+        }
+      },
+      { once: true },
+    );
+  }
+</script>
+
+<style>
+  .embed-instagram {
+    /* O post do Instagram tem no máximo 540px; o cartão acompanha. */
+    max-width: 540px;
+    margin-inline: auto;
+  }
+
+  .embed-instagram__cartao {
+    display: grid;
+    justify-items: start;
+    gap: var(--espaco-2);
+    padding: var(--espaco-5);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-md);
+    background-color: var(--cor-creme);
+    line-height: var(--altura-linha-base);
+  }
+
+  .embed-instagram__titulo {
+    font-weight: var(--peso-negrito);
+  }
+
+  .embed-instagram__aviso {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+  }
+
+  .embed-instagram__acoes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espaco-3) var(--espaco-5);
+    margin-block-start: var(--espaco-2);
+  }
+
+  .embed-instagram__link {
+    font-weight: var(--peso-medio);
+  }
+
+  .embed-instagram__carregar {
+    padding: var(--espaco-2) var(--espaco-4);
+    border: 0;
+    border-radius: var(--raio-pilula);
+    color: var(--cor-fundo);
+    background-color: var(--cor-vinho);
+    font: inherit;
+    font-weight: var(--peso-medio);
+    cursor: pointer;
+  }
+
+  .embed-instagram__carregar:hover {
+    background-color: var(--cor-vinho-hover);
+  }
+
+  .embed-instagram__carregar[hidden] {
+    display: none;
+  }
+
+  .embed-instagram__legenda {
+    margin-block-start: var(--espaco-2);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+    line-height: var(--altura-linha-base);
+  }
+</style>
