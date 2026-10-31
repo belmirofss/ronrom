@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatarData, isoNoFuso } from '@/lib/utils/data';
+import { anoNoFuso, formatarData, isoNoFuso } from '@/lib/utils/data';
 
 describe('formatarData', () => {
   it('escreve o mês por extenso e em minúsculas', () => {
@@ -22,6 +22,17 @@ describe('formatarData', () => {
   it('lança erro com data inválida', () => {
     expect(() => formatarData('')).toThrow('Data inválida');
     expect(() => formatarData('ontem')).toThrow('Data inválida');
+  });
+});
+
+describe('anoNoFuso', () => {
+  it('usa o ano de Brasília na virada do ano', () => {
+    expect(anoNoFuso('2027-01-01T01:30:00Z')).toBe(2026);
+    expect(anoNoFuso('2027-01-01T03:00:00Z')).toBe(2027);
+  });
+
+  it('lança erro com data inválida', () => {
+    expect(() => anoNoFuso('ontem')).toThrow('Data inválida');
   });
 });
 

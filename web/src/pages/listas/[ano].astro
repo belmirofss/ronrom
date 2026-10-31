@@ -1,0 +1,184 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BarraLateral from '@/components/barra-lateral/BarraLateral.astro';
+import ItemDeLista from '@/components/post/ItemDeLista.astro';
+import JsonLd from '@/components/seo/JsonLd.astro';
+import Breadcrumb from '@/components/ui/Breadcrumb.astro';
+import LayoutComBarraLateral from '@/layouts/LayoutComBarraLateral.astro';
+import {
+  descricaoDaLista,
+  listaSemIndexacao,
+  listasPorAno,
+  rotuloDoGrupo,
+  tituloDaLista,
+  totalDaLista,
+} from '@/lib/listas';
+import { naoEncontrada } from '@/lib/previa';
+import { urlDaListaDoAno } from '@/lib/rotas';
+import { buscarListasDoAno } from '@/lib/sanity/conteudo';
+import { trilhaDaListaDoAno } from '@/lib/trilha';
+
+// "Lidos e assistidos em {ano}" (#137): as reviews de livros, filmes e séries publicadas no ano,
+// geradas no build. Uma página por ano com pelo menos uma review dessas.
+export const getStaticPaths = (async () => {
+  const listas = listasPorAno(await buscarListasDoAno());
+  return listas.map(({ ano }) => ({ params: { ano: String(ano) } }));
+}) satisfies GetStaticPaths;
+
+const ano = Number(Astro.params.ano);
+const listas = listasPorAno(await buscarListasDoAno());
+const lista = listas.find((item) => item.ano === ano);
+if (!lista) return naoEncontrada(Astro, `Nenhuma review de livro, filme ou série em "${ano}".`);
+
+const titulo = tituloDaLista(ano);
+const trilha = trilhaDaListaDoAno(ano);
+const outrosAnos = listas.filter((item) => item.ano !== ano).map((item) => item.ano);
+const grupos = [
+  { id: 'lidos', titulo: 'Lidos', posts: lista.lidos },
+  { id: 'assistidos', titulo: 'Assistidos', posts: lista.assistidos },
+] as const;
+---
+
+<LayoutComBarraLateral
+  seo={{
+    title: titulo,
+    description: descricaoDaLista(lista),
+    canonical: urlDaListaDoAno(ano),
+    noindex: listaSemIndexacao(totalDaLista(lista)),
+  }}
+>
+  <JsonLd slot="head" pagina={{ tipo: 'listagem', titulo, trilha }} />
+
+  <div class="lista-do-ano">
+    <header class="lista-do-ano__topo">
+      <Breadcrumb itens={trilha} />
+      <h1 class="lista-do-ano__titulo">{titulo}</h1>
+      <p class="lista-do-ano__descricao">
+        Os livros, filmes e séries que viraram review por aqui em {ano}, das mais recentes às mais
+        antigas.
+      </p>
+    </header>
+
+    {grupos
+      .filter(({ posts }) => posts.length > 0)
+      .map(({ id, titulo: tituloDoGrupo, posts }) => (
+        <section class="lista-do-ano__grupo" aria-labelledby={`lista-${id}`}>
+          <div class="lista-do-ano__cabecalho">
+            <h2 id={`lista-${id}`} class="lista-do-ano__subtitulo">
+              {tituloDoGrupo}
+            </h2>
+            <p class="lista-do-ano__total">{rotuloDoGrupo(id, posts.length)}</p>
+          </div>
+          <ul class="lista-do-ano__posts">
+            {posts.map((post) => (
+              <li>
+                <ItemDeLista post={post} nivelTitulo={3} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+
+    {outrosAnos.length > 0 && (
+      <nav class="lista-do-ano__anos" aria-labelledby="lista-outros-anos">
+        <h2 id="lista-outros-anos" class="lista-do-ano__subtitulo">
+          Outros anos
+        </h2>
+        <ul class="lista-do-ano__links">
+          {outrosAnos.map((outro) => (
+            <li>
+              <a href={urlDaListaDoAno(outro)}>{outro}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )}
+  </div>
+
+  <BarraLateral slot="barra-lateral" />
+</LayoutComBarraLateral>
+
+<style>
+  .lista-do-ano {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-8);
+  }
+
+  .lista-do-ano__topo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-3);
+  }
+
+  .lista-do-ano__titulo {
+    font-size: var(--texto-3xl);
+  }
+
+  .lista-do-ano__descricao {
+    max-width: var(--coluna-leitura);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-lg);
+  }
+
+  .lista-do-ano__grupo,
+  .lista-do-ano__anos {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-5);
+  }
+
+  .lista-do-ano__cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espaco-2) var(--espaco-4);
+    align-items: baseline;
+    padding-block-end: var(--espaco-3);
+    border-block-end: 1px solid var(--cor-borda);
+  }
+
+  .lista-do-ano__subtitulo {
+    font-size: var(--texto-2xl);
+  }
+
+  .lista-do-ano__total {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+    font-weight: var(--peso-medio);
+  }
+
+  .lista-do-ano__posts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-7);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Pílulas com alvo de toque de 44px de altura, como no /sobre. */
+  .lista-do-ano__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espaco-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .lista-do-ano__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--espaco-4);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-pilula);
+    font-weight: var(--peso-medio);
+    text-decoration-line: none;
+  }
+
+  .lista-do-ano__links a:hover {
+    border-color: var(--cor-vinho);
+    background-color: var(--cor-creme);
+  }
+</style>

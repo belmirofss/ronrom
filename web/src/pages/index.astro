@@ -11,11 +11,17 @@ import EstadoVazio from '@/components/ui/EstadoVazio.astro';
 import LayoutComBarraLateral from '@/layouts/LayoutComBarraLateral.astro';
 import { EVENTOS } from '@/lib/analytics';
 import { ultimosSemODestaque } from '@/lib/home';
-import { buscarConfiguracoes, buscarDestaque, buscarUltimos } from '@/lib/sanity/conteudo';
+import {
+  buscarConfiguracoes,
+  buscarDestaque,
+  buscarSobre,
+  buscarUltimos,
+} from '@/lib/sanity/conteudo';
 import { DESCRICAO_DO_SITE } from '@/lib/utils/site';
 
-const [configuracoes, destaque, { posts }] = await Promise.all([
+const [configuracoes, sobre, destaque, { posts }] = await Promise.all([
   buscarConfiguracoes(),
+  buscarSobre(),
   buscarDestaque(),
   buscarUltimos(),
 ]);
@@ -41,8 +47,8 @@ const ABAS = [
 >
   <JsonLd slot="head" pagina={{ tipo: 'home' }} />
 
-  {/* O único h1 da home, "Ronrom", está no TopoHome. */}
-  <TopoHome slot="topo" />
+  {/* O único h1 da home, "Ronrom", está no TopoHome, assinado com o nome do Sobre. */}
+  <TopoHome slot="topo" autora={sobre?.nome?.trim()} />
 
   {destaque ? (
     <div class="home">

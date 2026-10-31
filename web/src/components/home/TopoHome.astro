@@ -5,40 +5,74 @@ import { NOME_DO_SITE } from '@/lib/utils/site';
 interface Props {
   /** Frase embaixo do nome. */
   subtitulo?: string;
+  /** O `nome` do Sobre, na assinatura "Por ..." embaixo do nome. Sem ele, sem assinatura. */
+  autora?: string | undefined;
 }
 
 const {
   subtitulo = 'Reviews de filmes, séries, livros, restaurantes e lugares, e pensamentos sobre o resto.',
+  autora,
 } = Astro.props;
 ---
 
+{/* A capa ocupa a primeira dobra toda (#141); a seta leva ao que vem depois dela, o
+    #depois-do-topo do LayoutComBarraLateral. */}
 <div class="topo-home">
-  <div class="topo-home__textos">
-    <h1 class="topo-home__nome">{NOME_DO_SITE}</h1>
-    <p class="topo-home__subtitulo">{subtitulo}</p>
+  <div class="topo-home__capa">
+    <div class="topo-home__textos">
+      <h1 class="topo-home__nome">{NOME_DO_SITE}</h1>
+      {autora && <p class="topo-home__autora">Por {autora}</p>}
+      <p class="topo-home__subtitulo">{subtitulo}</p>
+    </div>
+    <Mosaico />
   </div>
-  <Mosaico />
+  <a class="topo-home__rolar" href="#depois-do-topo">
+    <span class="visualmente-oculto">Ir para os posts</span>
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="m6 9 6 6 6-6"></path>
+    </svg>
+  </a>
 </div>
 
 <style>
-  /* No celular, o mosaico fica embaixo do nome; a partir de 640px, à direita dele. */
+  /* Altura da tela menos a do cabeçalho (--altura-cabecalho, no Cabecalho), com a capa centrada
+     e a seta no pé. Em tela baixa demais a capa só cresce: nada é cortado. */
   .topo-home {
     display: grid;
-    gap: var(--espaco-6);
-    padding-block: var(--espaco-7);
+    grid-template-rows: 1fr auto;
+    gap: var(--espaco-4);
+    min-block-size: calc(100svh - var(--altura-cabecalho));
+    padding-block: var(--espaco-5) var(--espaco-2);
   }
 
-  .topo-home > :global(.mosaico) {
-    width: min(100%, 20rem);
+  /* No celular, o mosaico fica embaixo do nome; a partir de 640px, à direita dele. */
+  .topo-home__capa {
+    display: grid;
+    align-self: center;
+    gap: var(--espaco-5);
+  }
+
+  /* No celular o mosaico também diminui em tela baixa, para a capa caber na primeira dobra. */
+  .topo-home__capa > :global(.mosaico) {
+    width: min(100%, 20rem, 30svh);
   }
 
   @media (min-width: 40rem) {
-    .topo-home {
+    .topo-home__capa {
       grid-template-columns: 1fr auto;
       align-items: end;
+      gap: var(--espaco-6);
     }
 
-    .topo-home > :global(.mosaico) {
+    .topo-home__capa > :global(.mosaico) {
       width: clamp(11rem, 28vw, 20rem);
     }
   }
@@ -50,10 +84,60 @@ const {
     letter-spacing: var(--espacamento-ronrom);
   }
 
+  /* Assinatura discreta: pequena e no tom secundário, para não competir com o subtítulo. */
+  .topo-home__autora {
+    margin-block-start: var(--espaco-2);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+  }
+
   .topo-home__subtitulo {
     max-width: 32ch;
     margin-block-start: var(--espaco-4);
     color: var(--cor-texto-2);
     font-size: var(--texto-lg);
+  }
+
+  /* 44×44 de área de toque, com a seta de 28px no meio. */
+  .topo-home__rolar {
+    display: grid;
+    justify-self: center;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--raio-pilula);
+    color: var(--cor-vinho);
+  }
+
+  .topo-home__rolar:hover {
+    background-color: var(--cor-creme);
+    color: var(--cor-vinho-hover);
+  }
+
+  .topo-home__rolar svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* Só com movimento liberado: a seta balança de leve e a rolagem até o conteúdo é suave. */
+  @media (prefers-reduced-motion: no-preference) {
+    .topo-home__rolar svg {
+      animation: balanco 2s ease-in-out infinite;
+    }
+
+    :global(html:has(.topo-home__rolar)) {
+      scroll-behavior: smooth;
+    }
+  }
+
+  @keyframes balanco {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(4px);
+    }
   }
 </style>

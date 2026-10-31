@@ -1,6 +1,7 @@
+import { listaSemIndexacao, listasPorAno, totalDaLista } from '@/lib/listas';
 import { CAMINHO_DO_MAPA } from '@/lib/mapa';
 import { CAMINHO_DA_PRIVACIDADE, PRIVACIDADE_ATUALIZADA_EM } from '@/lib/privacidade';
-import { urlDaCategoria, urlDaPagina, urlDoFormato, urlDoPost } from '@/lib/rotas';
+import { urlDaCategoria, urlDaListaDoAno, urlDaPagina, urlDoFormato, urlDoPost } from '@/lib/rotas';
 import { POSTS_POR_PAGINA, totalDePaginas } from '@/lib/sanity/conteudo';
 import type { CONSULTA_DO_SITEMAP_RESULT } from '@/lib/sanity/tipos.gerados';
 
@@ -39,6 +40,7 @@ const iso = (data: number) => new Date(data).toISOString();
  * - Página `n` de uma listagem: o post mais recente entre os que aparecem nela ou antes dela (um
  *   post novo empurra todos os outros uma posição), ou o documento da categoria ou do formato,
  *   cuja descrição a página mostra.
+ * - Lista do ano (#137): a review mais recente da lista; com poucas reviews, noindex.
  * - Home: a data mais recente de tudo (destaque, abas e barra lateral). Sobre: o próprio documento.
  * - Privacidade: a última mudança no texto ou no Sobre, de onde vêm o nome e o e-mail da autora.
  * - Mapa: o post de lugar (restaurantes, cafés e lugares) mais recente.
@@ -89,10 +91,16 @@ export function dadosDoSitemap(dados: CONSULTA_DO_SITEMAP_RESULT): DadosDoSitema
     listagem(urlDoFormato(slug), posts, _updatedAt);
   }
 
+  for (const lista of listasPorAno(dados.posts)) {
+    const caminho = urlDaListaDoAno(lista.ano);
+    lastmod[caminho] = iso(maisRecente([...lista.lidos, ...lista.assistidos].map(dataDoPost)));
+    if (listaSemIndexacao(totalDaLista(lista))) noindex.push(caminho);
+  }
+
   lastmod['/'] = iso(home);
   lastmod['/sobre'] = iso(maisRecente([dados.sobre]) || home);
   lastmod[CAMINHO_DO_MAPA] = iso(
-    maisRecente(dados.posts.filter((post) => post.lugar).map(dataDoPost)) || home,
+    maisRecente(dados.posts.filter((post) => post.modelo === 'lugar').map(dataDoPost)) || home,
   );
   lastmod[CAMINHO_DA_PRIVACIDADE] = iso(maisRecente([PRIVACIDADE_ATUALIZADA_EM, dados.sobre]));
 

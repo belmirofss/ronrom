@@ -124,6 +124,16 @@ export const CONSULTA_DA_TAXONOMIA = defineQuery(`{
   }
 }`);
 
+// /listas/[ano] (#137): as reviews de livros, filmes e séries, com o modelo de ficha da categoria
+// para separar "lidos" de "assistidos". O ano sai da data de publicação, no fuso de Brasília
+// (web/src/lib/listas.ts): o GROQ não converte fuso, então o agrupamento fica no site.
+export const CONSULTA_DAS_LISTAS_DO_ANO = defineQuery(`*[
+  ${POST_PUBLICADO} && tipo == "review" && categoria->modeloFicha in ["livro", "filme", "serie"]
+] | ${MAIS_RECENTES} {${CAMPOS_DO_CARD},
+  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } },
+  "modelo": categoria->modeloFicha
+}`);
+
 // --- Post ---
 
 // Página do post. Parâmetros: $tipo, $secao (slug da categoria, em review, ou do formato, em
@@ -200,7 +210,8 @@ export const CONSULTA_DOS_REDIRECTS = defineQuery(
 );
 
 // Sitemap (#52): o `lastmod` de cada página (web/src/lib/sitemap.ts). A URL do post sai do
-// `urlDoPost`, e post com `noindex` fica de fora. Os posts vêm na ordem das listagens, para o
+// `urlDoPost`, e post com `noindex` fica de fora. O `modelo` diz se a review entra nas listas
+// do ano (#137). Os posts vêm na ordem das listagens, para o
 // `lastmod` de cada página de listagem; as datas da taxonomia, do Sobre e das Configurações
 // cobrem o que essas páginas mostram além dos posts.
 export const CONSULTA_DO_SITEMAP = defineQuery(`{
@@ -208,8 +219,8 @@ export const CONSULTA_DO_SITEMAP = defineQuery(`{
     ${ROTA},
     _updatedAt,
     dataDePublicacao,
-    "noindex": coalesce(seo.noindex, false),
-    "lugar": categoria->modeloFicha == "lugar"
+    "modelo": categoria->modeloFicha,
+    "noindex": coalesce(seo.noindex, false)
   },
   "categorias": *[_type == "categoria" && ${PUBLICADO}]{ "slug": slug.current, _updatedAt },
   "formatos": *[_type == "formato" && ${PUBLICADO}]{ "slug": slug.current, _updatedAt },
