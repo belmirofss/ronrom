@@ -29,7 +29,6 @@ export type Sobre = {
   _updatedAt: string;
   _rev: string;
   nome: string;
-  email: string;
   foto: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -554,12 +553,11 @@ export type CONSULTA_DAS_CONFIGURACOES_RESULT =
 
 // Source: ../web/src/lib/sanity/consultas.ts
 // Variable: CONSULTA_DO_SOBRE
-// Query: *[_id == "sobre"][0]{  _updatedAt,  nome,  email,  bio,  "foto": foto{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  texto,  seo{ descricao, "imagem": imagem{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }} }}
+// Query: *[_id == "sobre"][0]{  _updatedAt,  nome,  bio,  "foto": foto{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  texto,  seo{ descricao, "imagem": imagem{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }} }}
 export type CONSULTA_DO_SOBRE_RESULT =
   | {
       _updatedAt: string;
       nome: null;
-      email: null;
       bio: null;
       foto: null;
       texto: null;
@@ -568,7 +566,6 @@ export type CONSULTA_DO_SOBRE_RESULT =
   | {
       _updatedAt: string;
       nome: null;
-      email: null;
       bio: null;
       foto: null;
       texto: null;
@@ -593,7 +590,6 @@ export type CONSULTA_DO_SOBRE_RESULT =
   | {
       _updatedAt: string;
       nome: string;
-      email: null;
       bio: null;
       foto: null;
       texto: null;
@@ -602,7 +598,6 @@ export type CONSULTA_DO_SOBRE_RESULT =
   | {
       _updatedAt: string;
       nome: string;
-      email: string;
       bio: string;
       foto: {
         asset: {
@@ -1326,7 +1321,7 @@ export type CONSULTA_DO_FEED_RESULT = Array<{
 declare global {
   interface SanityQueries {
     '*[_id == "configuracoes"][0]{\n  fraseDaSemana,\n  seo{ descricao, "imagem": imagem{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n} },\n  redes[]{ rede, url }\n}': CONSULTA_DAS_CONFIGURACOES_RESULT;
-    '*[_id == "sobre"][0]{\n  _updatedAt,\n  nome,\n  email,\n  bio,\n  "foto": foto{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  texto,\n  seo{ descricao, "imagem": imagem{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n} }\n}': CONSULTA_DO_SOBRE_RESULT;
+    '*[_id == "sobre"][0]{\n  _updatedAt,\n  nome,\n  bio,\n  "foto": foto{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  texto,\n  seo{ descricao, "imagem": imagem{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n} }\n}': CONSULTA_DO_SOBRE_RESULT;
     'coalesce(\n  *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && _id == *[_id == "configuracoes"][0].postEmDestaque._ref][0]{\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n,\n  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }\n},\n  *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) [0]{\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n,\n  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }\n}\n)': CONSULTA_DO_DESTAQUE_RESULT;
     '{\n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && true] | order(dataDePublicacao desc, _id asc) [$inicio...$fim]{\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n,\n  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }\n},\n  "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && true])\n}': CONSULTA_DOS_ULTIMOS_POSTS_RESULT;
     '{\n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == $tipo] | order(dataDePublicacao desc, _id asc) [$inicio...$fim]{\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n,\n  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }\n},\n  "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == $tipo])\n}': CONSULTA_DOS_POSTS_DO_TIPO_RESULT;
@@ -1339,8 +1334,8 @@ declare global {
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n,\n  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }\n}': CONSULTA_DO_INDICE_DE_POSTS_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())]._id': CONSULTA_DOS_IDS_PUBLICADOS_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && count(slugsAnteriores) > 0]{ "anteriores": slugsAnteriores, tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current } }': CONSULTA_DOS_REDIRECTS_RESULT;
-    '{\n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {\n    tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current },\n    _updatedAt,\n    dataDePublicacao,\n    "noindex": coalesce(seo.noindex, false)\n  },\n  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n\n  "sobre": *[_id == "sobre"][0]._updatedAt,\n  "configuracoes": *[_id == "configuracoes"][0]._updatedAt\n}': CONSULTA_DO_SITEMAP_RESULT;
-    '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) [0...30]{\n  tipo,\n  "slug": slug.current,\n  titulo,\n  subtitulo,\n  dataDePublicacao,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  "corpo": corpo[_type == "block"]{ _type, style, children[]{ text } },\n  seo{ descricao }\n}': CONSULTA_DO_FEED_RESULT;
+    '{\n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {\n    tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current },\n    _updatedAt,\n    dataDePublicacao,\n    "noindex": coalesce(seo.noindex, false)\n  },\n  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "sobre": *[_id == "sobre"][0]._updatedAt,\n  "configuracoes": *[_id == "configuracoes"][0]._updatedAt\n}': CONSULTA_DO_SITEMAP_RESULT;
+    '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) [0...30]{\n  tipo,\n  "slug": slug.current,\n  titulo,\n  subtitulo,\n  dataDePublicacao,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  "corpo": corpo[_type == "block"]{ _type, style, children[]{ text } },\n  seo{ descricao }\n}': CONSULTA_DO_FEED_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

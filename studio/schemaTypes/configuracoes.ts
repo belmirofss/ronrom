@@ -30,7 +30,7 @@ export const configuracoes = defineType({
   fields: [
     defineField({
       name: 'fraseDaSemana',
-      title: 'Frase da semana',
+      title: 'Frase em destaque',
       type: 'object',
       group: 'home',
       description:
@@ -65,7 +65,7 @@ export const configuracoes = defineType({
           name: 'data',
           title: 'Data',
           type: 'date',
-          description: 'Opcional. A semana da frase.',
+          description: 'Opcional. A data da frase.',
           options: { dateFormat: 'DD/MM/YYYY' },
         }),
       ],
@@ -118,7 +118,7 @@ export const configuracoes = defineType({
       type: 'array',
       group: 'seo',
       description:
-        'Links para os seus perfis. Aparecem no site e ajudam o Google a saber que os perfis são seus.',
+        'Links para os seus perfis. Aparecem na página de privacidade, como o canal para pedidos sobre os dados, e ajudam o Google a saber que os perfis são seus.',
       of: [
         defineArrayMember({
           name: 'rede',

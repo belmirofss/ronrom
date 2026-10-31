@@ -44,15 +44,14 @@ const rotas = await buscarRotasDosPosts();
 | `buscarPostsDoTipo(tipo, pagina?)`      | `CONSULTA_DOS_POSTS_DO_TIPO`      |
 | `buscarPostsDaCategoria(slug, pagina?)` | `CONSULTA_DOS_POSTS_DA_CATEGORIA` |
 | `buscarPostsDoFormato(slug, pagina?)`   | `CONSULTA_DOS_POSTS_DO_FORMATO`   |
-
-| `buscarTaxonomia()` | `CONSULTA_DA_TAXONOMIA` |
-| `buscarPost({ tipo, secao, slug })` | `CONSULTA_DO_POST` |
-| `buscarRotasDosPosts()` | `CONSULTA_DAS_ROTAS_DOS_POSTS` |
-| `buscarLeiaTambem(id)` | `CONSULTA_DO_LEIA_TAMBEM` |
-| `buscarIndiceDePosts()` | `CONSULTA_DO_INDICE_DE_POSTS` |
-| `buscarSitemap()` | `CONSULTA_DO_SITEMAP` |
-| `CONSULTA_DO_FEED` | — | Os 30 posts mais recentes, para o `/rss.xml`: rota, título, subtítulo, data, categoria ou formato, capa, texto dos blocos do corpo e `seo.descricao` (#52) |
-| `buscarFeed()` | `CONSULTA_DO_FEED` |
+| `buscarTaxonomia()`                     | `CONSULTA_DA_TAXONOMIA`           |
+| `buscarPost({ tipo, secao, slug })`     | `CONSULTA_DO_POST`                |
+| `buscarRotasDosPosts()`                 | `CONSULTA_DAS_ROTAS_DOS_POSTS`    |
+| `buscarLeiaTambem(id)`                  | `CONSULTA_DO_LEIA_TAMBEM`         |
+| `buscarIndiceDePosts()`                 | `CONSULTA_DO_INDICE_DE_POSTS`     |
+| `buscarSitemap()`                       | `CONSULTA_DO_SITEMAP`             |
+| `CONSULTA_DO_FEED`                      | —                                 | Os 30 posts mais recentes, para o `/rss.xml`: rota, título, subtítulo, data, categoria ou formato, capa, texto dos blocos do corpo e `seo.descricao` (#52) |
+| `buscarFeed()`                          | `CONSULTA_DO_FEED`                |
 
 As listagens recebem o número da página (a partir de 1; o padrão é 1) e calculam a fatia com `fatiaDaPagina(n)`, a partir de `POSTS_POR_PAGINA` (12). `totalDePaginas(total)` diz quantas páginas gerar, com pelo menos uma.
 
@@ -89,7 +88,7 @@ O que o dataset tem (o [`conteudo.test.ts`](conteudo.test.ts) confere):
 
 - **1 review de cada categoria**, com nota e ficha do modelo certo. A ficha do mirante (Lugares) fica sem tipo de cozinha e sem Instagram: o caso do campo vazio.
 - **1 pensamento de cada formato**: um artigo com **todos os blocos do Portable Text** (subtítulos h2 e h3, citação, listas com marcadores e numerada, com subnível, negrito, itálico, link externo `https` e `mailto`, link interno no ar e fora do ar, imagem normal e larga, galeria, vídeo do YouTube e do Instagram e citação em destaque com e sem fonte), um texto sem subtítulo, uma frase curta (com `noindex` e um endereço antigo, para o sitemap e os redirects) e uma opinião com o SEO preenchido.
-- Configurações (frase da semana, destaque e redes) e a página Sobre.
+- Configurações (frase em destaque, post em destaque e redes) e a página Sobre.
 
 **Imagens.** Cada asset é um placeholder em SVG num data URI (`url`), com dimensões e `lqip`: nada vai para o repositório nem para a rede. O `_id` segue o padrão dos assets do Sanity (`image-{id}-{largura}x{altura}-svg`), mas não existe no CDN, e sem `SANITY_PROJECT_ID` não há como montar uma URL do CDN. O [`imagem.ts`](imagem.ts) usa o `url` do asset direto no modo fixtures, sem `srcset`, e o `<ImagemSanity>` recorta na proporção pelo CSS (veja [Imagens](#imagens)).
 
@@ -185,5 +184,4 @@ O projeto e o dataset saem da URL do próprio asset (`https://cdn.sanity.io/imag
 - `_updatedAt`, para o `dateModified` e o `lastmod`;
 - `ficha`: só os campos do modelo da categoria, com `modelo` (`'filme' | 'serie' | 'livro' | 'lugar' | 'comida'`) para separar os casos no TypeScript; campo vazio vem `null`, e a ficha toda vem `null` em pensamento ou sem ficha;
 - `corpo`: o Portable Text com as imagens (soltas e da galeria) expandidas e cada `linkInterno` com `post: Rota | null`, `null` quando o destino não está no ar;
-
 - `seo: { titulo, descricao, noindex, imagem } | null`.

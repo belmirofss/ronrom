@@ -25,16 +25,6 @@ export const sobre = defineType({
       description: 'Como você assina o blog. Aparece em "Oi, eu sou a…" e como autora dos posts.',
       validation: (rule) => rule.required().error('Preencha o nome.'),
     }),
-    // O contato da controladora na /privacidade (#59): a LGPD pede um canal para os pedidos do titular.
-    defineField({
-      name: 'email',
-      title: 'E-mail de contato',
-      type: 'email',
-      group: 'conteudo',
-      description:
-        'Aparece na página de privacidade, para quem quiser tirar dúvidas ou pedir algo sobre os próprios dados.',
-      validation: (rule) => rule.required().error('Preencha o e-mail de contato.'),
-    }),
     defineField({
       name: 'foto',
       title: 'Foto',

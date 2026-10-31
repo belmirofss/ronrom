@@ -123,14 +123,16 @@ Dois documentos únicos, registrados em `document.singletons` no [`sanity.config
 
 **Configurações do site** ([`schemaTypes/configuracoes.ts`](schemaTypes/configuracoes.ts)), abas Home e SEO e redes:
 
-| Campo            | Regras                                                                                                    |
-| ---------------- | --------------------------------------------------------------------------------------------------------- |
-| `fraseDaSemana`  | `texto` (aviso acima de 280), `autoria` e `data` opcionais; autor ou data sem texto é erro                |
-| `postEmDestaque` | Referência a post, só publicado (a validação confere); vazio, a home usa o post mais recente              |
-| `seo`            | SEO padrão do site: `descricao` (aviso se vazia ou acima de 160) e `imagem` (`alt` obrigatório se houver) |
-| `redes[]`        | `rede` (Instagram, TikTok, YouTube, Letterboxd, Goodreads, Skoob, Pinterest ou Outra) e `url` (https)     |
+| Campo            | Regras                                                                                                          |
+| ---------------- | --------------------------------------------------------------------------------------------------------------- |
+| `fraseDaSemana`  | "Frase em destaque": `texto` (aviso acima de 280), `autoria` e `data` opcionais; autor ou data sem texto é erro |
+| `postEmDestaque` | Referência a post, só publicado (a validação confere); vazio, a home usa o post mais recente                    |
+| `seo`            | SEO padrão do site: `descricao` (aviso se vazia ou acima de 160) e `imagem` (`alt` obrigatório se houver)       |
+| `redes[]`        | `rede` (Instagram, TikTok, YouTube, Letterboxd, Goodreads, Skoob, Pinterest ou Outra) e `url` (https)           |
 
 O destaque da home saiu do post (era o boolean `destaque`): com um só post escolhido aqui, não existe o caso de dois posts ligados ao mesmo tempo.
+
+As `redes` são o canal da `/privacidade` para os pedidos sobre os dados (a LGPD pede um; o Sobre mim não tem e-mail, #146). Mantenha ao menos uma preenchida: sem nenhuma, a página só manda para o `/sobre`.
 
 **Sobre mim** ([`schemaTypes/sobre.ts`](schemaTypes/sobre.ts)), abas Conteúdo e SEO:
 
@@ -186,7 +188,7 @@ O dataset é sempre explícito: sem `--dataset`, o script não grava nada.
 Conteúdo de exemplo para desenvolver e testar o site antes da autora escrever. Grava **só no dataset `development`**: [`scripts/seed.ts`](scripts/seed.ts) grava a taxonomia inicial e, depois, o conteúdo de [`seed/conteudo.ts`](seed/conteudo.ts):
 
 - **12 posts:** uma review por categoria, com nota e ficha preenchidas, e pensamentos dos quatro formatos. Entre eles, uma frase bem curta ("Café primeiro."), um texto longo ("Por que eu ainda escrevo à mão"), três posts sem subtítulo e a review de "Dias Perfeitos", com todos os blocos do texto (imagem, galeria, vídeo do YouTube e do Instagram, citação em destaque, citação, listas, link externo e link para outro post).
-- As **Configurações do site** (frase da semana, destaque, SEO e redes) e o **Sobre mim**.
+- As **Configurações do site** (frase em destaque, post em destaque, SEO e redes) e o **Sobre mim**.
 - **11 imagens** de [`seed/imagens`](seed/imagens): ilustrações próprias com a paleta do Ronrom, sem direitos de terceiros, enviadas como assets.
 
 Com `studio/.env` preenchido e `sanity login` feito (o token do usuário é o token de escrita, como na taxonomia), na raiz:

@@ -177,7 +177,6 @@ export function seoDoPost(post: PostParaSeo, canonical: string): Metadados {
     noindex: post.seo?.noindex ?? false,
     publishedTime: post.dataDePublicacao,
     modifiedTime: post._updatedAt,
-
     section: (post.tipo === 'review' ? post.categoria : post.formato)?.nome,
   };
 }

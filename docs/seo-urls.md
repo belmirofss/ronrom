@@ -49,31 +49,30 @@ A resposta esperada é `308` com `location: /sobre`.
 
 ## Mapa de rotas
 
-| Rota                            | Arquivo em `src/pages`               | Conteúdo                               | Indexável                | Issue |
-| ------------------------------- | ------------------------------------ | -------------------------------------- | ------------------------ | ----- |
-| `/`                             | `index.astro`                        | Home                                   | sim                      | #44   |
-| `/posts`                        | `posts/index.astro`                  | Todos os posts, mais recentes primeiro | sim                      | #46   |
-| `/reviews`                      | `reviews/index.astro`                | Todas as reviews                       | sim                      | #46   |
-| `/reviews/[categoria]`          | `reviews/[categoria]/index.astro`    | Reviews de uma categoria               | sim                      | #46   |
-| `/reviews/[categoria]/[slug]`   | `reviews/[categoria]/[slug].astro`   | Post do tipo review                    | sim, salvo `seo.noindex` | #42   |
-| `/pensamentos`                  | `pensamentos/index.astro`            | Todos os pensamentos                   | sim                      | #46   |
-| `/pensamentos/[formato]`        | `pensamentos/[formato]/index.astro`  | Pensamentos de um formato              | sim                      | #46   |
-| `/pensamentos/[formato]/[slug]` | `pensamentos/[formato]/[slug].astro` | Post do tipo pensamento                | sim, salvo `seo.noindex` | #42   |
-
-| `{listagem}/pagina/[n]` | `{listagem}/pagina/[n].astro` | Página `n` (a partir de 2) de uma listagem | sim, canonical para si | #46 |
-| `/sobre` | `sobre.astro` | Autora (texto do CMS) | sim | #47 |
-| `/busca` | `busca.astro` | Busca do Pagefind (`/busca?q=termo`) | não: `noindex,follow` | #55 |
-| `/privacidade` | `privacidade.astro` | Política de privacidade | sim | #59 |
-| qualquer URL inexistente | `404.astro` (gera `404.html`) | Página não encontrada, com status 404 | não | #47 |
-| `/rss.xml` | `rss.xml.ts` | Feed dos últimos 30 posts | — | #52 |
-| `/sitemap-index.xml`, `/sitemap-*.xml` | gerados pelo `@astrojs/sitemap` | Sitemap só com URLs canônicas | — | #52 |
-| `/robots.txt` | `robots.txt.ts` | Libera produção, bloqueia o resto | — | #52 |
-| `/posts-index.json` | `posts-index.json.ts` | Dados dos cards para "Mais lidos" | — | #57 |
-| `/pagefind/*` | gerado no build | Índice da busca | — | #54 |
-| `/api/health` | `api/health.ts` (sob demanda) | Fumaça do deploy | — | #9 |
-| `/api/csp-report` | `api/csp-report.ts` (sob demanda) | Recebe os relatórios da CSP | — | #41 |
-| `/api/views` | `api/views.ts` (sob demanda) | Registra visualização (`POST {id}`) | — | #56 |
-| `/api/mais-lidos` | `api/mais-lidos.ts` (sob demanda) | Ranking (`?limite=10`) | — | #57 |
+| Rota                                   | Arquivo em `src/pages`               | Conteúdo                                   | Indexável                | Issue |
+| -------------------------------------- | ------------------------------------ | ------------------------------------------ | ------------------------ | ----- |
+| `/`                                    | `index.astro`                        | Home                                       | sim                      | #44   |
+| `/posts`                               | `posts/index.astro`                  | Todos os posts, mais recentes primeiro     | sim                      | #46   |
+| `/reviews`                             | `reviews/index.astro`                | Todas as reviews                           | sim                      | #46   |
+| `/reviews/[categoria]`                 | `reviews/[categoria]/index.astro`    | Reviews de uma categoria                   | sim                      | #46   |
+| `/reviews/[categoria]/[slug]`          | `reviews/[categoria]/[slug].astro`   | Post do tipo review                        | sim, salvo `seo.noindex` | #42   |
+| `/pensamentos`                         | `pensamentos/index.astro`            | Todos os pensamentos                       | sim                      | #46   |
+| `/pensamentos/[formato]`               | `pensamentos/[formato]/index.astro`  | Pensamentos de um formato                  | sim                      | #46   |
+| `/pensamentos/[formato]/[slug]`        | `pensamentos/[formato]/[slug].astro` | Post do tipo pensamento                    | sim, salvo `seo.noindex` | #42   |
+| `{listagem}/pagina/[n]`                | `{listagem}/pagina/[n].astro`        | Página `n` (a partir de 2) de uma listagem | sim, canonical para si   | #46   |
+| `/sobre`                               | `sobre.astro`                        | Autora (texto do CMS)                      | sim                      | #47   |
+| `/busca`                               | `busca.astro`                        | Busca do Pagefind (`/busca?q=termo`)       | não: `noindex,follow`    | #55   |
+| `/privacidade`                         | `privacidade.astro`                  | Política de privacidade                    | sim                      | #59   |
+| qualquer URL inexistente               | `404.astro` (gera `404.html`)        | Página não encontrada, com status 404      | não                      | #47   |
+| `/rss.xml`                             | `rss.xml.ts`                         | Feed dos últimos 30 posts                  | —                        | #52   |
+| `/sitemap-index.xml`, `/sitemap-*.xml` | gerados pelo `@astrojs/sitemap`      | Sitemap só com URLs canônicas              | —                        | #52   |
+| `/robots.txt`                          | `robots.txt.ts`                      | Libera produção, bloqueia o resto          | —                        | #52   |
+| `/posts-index.json`                    | `posts-index.json.ts`                | Dados dos cards para "Mais lidos"          | —                        | #57   |
+| `/pagefind/*`                          | gerado no build                      | Índice da busca                            | —                        | #54   |
+| `/api/health`                          | `api/health.ts` (sob demanda)        | Fumaça do deploy                           | —                        | #9    |
+| `/api/csp-report`                      | `api/csp-report.ts` (sob demanda)    | Recebe os relatórios da CSP                | —                        | #41   |
+| `/api/views`                           | `api/views.ts` (sob demanda)         | Registra visualização (`POST {id}`)        | —                        | #56   |
+| `/api/mais-lidos`                      | `api/mais-lidos.ts` (sob demanda)    | Ranking (`?limite=10`)                     | —                        | #57   |
 
 Os nomes de arquivo são a sugestão para as issues de cada página; o que não pode mudar sem PR neste doc é a **rota pública**. O site não tem tags desde a #145: `/tags/*`, que existiu, responde `301` para `/busca` ([redirects](cabecalhos.md#redirects)). Não existem `/reviews/[categoria]/[slug]/` com barra nem rota com `.html`. A home não é paginada.
 
@@ -188,7 +187,6 @@ O nome exibido pode mudar à vontade; o slug de categoria e de formato fica cong
 ### Posts
 
 - **Post:** slug gerado do título, **único entre todos os posts** (não só dentro da categoria), para que o slug sozinho identifique o post na URL e nos redirects. A URL inclui a categoria ou o formato, mas o slug não repete essa informação.
-
 - **Mudou o slug, a categoria ou o formato de um post publicado?** A URL antiga vira um redirect 301 para a nova no próximo build (#53; como funciona e quando o build falha: [`cabecalhos.md`](cabecalhos.md#slug-alterado)). Para cobrir também a troca de categoria/formato, o `slugsAnteriores` guarda o **caminho completo** antigo (`/reviews/filmes/slug-antigo`), não só o slug. Quem preenche é o botão "Publicar" do Studio (#19): ao publicar um post que já estava no ar com outro endereço, ele acrescenta o caminho publicado à lista e tira dela o caminho novo, se a autora voltou a um endereço antigo. O Studio também mostra um aviso (não erro) no slug, na categoria e no formato quando eles diferem da versão publicada.
 
 ## Identificador estável do post
@@ -216,7 +214,6 @@ Regras:
 function urlDoPost(post: PostComRota): string;
 function urlDaCategoria(slug: string): string; // /reviews/{slug}
 function urlDoFormato(slug: string): string; // /pensamentos/{slug}
-
 function urlDaPagina(base: string, n: number): string;
 
 // URL absoluta e canônica, a partir de um caminho.
@@ -257,49 +254,46 @@ O ESLint recusa, fora do `rotas.ts`, template literal ou concatenação que come
 
 Com `SITE_URL=https://ronrom-blog.vercel.app`:
 
-| Chamada                                                                                | Resultado                         |
-| -------------------------------------------------------------------------------------- | --------------------------------- |
-| `urlDoPost({ tipo: 'review', slug: 'dias-perfeitos', categoria: { slug: 'filmes' } })` | `/reviews/filmes/dias-perfeitos`  |
-| `urlDoPost({ tipo: 'pensamento', slug: 'sobre-gatos', formato: { slug: 'frases' } })`  | `/pensamentos/frases/sobre-gatos` |
-| `urlDoPost({ tipo: 'review', slug: 'x' })` (sem categoria)                             | erro                              |
-| `urlDaCategoria('restaurantes-e-cafes')`                                               | `/reviews/restaurantes-e-cafes`   |
-
-| `urlDaPagina('/reviews/filmes', 1)` | `/reviews/filmes` |
-| `urlDaPagina('/reviews/filmes', 2)` | `/reviews/filmes/pagina/2` |
-| `urlDaPagina('/posts', 0)` | erro |
-| `canonicalUrl('/')` | `https://ronrom-blog.vercel.app/` |
-| `canonicalUrl('/reviews/filmes/dias-perfeitos/')` | `https://ronrom-blog.vercel.app/reviews/filmes/dias-perfeitos` |
-| `canonicalUrl('/busca?q=cafe')` | `https://ronrom-blog.vercel.app/busca` |
-| `canonicalUrl('https://outro.site/x')` | erro |
+| Chamada                                                                                | Resultado                                                      |
+| -------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `urlDoPost({ tipo: 'review', slug: 'dias-perfeitos', categoria: { slug: 'filmes' } })` | `/reviews/filmes/dias-perfeitos`                               |
+| `urlDoPost({ tipo: 'pensamento', slug: 'sobre-gatos', formato: { slug: 'frases' } })`  | `/pensamentos/frases/sobre-gatos`                              |
+| `urlDoPost({ tipo: 'review', slug: 'x' })` (sem categoria)                             | erro                                                           |
+| `urlDaCategoria('restaurantes-e-cafes')`                                               | `/reviews/restaurantes-e-cafes`                                |
+| `urlDaPagina('/reviews/filmes', 1)`                                                    | `/reviews/filmes`                                              |
+| `urlDaPagina('/reviews/filmes', 2)`                                                    | `/reviews/filmes/pagina/2`                                     |
+| `urlDaPagina('/posts', 0)`                                                             | erro                                                           |
+| `canonicalUrl('/')`                                                                    | `https://ronrom-blog.vercel.app/`                              |
+| `canonicalUrl('/reviews/filmes/dias-perfeitos/')`                                      | `https://ronrom-blog.vercel.app/reviews/filmes/dias-perfeitos` |
+| `canonicalUrl('/busca?q=cafe')`                                                        | `https://ronrom-blog.vercel.app/busca`                         |
+| `canonicalUrl('https://outro.site/x')`                                                 | erro                                                           |
 
 ## Campos do Sanity usados pela área de SEO
 
 Os nomes finais dos campos saem dos schemas (#18, #19, #21, #24); os do post já são os do [`studio/schemaTypes/post.ts`](../studio/schemaTypes/post.ts), os da ficha estão no [README do Studio](../studio/README.md#post), e os da autora e do site são os dos singletons [`sobre`](../studio/schemaTypes/sobre.ts) e [`configuracoes`](../studio/schemaTypes/configuracoes.ts). Toda consulta que alimenta uma página de post, listagem, sitemap, RSS ou JSON-LD traz o que estiver marcado para ela.
 
-| Campo                                             | Documento                | Usado em                                                       |
-| ------------------------------------------------- | ------------------------ | -------------------------------------------------------------- |
-| `_id`                                             | post                     | Contador, ranking, `/posts-index.json`, lista de ids válidos   |
-| `slug.current`                                    | post, categoria, formato | URLs (`rotas.ts`)                                              |
-| `slugsAnteriores[]` (caminhos completos)          | post                     | Redirects 301 (#53)                                            |
-| `tipo` (`review` \| `pensamento`)                 | post                     | URL, JSON-LD (Review ou BlogPosting), filtros da busca         |
-| `categoria->{nome, slug, modeloFicha, descricao}` | post (review)            | URL, breadcrumb, `itemReviewed` (#51), descrição da listagem   |
-| `formato->{nome, slug, descricao}`                | post (pensamento)        | URL, breadcrumb, `articleSection` (#50), descrição da listagem |
-
-| `titulo` | post | `<title>`, `og:title`, `headline`, RSS |
-| `subtitulo` | post | Fallback da description, metadado da busca |
-| `capa{asset, alt, legenda, hotspot, crop}` | post | `og:image` (1200×630 no hotspot), imagens do JSON-LD, RSS, cards |
-| `seo{titulo, descricao, imagem{asset, alt}, noindex}` | post | Sobrescreve título, description e imagem; `noindex` tira do sitemap |
-| `dataDePublicacao` | post | `article:published_time`, `datePublished`, ordenação, RSS `pubDate` |
-| `_updatedAt` | post, sobre | `article:modified_time`, `dateModified`, `lastmod` do sitemap |
-| `nota` (0,5 a 5, em meios) | post (review) | `reviewRating` (#51), metadado e filtro da busca |
-| `ficha` (só os campos do `modeloFicha`) | post (review) | `itemReviewed` tipado (#51), texto indexado pela busca |
-| `corpo` (Portable Text) | post | Fallback da description (~155 caracteres), `wordCount`, busca |
-| `texto` (Portable Text) | sobre | Conteúdo de `/sobre` (#47) |
-| `nome`, `bio`, `foto{asset, alt, hotspot, crop}` | sobre | `Person` e `ProfilePage` (#50), barra lateral (#38) |
-| `email` | sobre | Contato da controladora em `/privacidade` (#59) |
-| `seo{descricao, imagem{asset, alt}}` | sobre, configuracoes | Description e `og:image` de `/sobre` e o padrão do site |
-| `redes[]{rede, url}` | configuracoes | `sameAs` do `Person` (#50) |
-| `fraseDaSemana{texto, autoria, data}` | configuracoes | Barra lateral (#38) |
-| `postEmDestaque->` | configuracoes | Destaque da home (#44); vazio usa o post mais recente |
+| Campo                                                 | Documento                | Usado em                                                            |
+| ----------------------------------------------------- | ------------------------ | ------------------------------------------------------------------- |
+| `_id`                                                 | post                     | Contador, ranking, `/posts-index.json`, lista de ids válidos        |
+| `slug.current`                                        | post, categoria, formato | URLs (`rotas.ts`)                                                   |
+| `slugsAnteriores[]` (caminhos completos)              | post                     | Redirects 301 (#53)                                                 |
+| `tipo` (`review` \| `pensamento`)                     | post                     | URL, JSON-LD (Review ou BlogPosting), filtros da busca              |
+| `categoria->{nome, slug, modeloFicha, descricao}`     | post (review)            | URL, breadcrumb, `itemReviewed` (#51), descrição da listagem        |
+| `formato->{nome, slug, descricao}`                    | post (pensamento)        | URL, breadcrumb, `articleSection` (#50), descrição da listagem      |
+| `titulo`                                              | post                     | `<title>`, `og:title`, `headline`, RSS                              |
+| `subtitulo`                                           | post                     | Fallback da description, metadado da busca                          |
+| `capa{asset, alt, legenda, hotspot, crop}`            | post                     | `og:image` (1200×630 no hotspot), imagens do JSON-LD, RSS, cards    |
+| `seo{titulo, descricao, imagem{asset, alt}, noindex}` | post                     | Sobrescreve título, description e imagem; `noindex` tira do sitemap |
+| `dataDePublicacao`                                    | post                     | `article:published_time`, `datePublished`, ordenação, RSS `pubDate` |
+| `_updatedAt`                                          | post, sobre              | `article:modified_time`, `dateModified`, `lastmod` do sitemap       |
+| `nota` (0,5 a 5, em meios)                            | post (review)            | `reviewRating` (#51), metadado e filtro da busca                    |
+| `ficha` (só os campos do `modeloFicha`)               | post (review)            | `itemReviewed` tipado (#51), texto indexado pela busca              |
+| `corpo` (Portable Text)                               | post                     | Fallback da description (~155 caracteres), `wordCount`, busca       |
+| `texto` (Portable Text)                               | sobre                    | Conteúdo de `/sobre` (#47)                                          |
+| `nome`, `bio`, `foto{asset, alt, hotspot, crop}`      | sobre                    | `Person` e `ProfilePage` (#50), barra lateral (#38)                 |
+| `seo{descricao, imagem{asset, alt}}`                  | sobre, configuracoes     | Description e `og:image` de `/sobre` e o padrão do site             |
+| `redes[]{rede, url}`                                  | configuracoes            | `sameAs` do `Person` (#50), contato da `/privacidade` (#146)        |
+| `fraseDaSemana{texto, autoria, data}`                 | configuracoes            | Barra lateral (#38)                                                 |
+| `postEmDestaque->`                                    | configuracoes            | Destaque da home (#44); vazio usa o post mais recente               |
 
 A nota vai de meio a 5 corações, em passos de meio (decidido na #1); o critério original da issue falava em 1–5.

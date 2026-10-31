@@ -38,13 +38,11 @@ export function indiceDoPost(
   const ehReview = post.tipo === 'review';
   const nota = ehReview ? notaPorExtenso(post.nota) : undefined;
   const secao = ehReview ? post.categoria?.nome : post.formato?.nome;
-
   const imagem = urlDaMiniatura(post.capa, LARGURA_DA_MINIATURA, PROPORCAO_DA_MINIATURA);
 
   const filtros: [string, string | undefined][] = [
     ['tipo', ehReview ? 'Review' : 'Pensamento'],
     [ehReview ? 'categoria' : 'formato', secao?.trim()],
-
     ['nota', nota],
   ];
 

@@ -194,7 +194,6 @@ function imagensDoPost(post: Post): string[] {
 /** Um pensamento. Datas no fuso de Brasília; a seção é o formato. */
 export function blogPosting(post: Post, comAutora: boolean): BlogPosting {
   const url = canonicalUrl(urlDoPost(post));
-
   return {
     '@type': 'BlogPosting',
     '@id': idDoPost(url),
@@ -208,7 +207,6 @@ export function blogPosting(post: Post, comAutora: boolean): BlogPosting {
     mainEntityOfPage: ref(url),
     isPartOf: ref(ID_DO_SITE),
     inLanguage: IDIOMA,
-
     ...(post.formato?.nome ? { articleSection: post.formato.nome } : {}),
     wordCount: contarPalavras(post.corpo),
   };

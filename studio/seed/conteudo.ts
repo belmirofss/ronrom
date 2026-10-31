@@ -553,11 +553,6 @@ function sobre(assets: Assets): Documento {
         'Reviews com nota em corações, de meio a cinco.',
         'Textos, frases soltas e opiniões, sem calendário fixo.',
       ),
-      paragrafo(
-        'Quer conversar? Escreva para ',
-        { texto: 'ola@ronrom.exemplo', link: 'mailto:ola@ronrom.exemplo' },
-        '.',
-      ),
     ],
     seo: {
       descricao: 'Quem escreve o Ronrom e o que você encontra por aqui.',

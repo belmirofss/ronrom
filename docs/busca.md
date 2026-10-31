@@ -18,14 +18,13 @@ Erro do Pagefind derruba o build. O `pagefind` é dependência de desenvolviment
 
 Só as páginas de post. A [`PaginaDoPost`](../web/src/components/post/PaginaDoPost.astro) marca o `<article>` com `data-pagefind-body`, e página sem esse atributo (home, listagens, Sobre, 404) fica fora. Dentro do post:
 
-| Parte                     | No índice? | Por quê                                                     |
-| ------------------------- | ---------- | ----------------------------------------------------------- |
-| Título, subtítulo e texto | sim        | O subtítulo tem peso 5 (`data-pagefind-weight`; o h1 tem 7) |
-| Ficha da review           | sim        | Diretor, autor, endereço, cozinha ajudam a achar a review   |
-
-| Trilha de navegação | não | `data-pagefind-ignore` no próprio `Breadcrumb` |
-| Autora, data e tempo de leitura | não | `data-pagefind-ignore` na linha de meta |
-| Cabeçalho, rodapé e "Leia também" | não | Ficam fora do `<article>` |
+| Parte                             | No índice? | Por quê                                                     |
+| --------------------------------- | ---------- | ----------------------------------------------------------- |
+| Título, subtítulo e texto         | sim        | O subtítulo tem peso 5 (`data-pagefind-weight`; o h1 tem 7) |
+| Ficha da review                   | sim        | Diretor, autor, endereço, cozinha ajudam a achar a review   |
+| Trilha de navegação               | não        | `data-pagefind-ignore` no próprio `Breadcrumb`              |
+| Autora, data e tempo de leitura   | não        | `data-pagefind-ignore` na linha de meta                     |
+| Cabeçalho, rodapé e "Leia também" | não        | Ficam fora do `<article>`                                   |
 
 ## Filtros, metadados e ordenação
 
@@ -33,13 +32,12 @@ Saem de [`indiceDoPost`](../web/src/lib/busca.ts) e vão num `<div hidden data-p
 
 **Filtros** (`data-pagefind-filter`):
 
-| Filtro      | Valores                                 | Em         |
-| ----------- | --------------------------------------- | ---------- |
-| `tipo`      | `Review` ou `Pensamento`                | todo post  |
-| `categoria` | nome da categoria (`Filmes`, `Séries`…) | review     |
-| `formato`   | nome do formato (`Textos`, `Opiniões`…) | pensamento |
-
-| `nota` | `4,5 corações`, `1 coração` (`notaPorExtenso`) | review |
+| Filtro      | Valores                                        | Em         |
+| ----------- | ---------------------------------------------- | ---------- |
+| `tipo`      | `Review` ou `Pensamento`                       | todo post  |
+| `categoria` | nome da categoria (`Filmes`, `Séries`…)        | review     |
+| `formato`   | nome do formato (`Textos`, `Opiniões`…)        | pensamento |
+| `nota`      | `4,5 corações`, `1 coração` (`notaPorExtenso`) | review     |
 
 **Metadados** (`data-pagefind-meta`), o que o resultado mostra: `title`, `url`, `image`, `image_alt`, `date`, `subtitulo` e `nota`. Campo vazio não entra.
 

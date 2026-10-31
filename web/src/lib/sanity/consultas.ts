@@ -60,19 +60,18 @@ const POSTS_NO_FEED = 30;
 
 // --- Site ---
 
-// Singleton `configuracoes`: frase da semana, SEO padrão e redes. O destaque tem consulta própria.
+// Singleton `configuracoes`: frase em destaque, SEO padrão e redes. O destaque tem consulta própria.
 export const CONSULTA_DAS_CONFIGURACOES = defineQuery(`*[_id == "configuracoes"][0]{
   fraseDaSemana,
   seo{ descricao, "imagem": imagem${IMAGEM_NO_GROQ} },
   redes[]{ rede, url }
 }`);
 
-// Singleton `sobre`: barra lateral, páginas /sobre e /privacidade (o e-mail) e o `Person` do
+// Singleton `sobre`: barra lateral, páginas /sobre e /privacidade (o nome) e o `Person` do
 // JSON-LD. O texto só tem links externos, que não precisam ser resolvidos.
 export const CONSULTA_DO_SOBRE = defineQuery(`*[_id == "sobre"][0]{
   _updatedAt,
   nome,
-  email,
   bio,
   "foto": foto${IMAGEM_NO_GROQ},
   texto,
@@ -196,7 +195,6 @@ export const CONSULTA_DO_SITEMAP = defineQuery(`{
   },
   "categorias": *[_type == "categoria" && ${PUBLICADO}]{ "slug": slug.current, _updatedAt },
   "formatos": *[_type == "formato" && ${PUBLICADO}]{ "slug": slug.current, _updatedAt },
-
   "sobre": *[_id == "sobre"][0]._updatedAt,
   "configuracoes": *[_id == "configuracoes"][0]._updatedAt
 }`);
@@ -212,7 +210,6 @@ export const CONSULTA_DO_FEED =
   dataDePublicacao,
   "categoria": categoria->{ nome, "slug": slug.current },
   "formato": formato->{ nome, "slug": slug.current },
-
   "capa": capa${IMAGEM_NO_GROQ},
   "corpo": corpo[_type == "block"]{ _type, style, children[]{ text } },
   seo{ descricao }
