@@ -1294,18 +1294,83 @@ export type CONSULTA_DOS_REDIRECTS_RESULT = Array<{
 
 // Source: ../web/src/lib/sanity/consultas.ts
 // Variable: CONSULTA_DO_SITEMAP
-// Query: *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) { tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current }, _updatedAt, "noindex": coalesce(seo.noindex, false) }
-export type CONSULTA_DO_SITEMAP_RESULT = Array<{
+// Query: {  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {    tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current },    _updatedAt,    dataDePublicacao,    "noindex": coalesce(seo.noindex, false),    "tags": (tags[]->)[defined(slug.current)].slug.current  },  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },  "tags": *[_type == "tag" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },  "sobre": *[_id == "sobre"][0]._updatedAt,  "configuracoes": *[_id == "configuracoes"][0]._updatedAt}
+export type CONSULTA_DO_SITEMAP_RESULT = {
+  posts: Array<{
+    tipo: 'pensamento' | 'review';
+    slug: string;
+    categoria: {
+      slug: string;
+    } | null;
+    formato: {
+      slug: string;
+    } | null;
+    _updatedAt: string;
+    dataDePublicacao: string;
+    noindex: boolean | false;
+    tags: Array<string> | null;
+  }>;
+  categorias: Array<{
+    slug: string;
+    _updatedAt: string;
+  }>;
+  formatos: Array<{
+    slug: string;
+    _updatedAt: string;
+  }>;
+  tags: Array<{
+    slug: string;
+    _updatedAt: string;
+  }>;
+  sobre: string | null;
+  configuracoes: string | null;
+};
+
+// Source: ../web/src/lib/sanity/consultas.ts
+// Variable: CONSULTA_DO_FEED
+// Query: *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) [0...30]{  tipo,  "slug": slug.current,  titulo,  subtitulo,  dataDePublicacao,  "categoria": categoria->{ nome, "slug": slug.current },  "formato": formato->{ nome, "slug": slug.current },  "tags": (tags[]->)[defined(slug.current)]{ nome },  "capa": capa{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  "corpo": corpo[_type == "block"]{ _type, style, children[]{ text } },  seo{ descricao }}
+export type CONSULTA_DO_FEED_RESULT = Array<{
   tipo: 'pensamento' | 'review';
   slug: string;
+  titulo: string;
+  subtitulo: string | null;
+  dataDePublicacao: string;
   categoria: {
+    nome: string;
     slug: string;
   } | null;
   formato: {
+    nome: string;
     slug: string;
   } | null;
-  _updatedAt: string;
-  noindex: boolean | false;
+  tags: Array<{
+    nome: string;
+  }> | null;
+  capa: {
+    asset: {
+      _id: string;
+      url: string;
+      largura: number | null;
+      altura: number | null;
+      lqip: string | null;
+    } | null;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    legenda?: string;
+    _type: 'image';
+  };
+  corpo: Array<{
+    _type: 'block';
+    style: 'blockquote' | 'h2' | 'h3' | 'normal' | null;
+    children: Array<{
+      text: string | null;
+    }> | null;
+  }> | null;
+  seo: {
+    descricao: string | null;
+  } | null;
 }>;
 
 // Query TypeMap
@@ -1325,7 +1390,8 @@ declare global {
     'coalesce(*[_type == "post" && _id == $id][0]{\n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && _id != ^._id]{\n    ...,\n    "prioridade": select(\n      tipo == ^.tipo && coalesce(categoria._ref, formato._ref) == coalesce(^.categoria._ref, ^.formato._ref) => 2,\n      tipo == ^.tipo => 1,\n      0\n    )\n  } | order(prioridade desc, dataDePublicacao desc, _id asc) [0...3]{\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n}\n}.posts, [])': CONSULTA_DO_LEIA_TAMBEM_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n}': CONSULTA_DO_INDICE_DE_POSTS_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && count(slugsAnteriores) > 0]{ "anteriores": slugsAnteriores, tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current } }': CONSULTA_DOS_REDIRECTS_RESULT;
-    '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) { tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current }, _updatedAt, "noindex": coalesce(seo.noindex, false) }': CONSULTA_DO_SITEMAP_RESULT;
+    '{\n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {\n    tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current },\n    _updatedAt,\n    dataDePublicacao,\n    "noindex": coalesce(seo.noindex, false),\n    "tags": (tags[]->)[defined(slug.current)].slug.current\n  },\n  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "tags": *[_type == "tag" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "sobre": *[_id == "sobre"][0]._updatedAt,\n  "configuracoes": *[_id == "configuracoes"][0]._updatedAt\n}': CONSULTA_DO_SITEMAP_RESULT;
+    '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) [0...30]{\n  tipo,\n  "slug": slug.current,\n  titulo,\n  subtitulo,\n  dataDePublicacao,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "tags": (tags[]->)[defined(slug.current)]{ nome },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  "corpo": corpo[_type == "block"]{ _type, style, children[]{ text } },\n  seo{ descricao }\n}': CONSULTA_DO_FEED_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

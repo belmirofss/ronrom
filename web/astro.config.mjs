@@ -3,6 +3,7 @@ import vercel from '@astrojs/vercel';
 import { defineConfig, envField, fontProviders } from 'astro/config';
 import { loadEnv } from 'vite';
 import { redirects } from './redirects.mjs';
+import { sitemapDoSite } from './sitemap.mjs';
 
 // O astro.config roda antes do astro:env, então o que decide a configuração é lido direto do
 // .env / ambiente. As variáveis, onde vivem e quem é dona: docs/ambientes.md.
@@ -98,6 +99,8 @@ export default defineConfig({
         },
       },
     },
+    // /sitemap-index.xml (#52): só as URLs canônicas e indexáveis, com lastmod. Detalhes em sitemap.mjs.
+    ...sitemapDoSite(),
   ],
   // Saída estática (o padrão do Astro): só as rotas com `export const prerender = false` viram
   // Vercel Function. Decisão no docs/adr/0001; como criar uma rota sob demanda: docs/ambientes.md.
@@ -174,6 +177,15 @@ export default defineConfig({
       KV_REST_API_TOKEN: envField.string({
         context: 'server',
         access: 'secret',
+        optional: true,
+      }),
+
+      // Variável de sistema da Vercel (sem cadastro): production, preview ou development. Fora de
+      // production, o robots.txt bloqueia tudo e toda página sai com noindex,nofollow (#52).
+      VERCEL_ENV: envField.enum({
+        context: 'server',
+        access: 'public',
+        values: ['production', 'preview', 'development'],
         optional: true,
       }),
 

@@ -185,8 +185,8 @@ describe('funções de acesso no modo fixtures', () => {
     expect(urlDoPost(redirects[0]!)).toBe('/pensamentos/frases/sobre-gatos');
 
     const sitemap = await buscarSitemap();
-    expect(sitemap).toHaveLength(10);
-    expect(sitemap.filter((post) => post.noindex).map((post) => post.slug)).toEqual([
+    expect(sitemap.posts).toHaveLength(10);
+    expect(sitemap.posts.filter((post) => post.noindex).map((post) => post.slug)).toEqual([
       'sobre-gatos',
     ]);
   });

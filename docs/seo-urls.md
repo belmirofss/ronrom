@@ -82,15 +82,67 @@ Os nomes de arquivo são a sugestão para as issues de cada página; o que não 
 - Listagens paginadas: `/posts`, `/reviews`, `/reviews/[categoria]`, `/pensamentos`, `/pensamentos/[formato]` e `/tags/[tag]`, com 12 itens por página (#1).
 - A página 1 é a própria listagem. A página 2 em diante fica em `{listagem}/pagina/[n]`, por exemplo `/reviews/filmes/pagina/2` e `/tags/cafe/pagina/3`.
 - `/pagina/1`, `/pagina/0` e páginas além da última não são geradas e dão 404 (critério da #46).
-- Cada página tem canonical para ela mesma e fica indexável (#52); `canonical`, `prev` e `next` saem do `seoDaPaginacao` ([`web/src/lib/listagem.ts`](../web/src/lib/listagem.ts)) e viram `<link rel="prev">` e `<link rel="next">` no `<Seo>`.
+- Cada página tem canonical para ela mesma e fica indexável ([Indexação](#indexação)); `canonical`, `prev` e `next` saem do `seoDaPaginacao` ([`web/src/lib/listagem.ts`](../web/src/lib/listagem.ts)) e viram `<link rel="prev">` e `<link rel="next">` no `<Seo>`.
 
 ### Busca
 
-`/busca` recebe o termo em `?q=`. É a única página com query string; o canonical é sempre `/busca`, sem parâmetros, e a página fica fora do sitemap. Nenhuma outra página usa parâmetros: filtros e paginação viram caminho.
+`/busca` recebe o termo em `?q=`. É a única página com query string; o canonical é sempre `/busca`, sem parâmetros, e a página fica fora do [sitemap](#sitemap). Nenhuma outra página usa parâmetros: filtros e paginação viram caminho.
 
 ### Slugs reservados
 
 `pagina` não pode ser slug de categoria, formato, tag nem post: `/reviews/pagina/2` precisa significar sempre "página 2 das reviews". A validação de slug do Studio (#18, #19) recusa esse valor.
+
+## Indexação, sitemap e RSS
+
+Definidos na #52. A regra de fundo: **só o deploy de produção pode ser indexado**, e só pelas URLs canônicas.
+
+### Indexação
+
+Quem decide é o `VERCEL_ENV` do build (variável de sistema da Vercel, lida pelo `astro:env`), em `SITE_INDEXAVEL` de [`web/src/lib/seo.ts`](../web/src/lib/seo.ts):
+
+| Build                                      | `/robots.txt`                                        | `<meta name="robots">`                                                                                                 |
+| ------------------------------------------ | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Produção (`VERCEL_ENV=production`)         | `Allow: /` e `Sitemap: {SITE_URL}/sitemap-index.xml` | `index,follow,max-image-preview:large`, ou `noindex,follow` onde a página pede (`/busca`, 404, post com `seo.noindex`) |
+| Preview, development, local e CI (o resto) | `Disallow: /`, sem `Sitemap`                         | `noindex,nofollow` em toda página                                                                                      |
+
+- O `/robots.txt` sai do endpoint prerenderizado [`robots.txt.ts`](../web/src/pages/robots.txt.ts) (`robotsTxt`); a meta, do `<Seo>` (`robotsDaPagina`).
+- **Previews da Vercel:** além disso, ficam atrás do Vercel Authentication, e a Vercel responde com `X-Robots-Tag: noindex` (conferido em 31/10/2026 num preview da #45, com `curl -sI`). Produção não recebe o cabeçalho. O `vercel.json` não precisa tratar isso.
+- **Domínio antigo:** depois da troca para `ronrom.com.br` (#63), `ronrom-blog.vercel.app` redireciona com 308 e deixa de servir páginas; sitemap e canonical seguem a `SITE_URL`.
+- **Todas as listagens são indexáveis** (decidido na #1), inclusive tags com poucos posts e o formato de frases curtas. Cada página da paginação tem canonical para ela mesma e não leva `noindex` ([Paginação](#paginação)).
+
+### Sitemap
+
+`/sitemap-index.xml` (e `/sitemap-0.xml`), gerados pelo `@astrojs/sitemap` a partir das páginas do build e configurados em [`web/sitemap.mjs`](../web/sitemap.mjs):
+
+- **Só URLs canônicas e indexáveis.** O `filter` tira `/busca`, `/404`, `/api/*`, qualquer arquivo (`/rss.xml`, `/robots.txt`) e as páginas `noindex` (posts com `seo.noindex`). As URLs saem sem barra no final, como o canonical.
+- **`lastmod` em toda URL**, a partir do `_updatedAt` do Sanity. O `astro.config.mjs` não lê o Sanity (não tem o `astro:env` nem os helpers de rota), então o endpoint prerenderizado [`sitemap-dados.json.ts`](../web/src/pages/sitemap-dados.json.ts) monta o mapa caminho → data com o `dadosDoSitemap` ([`web/src/lib/sitemap.ts`](../web/src/lib/sitemap.ts)), e a integração `ronrom:sitemap-dados` lê o arquivo no fim do build e o apaga antes do deploy. Sem o arquivo, o build quebra.
+- **A data de cada página:**
+  - post: a mais recente entre a última edição e a entrada no ar (`dataDePublicacao`);
+  - página `n` de uma listagem: o post mais recente entre os que aparecem nela ou antes dela (um post novo empurra os outros) e o documento da categoria, do formato ou da tag, cuja descrição a página mostra;
+  - home: a data mais recente de tudo; `/sobre`: a do documento `sobre`;
+  - sem data própria (listagem ainda vazia, Sobre não publicado): a da home.
+- **Página nova** (como a `/privacidade` da #59) entra sozinha no sitemap, mas sem `lastmod` e com o aviso `[sitemap] … sem lastmod` no build: inclua-a no `dadosDoSitemap`.
+- Sem `changefreq` nem `priority`, que o Google ignora.
+
+### RSS
+
+`/rss.xml`, do [`rss.xml.ts`](../web/src/pages/rss.xml.ts) com o `@astrojs/rss` e o `itemDoFeed` ([`web/src/lib/feed.ts`](../web/src/lib/feed.ts)), anunciado pelo `<link rel="alternate">` do `<Seo>`:
+
+- Os **30 posts mais recentes** (`CONSULTA_DO_FEED`), inclusive os com `seo.noindex`, que também aparecem nas listagens.
+- Canal: título e description do site, `language` `pt-br` e `atom:link rel="self"`.
+- Item: `title`, `description` (a mesma do `<meta name="description">` do post, pelo `descricaoDoPost`), `link` e `guid` canônicos, `pubDate` e uma `category` para o tipo, a categoria ou o formato e cada tag.
+- **Capa** em `media:content` (Media RSS), no recorte 1200×630 do `og:image`, com o alt em `media:description`. Não é `enclosure`, que exige o tamanho do arquivo em bytes.
+- Passa no [W3C Feed Validator](https://validator.w3.org/feed/) sem erros. Por upload, sobra o aviso "Self reference doesn't match document location", porque o `atom:link` aponta para a URL pública.
+
+Para conferir num deploy de produção:
+
+```bash
+curl -s https://ronrom-blog.vercel.app/robots.txt
+```
+
+```bash
+curl -s https://ronrom-blog.vercel.app/sitemap-0.xml
+```
 
 ## Slugs
 

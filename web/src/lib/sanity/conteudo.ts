@@ -4,6 +4,7 @@ import {
   CONSULTA_DAS_CONFIGURACOES,
   CONSULTA_DAS_ROTAS_DOS_POSTS,
   CONSULTA_DO_DESTAQUE,
+  CONSULTA_DO_FEED,
   CONSULTA_DO_INDICE_DE_POSTS,
   CONSULTA_DO_LEIA_TAMBEM,
   CONSULTA_DO_POST,
@@ -27,6 +28,7 @@ import type {
   CONSULTA_DOS_REDIRECTS_RESULT,
   CONSULTA_DOS_ULTIMOS_POSTS_RESULT,
   CONSULTA_DO_DESTAQUE_RESULT,
+  CONSULTA_DO_FEED_RESULT,
   CONSULTA_DO_INDICE_DE_POSTS_RESULT,
   CONSULTA_DO_LEIA_TAMBEM_RESULT,
   CONSULTA_DO_POST_RESULT,
@@ -129,5 +131,8 @@ export const buscarIndiceDePosts = () =>
 export const buscarRedirects = () =>
   consultar<CONSULTA_DOS_REDIRECTS_RESULT>(CONSULTA_DOS_REDIRECTS);
 
-/** Rota, `_updatedAt` e `noindex` de cada post (#52). */
+/** Datas de posts, taxonomia, Sobre e Configurações, para o `lastmod` do sitemap (#52). */
 export const buscarSitemap = () => consultar<CONSULTA_DO_SITEMAP_RESULT>(CONSULTA_DO_SITEMAP);
+
+/** Os 30 posts mais recentes, para o /rss.xml (#52). */
+export const buscarFeed = () => consultar<CONSULTA_DO_FEED_RESULT>(CONSULTA_DO_FEED);

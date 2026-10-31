@@ -139,6 +139,7 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 | `SANITY_API_READ_TOKEN` | segredo | não             | opcional            | Secret                            | Secret                       | Secret, já cadastrado    | `area:cms`   |
 | `KV_REST_API_URL`       | segredo | não (até a #56) | opcional            | injetada pelo Marketplace (#56)   | injetada pelo Marketplace    | não usada                | `area:dados` |
 | `KV_REST_API_TOKEN`     | segredo | não (até a #56) | opcional            | injetada pelo Marketplace (#56)   | injetada pelo Marketplace    | não usada                | `area:dados` |
+| `VERCEL_ENV`            | pública | não             | não definida        | sistema da Vercel                 | sistema da Vercel            | não usada                | `area:seo`   |
 | `VERCEL_GIT_COMMIT_SHA` | pública | não             | não definida        | sistema da Vercel                 | sistema da Vercel            | não usada                | `area:infra` |
 
 (\*) Sem `SITE_URL`, o `astro.config.mjs` usa `https://` + `VERCEL_URL` nos previews (a URL do próprio deploy) e `https://ronrom-blog.vercel.app` no resto (local e CI). `VERCEL_ENV` e `VERCEL_URL` são variáveis de sistema da Vercel, expostas no build sem cadastro.
@@ -148,6 +149,7 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 - **`STUDIO_URL`** é o link "Área da autora" do rodapé (#15). O padrão (`https://ronrom.sanity.studio`) é o Studio publicado; só precisa ser cadastrada se o Studio mudar de endereço.
 - **`SANITY_API_READ_TOKEN`** é o token `viewer` do Sanity, só para o preview de rascunhos (#43). Sem ele, o site lê só o conteúdo publicado. Cadastrado na Vercel como **Secret** em Production e Preview (29/10/2026).
 - **`KV_REST_API_URL` e `KV_REST_API_TOKEN`** são os nomes que o `Redis.fromEnv()` do `@upstash/redis` lê. A #56 confere, ao instalar o Upstash Redis pelo Marketplace, se a integração injeta exatamente esses nomes; se não, renomeia no schema, no `.env.example` e aqui.
+- **`VERCEL_ENV`** é variável de sistema da Vercel, sem cadastro. Além do `astro.config.mjs`, entra no schema para o site saber se pode ser indexado: só com `production` o `/robots.txt` libera os buscadores e as páginas saem indexáveis; no resto (previews, local e CI), tudo sai bloqueado e com `noindex,nofollow` ([seo-urls.md](seo-urls.md#indexação)).
 - **`VERCEL_GIT_COMMIT_SHA`** é variável de sistema da Vercel, sem cadastro. Entra no schema só para o `/api/health` ler o commit pelo `astro:env`.
 - **Os tokens do Studio** (`SANITY_AUTH_TOKEN`) e as variáveis `SANITY_STUDIO_*` não são do site: veja [`studio/README.md`](../studio/README.md).
 

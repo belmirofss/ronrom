@@ -55,6 +55,9 @@ const PAGINA_DE_POSTS = (filtro: string) => `
 // Quantos posts o "Leia também" mostra.
 const LEIA_TAMBEM = 3;
 
+// Quantos posts o /rss.xml traz (#52).
+const POSTS_NO_FEED = 30;
+
 // --- Site ---
 
 // Singleton `configuracoes`: frase da semana, SEO padrão e redes. O destaque tem consulta própria.
@@ -187,8 +190,38 @@ export const CONSULTA_DOS_REDIRECTS = defineQuery(
   `*[${POST_PUBLICADO} && count(slugsAnteriores) > 0]{ "anteriores": slugsAnteriores, ${ROTA} }`,
 );
 
-// Sitemap (#52): a URL sai do `urlDoPost`, o `lastmod` do `_updatedAt`, e post com `noindex` fica
-// de fora.
-export const CONSULTA_DO_SITEMAP = defineQuery(
-  `*[${POST_PUBLICADO}] | ${MAIS_RECENTES} { ${ROTA}, _updatedAt, "noindex": coalesce(seo.noindex, false) }`,
-);
+// Sitemap (#52): o `lastmod` de cada página (web/src/lib/sitemap.ts). A URL do post sai do
+// `urlDoPost`, e post com `noindex` fica de fora. Os posts vêm na ordem das listagens, com as tags,
+// para o `lastmod` de cada página de listagem; as datas da taxonomia, do Sobre e das Configurações
+// cobrem o que essas páginas mostram além dos posts.
+export const CONSULTA_DO_SITEMAP = defineQuery(`{
+  "posts": *[${POST_PUBLICADO}] | ${MAIS_RECENTES} {
+    ${ROTA},
+    _updatedAt,
+    dataDePublicacao,
+    "noindex": coalesce(seo.noindex, false),
+    "tags": (tags[]->)[defined(slug.current)].slug.current
+  },
+  "categorias": *[_type == "categoria" && ${PUBLICADO}]{ "slug": slug.current, _updatedAt },
+  "formatos": *[_type == "formato" && ${PUBLICADO}]{ "slug": slug.current, _updatedAt },
+  "tags": *[_type == "tag" && ${PUBLICADO}]{ "slug": slug.current, _updatedAt },
+  "sobre": *[_id == "sobre"][0]._updatedAt,
+  "configuracoes": *[_id == "configuracoes"][0]._updatedAt
+}`);
+
+// RSS (#52): os últimos posts, com o que a description (`descricaoDoPost`), as categorias
+// e a capa do feed precisam. Do corpo, só o texto dos blocos, como no card com tempo de leitura.
+export const CONSULTA_DO_FEED =
+  defineQuery(`*[${POST_PUBLICADO}] | ${MAIS_RECENTES} [0...${POSTS_NO_FEED}]{
+  tipo,
+  "slug": slug.current,
+  titulo,
+  subtitulo,
+  dataDePublicacao,
+  "categoria": categoria->{ nome, "slug": slug.current },
+  "formato": formato->{ nome, "slug": slug.current },
+  "tags": (tags[]->)[defined(slug.current)]{ nome },
+  "capa": capa${IMAGEM_NO_GROQ},
+  "corpo": corpo[_type == "block"]{ _type, style, children[]{ text } },
+  seo{ descricao }
+}`);

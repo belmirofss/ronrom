@@ -1,3 +1,4 @@
+import { VERCEL_ENV } from 'astro:env/server';
 import { ALTURA_OG, LARGURA_OG, ogImage, type ImagemDoSanity } from '@/lib/sanity/imagem';
 import type { CONSULTA_DO_POST_RESULT } from '@/lib/sanity/tipos.gerados';
 import { DESCRICAO_DO_SITE, URL_DO_SITE } from '@/lib/utils/site';
@@ -40,6 +41,27 @@ const IMAGEM_PADRAO = {
 
 export const ROBOTS_INDEXAVEL = 'index,follow,max-image-preview:large';
 export const ROBOTS_NOINDEX = 'noindex,follow';
+export const ROBOTS_BLOQUEADO = 'noindex,nofollow';
+
+// Só o deploy de produção pode ser indexado (#52). Nos previews da Vercel, no build local e no CI,
+// o robots.txt bloqueia tudo e toda página sai com noindex,nofollow, mesmo as indexáveis.
+export const SITE_INDEXAVEL = VERCEL_ENV === 'production';
+
+/** O `<meta name="robots">` de uma página: a prop `noindex` só vale onde o site é indexável. */
+export function robotsDaPagina(noindex: boolean, indexavel = SITE_INDEXAVEL): string {
+  if (!indexavel) {
+    return ROBOTS_BLOQUEADO;
+  }
+  return noindex ? ROBOTS_NOINDEX : ROBOTS_INDEXAVEL;
+}
+
+/** O /robots.txt: libera tudo e aponta o sitemap em produção; fora dela, bloqueia tudo. */
+export function robotsTxt(indexavel: boolean, sitemap: string): string {
+  const linhas = indexavel
+    ? ['User-agent: *', 'Allow: /', '', `Sitemap: ${sitemap}`]
+    : ['User-agent: *', 'Disallow: /'];
+  return `${linhas.join('\n')}\n`;
+}
 
 export interface ImagemDeCompartilhamento {
   url: string;
@@ -89,9 +111,17 @@ export function resumir(texto: string, limite = LIMITE_DA_DESCRICAO): string {
 
 type Post = NonNullable<CONSULTA_DO_POST_RESULT>;
 
+// O que o `textoDoCorpo` lê de cada bloco: serve o corpo inteiro da página do post e só os blocos
+// de texto, que o feed (#52) pede.
+type CorpoComTexto = ReadonlyArray<{
+  _type: string;
+  style?: string | null;
+  children?: ReadonlyArray<{ text?: string | null }> | null;
+}> | null;
+
 // O texto corrido do corpo: parágrafos, listas e citações, sem os subtítulos (que soltos no meio
 // da description não fazem sentido), as imagens, os vídeos e as citações em destaque.
-export function textoDoCorpo(corpo: Post['corpo']): string {
+export function textoDoCorpo(corpo: CorpoComTexto): string {
   return (corpo ?? [])
     .flatMap((bloco) =>
       bloco._type === 'block' && bloco.style !== 'h2' && bloco.style !== 'h3'
@@ -117,8 +147,12 @@ type PostParaSeo = Pick<
 >;
 
 // Description do post: a do SEO, depois o subtítulo, depois o começo do corpo. Post sem nenhum
-// dos três (só imagens, por exemplo) fica com a do site.
-export function descricaoDoPost(post: PostParaSeo): string {
+// dos três (só imagens, por exemplo) fica com a do site. O feed (#52) usa a mesma.
+export function descricaoDoPost(post: {
+  subtitulo: string | null;
+  corpo: CorpoComTexto;
+  seo: { descricao: string | null } | null;
+}): string {
   return (
     post.seo?.descricao?.trim() ||
     post.subtitulo?.trim() ||

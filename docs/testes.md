@@ -252,7 +252,7 @@ As regras de [`web/src/lib/sobre.ts`](../web/src/lib/sobre.ts), com o documento 
 
 Teste de componente (Container API) existe só para estes cinco:
 
-- **`Seo.astro` (#32):** uma tag de cada (`<title>`, description, canonical, robots, `og:title`, `og:image`, `twitter:card`), canonical e `og:image` absolutos, a tagline na home, `noindex,follow` pela prop, as metas `article:*` só em `type="article"` e o aviso no build com título acima de 65 caracteres.
+- **`Seo.astro` (#32):** uma tag de cada (`<title>`, description, canonical, robots, `og:title`, `og:image`, `twitter:card`), canonical e `og:image` absolutos, a tagline na home, `noindex,follow` pela prop (simulando o build de produção), as metas `article:*` só em `type="article"` e o aviso no build com título acima de 65 caracteres.
 - **`Coracoes.astro` (#35):** um único `role="img"` com o `aria-label` da nota, os SVGs internos com `aria-hidden="true"`, e o número de corações cheios, meios e vazios renderizados para `4.5` e `5`.
 - **`FichaDaReview.astro` (#42):** os rótulos certos para cada modelo de ficha (filme, série, livro, lugar, comida), campos vazios ocultos (sem `<dt>` sem `<dd>`), a nota em corações presente e nada renderizado para quem não é review.
 - **`Abas.astro` (#44):** um `tablist` com `aria-label` e um `tab` por aba, a primeira com `aria-selected="true"` e `tabindex="0"` e as outras com `"false"` e `-1`, o `aria-controls` de cada aba apontando para o painel, cada painel com o próprio título (para funcionar sem JS) e o conteúdo do slot, nada `hidden` no HTML do build e o slot `ao-lado` fora do `tablist`.
