@@ -2,6 +2,7 @@
 import vercel from '@astrojs/vercel';
 import { defineConfig, envField, fontProviders } from 'astro/config';
 import { loadEnv } from 'vite';
+import { redirects } from './redirects.mjs';
 
 // O astro.config roda antes do astro:env, então o que decide a configuração é lido direto do
 // .env / ambiente. As variáveis, onde vivem e quem é dona: docs/ambientes.md.
@@ -33,6 +34,16 @@ export default defineConfig({
     // /sobre vira sobre/index.html e a Vercel serve em /sobre; a variante com barra recebe 308
     // pelo trailingSlash: false do vercel.json. É o formato que o @astrojs/vercel impõe (#9).
     format: 'directory',
+  },
+  // Redirects fixos (#41); o adapter da Vercel os transforma em rotas. Lista e regras: redirects.mjs.
+  redirects,
+  vite: {
+    build: {
+      // O Astro põe inline, dentro do HTML, todo script menor que 4 kB. A CSP (#41) só libera
+      // script-src 'self', sem 'unsafe-inline', então JS sempre vai para um arquivo em /_astro.
+      // O resto (CSS, imagens) segue a regra padrão. Detalhes: docs/cabecalhos.md#csp.
+      assetsInlineLimit: (arquivo) => (arquivo.endsWith('.js') ? false : undefined),
+    },
   },
   // DM Sans servida pelo próprio site (#14): os woff2 vêm do @fontsource/dm-sans instalado (só o
   // subset latin), sem buscar nada na rede no build e sem requisição a terceiros no navegador.
