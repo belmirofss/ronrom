@@ -1,5 +1,7 @@
 import { caminhoDoPost } from '../../../studio/lib/post';
 
+import { totalDePaginas } from './paginacao';
+
 // Redirects do build (#53): os fixos de web/redirects.mjs e um 301 de cada caminho antigo de post
 // (`slugsAnteriores`) para o endereço atual. O astro.config.mjs monta a lista com o
 // `montarRedirects` antes do build e, no fim, confere os destinos com o `conferirRedirects`.
@@ -31,10 +33,16 @@ export interface PostComAnteriores extends RotaDoPost {
   anteriores: string[] | null;
 }
 
+/** Uma categoria ou um formato, com o total de posts da listagem. */
+export interface ItemComListagem {
+  slug: string;
+  total: number;
+}
+
 /** Categorias e formatos, cada um com a listagem dele. */
 export interface TaxonomiaComPagina {
-  categorias: { slug: string }[];
-  formatos: { slug: string }[];
+  categorias: ItemComListagem[];
+  formatos: ItemComListagem[];
 }
 
 /**
@@ -112,13 +120,13 @@ export function montarRedirects({
   paginas,
 }: DadosDosRedirects) {
   const avisos: string[] = [];
-  // As listagens nos mesmos caminhos do urlDaCategoria e do urlDoFormato (rotas.ts).
-  const noAr = new Set([
-    ...paginas,
-    ...rotasDosPosts.map(caminho),
-    ...taxonomia.categorias.map(({ slug }) => `/reviews/${slug}`),
-    ...taxonomia.formatos.map(({ slug }) => `/pensamentos/${slug}`),
+  // As listagens nos mesmos caminhos do urlDaCategoria e do urlDoFormato (rotas.ts), com o número
+  // de páginas de cada uma.
+  const listagens = new Map<string, number>([
+    ...taxonomia.categorias.map(({ slug, total }) => [`/reviews/${slug}`, total] as const),
+    ...taxonomia.formatos.map(({ slug, total }) => [`/pensamentos/${slug}`, total] as const),
   ]);
+  const noAr = new Set([...paginas, ...rotasDosPosts.map(caminho), ...listagens.keys()]);
   const mapa = new Map<string, RedirectComOrigem>();
 
   for (const [origem, valor] of Object.entries(fixos)) {
@@ -132,6 +140,19 @@ export function montarRedirects({
       );
     }
     mapa.set(origem, { ...redirect, fonte: 'web/redirects.mjs' });
+
+    // Para uma listagem, as páginas vão junto: `{origem}/pagina/N` leva à página N do destino,
+    // para cada página que o destino tem. Uma página N da listagem antiga que o destino não tem
+    // fica sem redirect: o Astro só aceita redirect com parâmetro para uma rota igual (#143).
+    const total = listagens.get(redirect.destination);
+    if (total === undefined) continue;
+    for (let n = 2; n <= totalDePaginas(total); n++) {
+      mapa.set(`${origem}/pagina/${n}`, {
+        status: redirect.status,
+        destination: `${redirect.destination}/pagina/${n}`,
+        fonte: `web/redirects.mjs (página ${n} de ${origem})`,
+      });
+    }
   }
 
   for (const post of posts) {

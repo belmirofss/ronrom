@@ -2,7 +2,7 @@ import { defineType } from 'sanity';
 
 import { campoDescricao, campoNome, campoOrdem, campoSlug, ordenacaoPorOrdem } from './campos';
 
-// Formato dos pensamentos (Artigos, Frases soltas...). Os quatro iniciais vêm do script
+// Formato dos pensamentos (Textos e opiniões, Frases soltas). Os dois iniciais vêm do script
 // scripts/criar-taxonomia.ts, com `_id` fixo.
 export const formato = defineType({
   name: 'formato',

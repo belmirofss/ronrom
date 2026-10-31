@@ -67,7 +67,7 @@ export const TEXTOS_DAS_SECOES = {
   },
   pensamento: {
     titulo: 'Pensamentos',
-    descricaoPadrao: 'Os pensamentos do Ronrom: artigos, textos, frases soltas e opiniões.',
+    descricaoPadrao: 'Os pensamentos do Ronrom: textos, opiniões e frases soltas.',
     mensagemVazia: 'Ainda não tem nenhum pensamento por aqui.',
   },
 } as const satisfies Record<string, TextosDaListagem>;

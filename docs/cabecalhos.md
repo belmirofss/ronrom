@@ -102,6 +102,7 @@ O `astro.config.mjs` passa a lista para o `redirects` do Astro, e o adapter da V
 - `301` para mudança definitiva (o padrão); `302` só para algo temporário, com o motivo num comentário.
 - Sem cadeias: aponte direto para o destino final, e ao mudar um destino atualize os redirects que apontavam para ele.
 - Não redirecione um caminho que ainda existe como página: o redirect ganha e a página some.
+- Um redirect de uma listagem para outra (`/pensamentos/artigos` → `/pensamentos/textos`, da #143) leva junto as páginas: o build cria `/pensamentos/artigos/pagina/N` → `/pensamentos/textos/pagina/N` para cada página que o destino tem. Não escreva a paginação com parâmetro (`/pagina/[n]`): o Astro só aceita redirect com parâmetro para uma rota de mesmo formato, e `/pensamentos/textos/pagina/[n]` não é uma rota (a rota é `/pensamentos/[formato]/pagina/[n]`).
 
 Redirect com parâmetro para uma página fixa não cabe no Astro, que exige no destino os mesmos parâmetros da origem. O único caso, `/tags/*` → `/busca` (301), de quando o site deixou de ter tags (#145), fica nos `redirects` do [`web/vercel.json`](../web/vercel.json), que a Vercel aplica antes de procurar o arquivo estático.
 

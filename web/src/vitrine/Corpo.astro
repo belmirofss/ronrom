@@ -9,7 +9,7 @@ import { buscarPost } from '@/lib/sanity/conteudo';
 
 // Os dois posts estão nas fixtures e no seed do dataset development (studio/seed).
 const posts = await Promise.all([
-  buscarPost({ tipo: 'pensamento', secao: 'artigos', slug: 'por-que-eu-anoto-tudo-num-caderno' }),
+  buscarPost({ tipo: 'pensamento', secao: 'textos', slug: 'por-que-eu-anoto-tudo-num-caderno' }),
   buscarPost({ tipo: 'review', secao: 'lugares', slug: 'mirante-do-morro-azul' }),
 ]);
 const encontrados = posts.filter((post) => post !== null);

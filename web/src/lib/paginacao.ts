@@ -1,4 +1,6 @@
-// Os números que a `Paginacao.astro` mostra entre "Anterior" e "Próxima".
+// Paginação das listagens: o tamanho da página e os números que a `Paginacao.astro` mostra entre
+// "Anterior" e "Próxima". Sem import do cliente do Sanity, porque o src/lib/redirects.ts, que roda
+// no astro.config antes do astro:env, também usa o `totalDePaginas`.
 
 export type ItemDaPaginacao = number | 'reticencias';
 
@@ -34,4 +36,20 @@ export function paginasVisiveis(atual: number, total: number): ItemDaPaginacao[]
     fim === total - 2 ? total - 1 : 'reticencias',
     total,
   ];
+}
+
+/** Posts por página nas listagens (#1). A página 2 em diante fica em `{listagem}/pagina/[n]`. */
+export const POSTS_POR_PAGINA = 12;
+
+/** A fatia `[inicio...fim]` (fim exclusivo) da página `n` de uma listagem. */
+export function fatiaDaPagina(n: number): { inicio: number; fim: number } {
+  if (!Number.isInteger(n) || n < 1) {
+    throw new Error(`Página inválida: ${n} (precisa ser inteiro a partir de 1).`);
+  }
+  return { inicio: (n - 1) * POSTS_POR_PAGINA, fim: n * POSTS_POR_PAGINA };
+}
+
+/** Quantas páginas uma listagem com `total` posts tem. Sem post, a página 1 existe vazia. */
+export function totalDePaginas(total: number): number {
+  return Math.max(1, Math.ceil(total / POSTS_POR_PAGINA));
 }

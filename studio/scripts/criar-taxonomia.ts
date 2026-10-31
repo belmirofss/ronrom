@@ -1,7 +1,7 @@
 // Cria ou atualiza as categorias e os formatos iniciais (studio/lib/taxonomia.ts) num dataset.
 // Idempotente: cada documento tem `_id` fixo e é gravado com createOrReplace, então rodar de
 // novo não duplica nada. Mas sobrescreve nome, descrição e ordem que tenham sido editados no
-// Studio nesses dez documentos. Como rodar: studio/README.md#taxonomia-inicial.
+// Studio nesses oito documentos. Como rodar: studio/README.md#taxonomia-inicial.
 import { getCliClient } from 'sanity/cli';
 
 import { CATEGORIAS, documentosDaTaxonomia, FORMATOS } from '../lib/taxonomia';

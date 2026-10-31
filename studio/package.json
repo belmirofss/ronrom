@@ -15,6 +15,7 @@
     "test": "vitest run",
     "taxonomia": "sanity exec scripts/criar-taxonomia.ts --with-user-token --",
     "seed": "sanity exec scripts/seed.ts --with-user-token --",
+    "unificar-formatos": "sanity exec scripts/unificar-formatos.ts --with-user-token --",
     "sanity": "sanity"
   },
   "dependencies": {

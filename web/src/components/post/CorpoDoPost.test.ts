@@ -28,7 +28,7 @@ describe('<CorpoDoPost>', () => {
   beforeAll(async () => {
     const post = await buscarPost({
       tipo: 'pensamento',
-      secao: 'artigos',
+      secao: 'textos',
       slug: 'por-que-eu-anoto-tudo-num-caderno',
     });
     html = await renderizar(post?.corpo ?? []);

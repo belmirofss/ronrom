@@ -90,38 +90,37 @@ export const CATEGORIAS: readonly Categoria[] = [
   },
 ];
 
+// "Textos e opiniões" juntou Artigos, Textos e Opiniões (#143) e manteve o slug `textos`, para não
+// mudar o endereço dos textos. Os formatos que deixaram de existir estão em FORMATOS_UNIFICADOS.
 export const FORMATOS: readonly Formato[] = [
   {
-    _id: 'formato-artigos',
-    nome: 'Artigos',
-    slug: 'artigos',
-    descricao: 'Artigos: textos mais longos e pensados, que desenvolvem um tema com calma.',
-    ordem: 1,
-  },
-  {
     _id: 'formato-textos',
-    nome: 'Textos',
+    nome: 'Textos e opiniões',
     slug: 'textos',
-    descricao: 'Textos livres: crônicas, desabafos e reflexões do dia a dia, sem regra de tamanho.',
-    ordem: 2,
+    descricao:
+      'Textos e opiniões: crônicas, reflexões do dia a dia e o que eu penso sobre o que anda em pauta, sem regra de tamanho.',
+    ordem: 1,
   },
   {
     _id: 'formato-frases',
     nome: 'Frases soltas',
     slug: 'frases',
     descricao: 'Frases soltas: pensamentos curtos, anotados do jeito que vieram.',
-    ordem: 3,
-  },
-  {
-    _id: 'formato-opinioes',
-    nome: 'Opiniões',
-    slug: 'opinioes',
-    descricao: 'Opiniões sobre o que anda em pauta: livros, filmes, internet e a vida em geral.',
-    ordem: 4,
+    ordem: 2,
   },
 ];
 
-// Os dez documentos como são gravados no Sanity, com o slug no formato do campo. Usado pelo
+// Formatos apagados na unificação da #143 e o formato que ficou com os posts deles. Usado pelo
+// scripts/unificar-formatos.ts; os redirects das listagens antigas ficam em web/redirects.mjs.
+export const FORMATOS_UNIFICADOS = {
+  destino: { _id: 'formato-textos', slug: 'textos' },
+  removidos: [
+    { _id: 'formato-artigos', slug: 'artigos' },
+    { _id: 'formato-opinioes', slug: 'opinioes' },
+  ],
+} as const;
+
+// Os oito documentos como são gravados no Sanity, com o slug no formato do campo. Usado pelo
 // scripts/criar-taxonomia.ts e pelo seed de desenvolvimento (scripts/seed.ts).
 export function documentosDaTaxonomia(): Documento[] {
   return [
