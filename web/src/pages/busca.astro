@@ -5,6 +5,7 @@ import Esqueleto from '@/components/ui/Esqueleto.astro';
 import EstadoVazio from '@/components/ui/EstadoVazio.astro';
 import LayoutBase from '@/layouts/LayoutBase.astro';
 import { navegacaoDaBarraLateral } from '@/lib/barra-lateral';
+import { TEXTO_SEM_TERMO } from '@/lib/busca-cliente';
 import { buscarTaxonomia } from '@/lib/sanity/conteudo';
 
 // A busca do Pagefind (#55). Página estática: o termo e os filtros vêm da URL (?q=, ?tipo=,
@@ -32,6 +33,16 @@ const listagens = [
     noindex: true,
   }}
 >
+  {/* Sem JS, o app some. Ele não sai do HTML com `hidden` para o script mostrar depois: aparecer
+      no fim do carregamento empurrava o rodapé (CLS de 0,3 na #60, docs/performance.md). */}
+  <noscript slot="head">
+    <style is:inline>
+      [data-busca] {
+        display: none;
+      }
+    </style>
+  </noscript>
+
   <Container class="busca">
     <h1 class="busca__titulo">Busca</h1>
 
@@ -51,8 +62,8 @@ const listagens = [
       </div>
     </noscript>
 
-    {/* Só aparece quando o script roda. */}
-    <div class="busca__app" data-busca hidden>
+    {/* Só aparece quando o JS está ligado (o <noscript> do head o esconde). */}
+    <div class="busca__app" data-busca>
       <CampoDeBusca id="busca-termo" rotulo="O que você procura?" rotuloVisivel>
         <fieldset class="busca__filtros">
           <legend class="visualmente-oculto">Filtros</legend>
@@ -79,7 +90,10 @@ const listagens = [
 
       {/* A contagem, o carregando, o vazio e o erro, anunciados ao leitor de tela. Com o estado de
           "nenhum resultado" na tela, o texto fica só para o leitor de tela. */}
-      <p class="busca__status" role="status" aria-live="polite" data-status></p>
+      {/* Já sai com o texto de "digite algo", o estado sem termo, para a linha não surgir depois. */}
+      <p class="busca__status" role="status" aria-live="polite" data-status>
+        {TEXTO_SEM_TERMO}
+      </p>
 
       {/* Na primeira busca, enquanto o Pagefind carrega. Depois, a lista anterior fica esmaecida. */}
       <div data-carregando hidden>
@@ -135,6 +149,7 @@ const listagens = [
     lerEstado,
     rotuloDaContagem,
     temBusca,
+    TEXTO_SEM_TERMO,
     urlDaBusca,
     type EstadoDaBusca,
     type FiltrosDisponiveis,
@@ -176,7 +191,6 @@ const listagens = [
     comTermo &&
     soFiltro
   ) {
-    raiz.hidden = false;
     const busca = criarBusca();
     let pagina: PaginaDeResultados | null = null;
 
@@ -275,7 +289,7 @@ const listagens = [
         atualizarMais();
         marcarCarregando(false);
         marcarSemResultados(null);
-        mostrarStatus('Digite algo para buscar nas reviews e nos pensamentos.');
+        mostrarStatus(TEXTO_SEM_TERMO);
         return;
       }
       marcarCarregando(true);
@@ -395,10 +409,6 @@ const listagens = [
     gap: var(--espaco-5);
   }
 
-  .busca__app[hidden] {
-    display: none;
-  }
-
   .busca__sem-js {
     display: grid;
     gap: var(--espaco-4);
@@ -430,12 +440,16 @@ const listagens = [
   .busca__filtro {
     display: grid;
     flex: 1 1 10rem;
+    /* A largura vem do espaço, não do texto das opções: elas chegam depois do Pagefind, e o
+       select que alargasse empurraria os outros filtros (CLS). */
+    min-width: 0;
     gap: var(--espaco-1);
     color: var(--cor-texto-2);
     font-size: var(--texto-sm);
   }
 
   .busca__filtro select {
+    width: 100%;
     min-height: 44px;
     padding-inline: var(--espaco-3);
     border: 1px solid var(--cor-texto-2);
