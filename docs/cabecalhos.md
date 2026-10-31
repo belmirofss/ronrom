@@ -38,20 +38,20 @@ script-src 'self' 'wasm-unsafe-eval' https://www.instagram.com https://cloud.uma
 style-src 'self' 'unsafe-inline';
 img-src 'self' data: https://cdn.sanity.io https://i.ytimg.com;
 font-src 'self';
-connect-src 'self' https://cloud.umami.is https://api-gateway.umami.dev;
+connect-src 'self' https://cloud.umami.is https://gateway.umami.is;
 frame-src https://www.youtube-nocookie.com https://www.instagram.com;
 object-src 'none'; base-uri 'self'; form-action 'self';
 frame-ancestors …; report-uri /api/csp-report; report-to csp
 ```
 
-| Origem                                    | Para quê                                                                            |
-| ----------------------------------------- | ----------------------------------------------------------------------------------- |
-| `cdn.sanity.io`                           | Imagens do conteúdo ([`ImagemSanity`](../web/src/components/ui/ImagemSanity.astro)) |
-| `i.ytimg.com`                             | Miniatura da fachada do YouTube (#40)                                               |
-| `www.youtube-nocookie.com`                | Player do YouTube, depois do clique (#40)                                           |
-| `www.instagram.com`                       | `embed.js` e o iframe do post, depois do clique (#40)                               |
-| `cloud.umami.is`, `api-gateway.umami.dev` | Script e envio de eventos do Umami Cloud (#58, [`analytics.md`](analytics.md))      |
-| `data:`                                   | Imagens de placeholder das fixtures e SVGs pequenos que o Vite põe inline           |
+| Origem                               | Para quê                                                                            |
+| ------------------------------------ | ----------------------------------------------------------------------------------- |
+| `cdn.sanity.io`                      | Imagens do conteúdo ([`ImagemSanity`](../web/src/components/ui/ImagemSanity.astro)) |
+| `i.ytimg.com`                        | Miniatura da fachada do YouTube (#40)                                               |
+| `www.youtube-nocookie.com`           | Player do YouTube, depois do clique (#40)                                           |
+| `www.instagram.com`                  | `embed.js` e o iframe do post, depois do clique (#40)                               |
+| `cloud.umami.is`, `gateway.umami.is` | Script e envio de eventos do Umami Cloud (#58, [`analytics.md`](analytics.md))      |
+| `data:`                              | Imagens de placeholder das fixtures e SVGs pequenos que o Vite põe inline           |
 
 - **Scripts:** só arquivos do próprio site, sem `'unsafe-inline'`. O Astro poria inline, dentro do HTML, os scripts menores que 4 kB (os das fachadas, por exemplo); o `vite.build.assetsInlineLimit` do [`astro.config.mjs`](../web/astro.config.mjs) desliga isso só para JS. **Não use `<script is:inline>` com código dentro** nem atributos `on*=`: a CSP bloqueia. A exceção é um script só com `src` de uma origem liberada, como o do [Umami](analytics.md#como-o-script-entra-na-página): o `is:inline` ali só impede o Astro de empacotá-lo. Se um dia for inevitável, acrescente o hash do script (`'sha256-…'`) ao `script-src`.
 - **WebAssembly:** `'wasm-unsafe-eval'` no `script-src` deixa a busca (Pagefind, #54) compilar o WASM dela. Libera só WebAssembly, não `eval` de JavaScript. Detalhes em [`busca.md`](busca.md#csp).
