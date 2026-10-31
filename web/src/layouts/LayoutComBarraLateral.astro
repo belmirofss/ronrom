@@ -6,11 +6,23 @@ import LayoutBase from '@/layouts/LayoutBase.astro';
 type Props = ComponentProps<typeof LayoutBase>;
 
 const temBarraLateral = Astro.slots.has('barra-lateral');
+const temTopo = Astro.slots.has('topo');
 ---
 
 <LayoutBase {...Astro.props}>
   <slot name="head" slot="head" />
-  <Container class:list={['com-barra-lateral', { 'com-barra-lateral--ativa': temBarraLateral }]}>
+  {/* O que ocupa a largura toda acima da grade, como o topo da home. */}
+  {temTopo && (
+    <Container>
+      <slot name="topo" />
+    </Container>
+  )}
+  <Container
+    class:list={[
+      'com-barra-lateral',
+      { 'com-barra-lateral--ativa': temBarraLateral, 'com-barra-lateral--com-topo': temTopo },
+    ]}
+  >
     <div class="com-barra-lateral__conteudo">
       <slot />
     </div>
@@ -28,6 +40,11 @@ const temBarraLateral = Astro.slots.has('barra-lateral');
     display: grid;
     gap: var(--espaco-7);
     padding-block: var(--espaco-7);
+  }
+
+  /* O topo já tem o próprio espaço embaixo. */
+  :global(.com-barra-lateral--com-topo) {
+    padding-block-start: 0;
   }
 
   @media (min-width: 60em) {

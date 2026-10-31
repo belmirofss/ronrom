@@ -1,24 +1,111 @@
 ---
+import BarraLateral from '@/components/barra-lateral/BarraLateral.astro';
+import MaisLidos from '@/components/home/MaisLidos.astro';
 import TopoHome from '@/components/home/TopoHome.astro';
-import Container from '@/components/layout/Container.astro';
-import LayoutBase from '@/layouts/LayoutBase.astro';
-import { buscarConfiguracoes } from '@/lib/sanity/conteudo';
+import Destaque from '@/components/post/Destaque.astro';
+import ListaDePosts from '@/components/post/ListaDePosts.astro';
+import Abas from '@/components/ui/Abas.astro';
+import EstadoVazio from '@/components/ui/EstadoVazio.astro';
+import LayoutComBarraLateral from '@/layouts/LayoutComBarraLateral.astro';
+import { ultimosSemODestaque } from '@/lib/home';
+import { buscarConfiguracoes, buscarDestaque, buscarUltimos } from '@/lib/sanity/conteudo';
 import { DESCRICAO_DO_SITE } from '@/lib/utils/site';
 
+const [configuracoes, destaque, { posts }] = await Promise.all([
+  buscarConfiguracoes(),
+  buscarDestaque(),
+  buscarUltimos(),
+]);
+
 // Description e imagem de compartilhamento da home: as de Configurações do site, se preenchidas.
-const seo = (await buscarConfiguracoes())?.seo;
+const seo = configuracoes?.seo;
+
+// O destaque é o escolhido em Configurações ou, na falta, o mais recente; a aba não o repete.
+const ultimos = ultimosSemODestaque(posts, destaque);
+
+const ABAS = [
+  { id: 'ultimos', titulo: 'Últimos posts' },
+  { id: 'mais-lidos', titulo: 'Mais lidos' },
+];
 ---
 
-{/* Home provisória: o resto (destaque, abas e barra lateral) entra na #44. */}
-<LayoutBase
+<LayoutComBarraLateral
   seo={{
     description: seo?.descricao || DESCRICAO_DO_SITE,
     canonical: '/',
     image: seo?.imagem,
   }}
 >
-  <Container>
-    <TopoHome />
-    <p>Em construção.</p>
-  </Container>
-</LayoutBase>
+  {/* O único h1 da home, "Ronrom", está no TopoHome. */}
+  <TopoHome slot="topo" />
+
+  {destaque ? (
+    <div class="home">
+      <Destaque post={destaque} />
+
+      <Abas abas={ABAS} rotulo="Posts">
+        {/* Lugar reservado para o campo de busca, que entra na WEB-15 (#61). */}
+        <div slot="ao-lado" class="home__busca"></div>
+        <Fragment slot="ultimos">
+          {ultimos.length > 0 ? (
+            <ListaDePosts posts={ultimos} nivelTitulo={3} />
+          ) : (
+            <EstadoVazio mensagem="Por enquanto, o único post é o do destaque." />
+          )}
+        </Fragment>
+        <MaisLidos slot="mais-lidos" />
+      </Abas>
+
+      <a class="home__ver-todos" href="/posts">
+        Ver todos os posts
+      </a>
+    </div>
+  ) : (
+    <EstadoVazio
+      mensagem="Ainda não tem nenhum post publicado. Volte daqui a pouquinho!"
+      link={{ rotulo: 'Enquanto isso, conheça a autora', href: '/sobre' }}
+    />
+  )}
+
+  <BarraLateral slot="barra-lateral" />
+</LayoutComBarraLateral>
+
+<style>
+  .home {
+    display: grid;
+    gap: var(--espaco-8);
+  }
+
+  /* O campo de busca da WEB-15 vai ocupar este espaço ao lado das abas. No celular, ela decide
+     onde ele fica; por enquanto, nada reservado ali. */
+  .home__busca {
+    display: none;
+  }
+
+  @media (min-width: 40rem) {
+    .home__busca {
+      display: block;
+      inline-size: 16rem;
+      min-block-size: 44px;
+    }
+  }
+
+  /* Botão secundário: contorno e texto vinho (9,70:1), com o fundo creme no hover. */
+  .home__ver-todos {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    min-height: 44px;
+    padding: var(--espaco-3) var(--espaco-5);
+    border: 2px solid var(--cor-vinho);
+    border-radius: var(--raio-pilula);
+    font-weight: var(--peso-medio);
+    line-height: var(--altura-linha-titulo);
+    text-decoration-line: none;
+  }
+
+  .home__ver-todos:hover {
+    background-color: var(--cor-creme);
+    color: var(--cor-vinho-hover);
+  }
+</style>
