@@ -1,0 +1,27 @@
+# Checagem de links internos e âncoras no HTML do build (#45), rodada pelo job `ci / links`.
+# Os links externos ficam de fora: são checados toda semana, contra o sitemap, na #62.
+# Opções: https://lychee.cli.rs/guides/config/ (a versão do lychee é a padrão da lychee-action).
+#
+# O --root-dir (caminho absoluto da pasta do build) e o --remap da URL do site vão na linha de
+# comando, porque dependem de onde o build está e da SITE_URL. Para rodar localmente, veja
+# docs/testes.md#links-internos.
+
+# Só arquivos locais, sem rede: link http(s) que não for remapeado para o build é ignorado.
+offline = true
+
+# Âncoras (#conteudo, /sobre#autora) precisam existir como id na página de destino.
+include_fragments = "anchor-only"
+
+# Com build.format 'directory', /sobre aponta para sobre/index.html. A pasta sem index.html
+# é link quebrado (na Vercel, ela cai no 404).
+index_files = ["index.html"]
+
+extensions = ["html"]
+
+no_progress = true
+
+# Exclusões. Toda entrada leva um comentário com o motivo e, se for temporária, a issue que a
+# remove. Os padrões são regex sobre a URL já remapeada (file:///…/web/dist/client/…).
+# Não exclua página que ainda não existe só para silenciar o relatório: enquanto o job não é
+# bloqueante, o relatório é justamente a lista do que falta.
+exclude = []
