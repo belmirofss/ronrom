@@ -70,4 +70,11 @@ export default defineConfig(
       ],
     },
   },
+  // Configurações CommonJS de ferramentas (o lighthouserc.cjs, que o Lighthouse CI carrega com
+  // `require`).
+  {
+    files: ['**/*.cjs'],
+    languageOptions: { sourceType: 'commonjs' },
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
 );

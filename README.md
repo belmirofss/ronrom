@@ -122,6 +122,7 @@ Monorepo com workspaces do pnpm (`pnpm-workspace.yaml`):
 │   └── schemaTypes/        # schemas de conteúdo
 ├── docs/                   # documentação e ADRs (veja a tabela abaixo)
 ├── scripts/                # scripts de infraestrutura (Ignored Build Step da Vercel)
+├── lighthouserc.cjs        # Lighthouse CI e orçamento (budget.json); veja docs/performance.md
 └── .github/                # CI, Dependabot e templates de issue e PR
 ```
 
@@ -140,6 +141,7 @@ Imports dentro de `web/src` usam o alias `@/*` (ex.: `import { NOME_DO_SITE } fr
 | [`docs/visualizacoes.md`](docs/visualizacoes.md)          | Contador de visualizações: regras, custo no Upstash, provisionar e conferir |
 | [`docs/testes.md`](docs/testes.md)                        | O que é testado no CI e o que é conferido à mão, e como escrever testes     |
 | [`docs/busca.md`](docs/busca.md)                          | Busca (Pagefind): o índice, a página /busca, o estado na URL e o dev        |
+| [`docs/performance.md`](docs/performance.md)              | Metas de performance, orçamento, Lighthouse CI e Core Web Vitals de campo   |
 | [`docs/adr/`](docs/adr/README.md)                         | Decisões de arquitetura e infraestrutura, com contexto e consequências      |
 | [`web/README.md`](web/README.md#design-tokens-e-css-base) | Site: tokens de design, regra de contraste e carregamento da DM Sans        |
 | [`studio/README.md`](studio/README.md)                    | Studio: rodar, variáveis, tokens e configuração do projeto no Sanity        |
