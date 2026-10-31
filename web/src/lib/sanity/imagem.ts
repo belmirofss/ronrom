@@ -141,14 +141,26 @@ export const ALTURA_OG = 630;
 // autora marcou no Studio. JPG explícito porque alguns crawlers não aceitam WebP nem AVIF.
 // Sem asset (arquivo apagado) ou fora do CDN, devolve `null` e a página usa a imagem padrão.
 export function ogImage(imagem: ImagemDoSanity): string | null {
+  return imagemRecortada(imagem, LARGURA_OG, ALTURA_OG);
+}
+
+/**
+ * A imagem recortada em `largura`×`altura` no hotspot, em JPG: a do `ogImage` e as do JSON-LD
+ * (#50), que pede a capa em várias proporções. `null` sem asset ou fora do CDN.
+ */
+export function imagemRecortada(
+  imagem: ImagemDoSanity,
+  largura: number,
+  altura: number,
+): string | null {
   const projeto = projetoDoCdn(imagem.asset);
   if (!projeto) {
     return null;
   }
   return createImageUrlBuilder(projeto)
     .image(imagem as SanityImageSource)
-    .width(LARGURA_OG)
-    .height(ALTURA_OG)
+    .width(largura)
+    .height(altura)
     .fit('crop')
     .format('jpg')
     .quality(80)
