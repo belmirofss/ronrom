@@ -25,7 +25,7 @@ const {
 const Titulo = `h${nivelTitulo}` as const;
 ---
 
-<article class:list={['card-de-post', 'card-clicavel', classe]}>
+<article class:list={['card-de-post', 'card-clicavel', 'revelar', classe]}>
   <Titulo class="card-de-post__titulo">
     <a class="card-clicavel__link" href={urlDoPost(post)}>
       {post.titulo}

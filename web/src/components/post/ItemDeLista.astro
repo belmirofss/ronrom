@@ -20,7 +20,7 @@ interface Props {
 const {
   post,
   nivelTitulo = 2,
-  sizes = '(min-width: 60em) 15rem, (min-width: 30rem) 40vw, 100vw',
+  sizes = '(min-width: 60em) 15rem, (min-width: 32rem) 40vw, 6.5rem',
   class: classe,
 } = Astro.props;
 
@@ -28,7 +28,7 @@ const Titulo = `h${nivelTitulo}` as const;
 const [tipo, secao] = rotuloDoCard(post);
 ---
 
-<article class:list={['item-de-lista', 'card-clicavel', classe]}>
+<article class:list={['item-de-lista', 'card-clicavel', 'revelar', classe]}>
   <div class="item-de-lista__grade">
     <div class="item-de-lista__textos">
       <Titulo class="item-de-lista__titulo">
@@ -70,23 +70,48 @@ const [tipo, secao] = rotuloDoCard(post);
     container-type: inline-size;
   }
 
-  /* Estreito (o celular), a miniatura vai em cima, na largura toda: ao lado do texto, ela ficaria
-     pequena demais para o chip de uma categoria longa. */
+  /* Estreito (o celular), compacto: miniatura pequena à direita do texto, sem o chip (o rótulo já
+     diz a seção) e com o subtítulo em até 2 linhas. A partir de 30rem, a miniatura maior vai à
+     esquerda, com o chip. */
   .item-de-lista__grade {
     display: grid;
+    grid-template-columns: minmax(0, 1fr) 6.5rem;
+    align-items: start;
     gap: var(--espaco-4);
   }
 
   .item-de-lista__miniatura {
     position: relative;
-    order: -1;
+  }
+
+  .item-de-lista__chip {
+    display: none;
+  }
+
+  .item-de-lista__subtitulo {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 
   @container (min-width: 30rem) {
     .item-de-lista__grade {
       grid-template-columns: min(40%, 15rem) minmax(0, 1fr);
-      align-items: start;
       gap: var(--espaco-5);
+    }
+
+    .item-de-lista__miniatura {
+      order: -1;
+    }
+
+    .item-de-lista__chip {
+      display: flex;
+    }
+
+    .item-de-lista__subtitulo {
+      display: block;
     }
   }
 
@@ -98,7 +123,6 @@ const [tipo, secao] = rotuloDoCard(post);
     position: absolute;
     inset-block-start: var(--espaco-2);
     inset-inline: var(--espaco-2);
-    display: flex;
   }
 
   /* Uma categoria mais larga que a miniatura quebra a linha, em vez de vazar. */

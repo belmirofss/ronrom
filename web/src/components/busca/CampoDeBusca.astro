@@ -94,8 +94,11 @@ const {
 
   /* 44px de altura nos dois, o alvo de toque mínimo. A borda (3:1 no fundo) fica vinho no hover e
      no foco, que também ganha o anel do :focus-visible. */
+  /* width: 100% zera a largura mínima intrínseca do <input> (~20 caracteres): sem ela, o campo
+     empurra a página para fora da tela em 320px. */
   .campo-de-busca__campo {
     flex: 1;
+    width: 100%;
     min-width: 0;
     min-height: 44px;
     padding-inline: calc(var(--espaco-4) + 1.125rem + var(--espaco-2)) var(--espaco-4);

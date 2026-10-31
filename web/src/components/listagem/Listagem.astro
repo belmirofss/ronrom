@@ -1,5 +1,6 @@
 ---
 import BarraLateral from '@/components/barra-lateral/BarraLateral.astro';
+import FiltrosDaListagem from '@/components/listagem/FiltrosDaListagem.astro';
 import ItemDeLista from '@/components/post/ItemDeLista.astro';
 import JsonLd from '@/components/seo/JsonLd.astro';
 import Breadcrumb from '@/components/ui/Breadcrumb.astro';
@@ -67,6 +68,7 @@ const tituloDaListagem = tituloComPagina(titulo, pagina);
       </h1>
       {textoDaDescricao && <p class="listagem__descricao">{textoDaDescricao}</p>}
       <p class="listagem__total">{rotuloDoTotal(total)}</p>
+      <FiltrosDaListagem base={base} />
     </header>
 
     {posts.length > 0 ? (
@@ -131,9 +133,15 @@ const tituloDaListagem = tituloComPagina(titulo, pagina);
   .listagem__posts {
     display: flex;
     flex-direction: column;
-    gap: var(--espaco-7);
+    gap: var(--espaco-6);
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+
+  @media (min-width: 40em) {
+    .listagem__posts {
+      gap: var(--espaco-7);
+    }
   }
 </style>

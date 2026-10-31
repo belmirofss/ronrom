@@ -29,6 +29,8 @@ const { seo } = Astro.props;
       <slot name="head" />
     </Seo>
     <Umami />
+    {/* Clássico e no <head>, não um módulo: precisa estar ouvindo antes do pagereveal. */}
+    <script is:inline src="/transicao-da-capa.js"></script>
   </head>
   <body>
     {/* Primeiro elemento focável: aparece só com o foco e leva o foco para o <main>. */}
@@ -41,8 +43,51 @@ const { seo } = Astro.props;
       <slot />
     </main>
     <Rodape />
+    <a class="voltar-ao-topo" href="#top" data-voltar-ao-topo hidden>
+      <span class="visualmente-oculto">Voltar ao topo</span>
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="m6 15 6-6 6 6"></path>
+      </svg>
+    </a>
   </body>
 </html>
+
+<script>
+  // Botão de voltar ao topo: aparece depois de rolar uma tela e meia e leva o foco de volta ao início.
+  const botao = document.querySelector<HTMLAnchorElement>('[data-voltar-ao-topo]');
+  if (botao) {
+    botao.hidden = false;
+    let agendado = false;
+    const atualizar = () => {
+      agendado = false;
+      botao.classList.toggle('voltar-ao-topo--visivel', window.scrollY > 1.5 * window.innerHeight);
+    };
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (agendado) return;
+        agendado = true;
+        requestAnimationFrame(atualizar);
+      },
+      { passive: true },
+    );
+    atualizar();
+    botao.addEventListener('click', (evento) => {
+      evento.preventDefault();
+      const suave = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: suave ? 'smooth' : 'auto' });
+      document.querySelector<HTMLElement>('.cabecalho__marca')?.focus({ preventScroll: true });
+    });
+  }
+</script>
 
 <style>
   /* O rodapé fica no fim da tela mesmo em páginas curtas. */
@@ -69,5 +114,50 @@ const { seo } = Astro.props;
     border-radius: var(--raio-md);
     box-shadow: var(--sombra-md);
     font-weight: var(--peso-medio);
+  }
+
+  /* Fica no canto, fora do caminho do texto, e só aparece depois de rolar (script acima). */
+  .voltar-ao-topo {
+    position: fixed;
+    z-index: 40;
+    inset-block-end: max(var(--espaco-4), env(safe-area-inset-bottom));
+    inset-inline-end: var(--espaco-4);
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--raio-pilula);
+    background-color: var(--cor-vinho);
+    box-shadow: var(--sombra-md);
+    color: var(--cor-creme);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+    transition:
+      opacity 0.2s ease-out,
+      transform 0.2s ease-out,
+      visibility 0.2s;
+    visibility: hidden;
+  }
+
+  .voltar-ao-topo:hover {
+    background-color: var(--cor-vinho-hover);
+    color: var(--cor-creme);
+  }
+
+  .voltar-ao-topo:focus-visible {
+    outline-color: var(--cor-vinho);
+  }
+
+  .voltar-ao-topo svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  :global(.voltar-ao-topo--visivel) {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    visibility: visible;
   }
 </style>

@@ -1,8 +1,10 @@
 ---
 import Container from '@/components/layout/Container.astro';
 import CardDePost from '@/components/post/CardDePost.astro';
+import Compartilhar from '@/components/post/Compartilhar.astro';
 import CorpoDoPost from '@/components/post/CorpoDoPost.astro';
 import FichaDaReview from '@/components/post/FichaDaReview.astro';
+import ProgressoDaLeitura from '@/components/post/ProgressoDaLeitura.astro';
 import RegistroDeVisualizacao from '@/components/post/RegistroDeVisualizacao.astro';
 import JsonLd from '@/components/seo/JsonLd.astro';
 import Breadcrumb from '@/components/ui/Breadcrumb.astro';
@@ -41,6 +43,8 @@ const indice = indiceDoPost(post, url);
 
   {/* Só o <article> entra no índice da busca (#54): cabeçalho, rodapé e "Leia também" ficam de
       fora. Detalhes: docs/busca.md. */}
+  <ProgressoDaLeitura />
+
   <article class="post" data-pagefind-body>
     <Container as="header" largura="leitura" class="post__topo">
       <Breadcrumb itens={trilhaDoPost(post)} />
@@ -92,6 +96,7 @@ const indice = indiceDoPost(post, url);
     <Container largura="leitura" class="post__leitura">
       <FichaDaReview post={post} />
       <CorpoDoPost corpo={post.corpo} />
+      <Compartilhar titulo={post.titulo} url={url} />
     </Container>
   </article>
 
@@ -138,8 +143,10 @@ const indice = indiceDoPost(post, url);
     font-size: var(--texto-sm);
   }
 
+  /* "capa" é o par da capa do card na transição entre páginas (public/transicao-da-capa.js). */
   :global(.post__imagem) {
     border-radius: var(--raio-lg);
+    view-transition-name: capa;
   }
 
   :global(.post__leitura) {
