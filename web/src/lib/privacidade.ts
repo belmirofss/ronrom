@@ -67,7 +67,7 @@ export const SERVICOS_DE_TERCEIROS: readonly ServicoDeTerceiro[] = [
     quando: 'Em toda página, menos com o "Não rastrear" (Do Not Track) ligado no navegador',
     pais: 'Estados Unidos',
     politica: 'https://umami.is/privacy',
-    origens: ['https://cloud.umami.is', 'https://api-gateway.umami.dev'],
+    origens: ['https://cloud.umami.is', 'https://gateway.umami.is'],
   },
   {
     nome: 'YouTube (Google)',
