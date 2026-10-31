@@ -7,10 +7,10 @@ const ABAS = [
   { id: 'mais-lidos', titulo: 'Mais lidos' },
 ];
 
-async function renderizar(slots: Record<string, string> = {}) {
+async function renderizar(slots: Record<string, string> = {}, props: object = {}) {
   const container = await AstroContainer.create();
   return container.renderToString(Abas, {
-    props: { abas: ABAS, rotulo: 'Posts' },
+    props: { abas: ABAS, rotulo: 'Posts', ...props },
     slots: {
       ultimos: '<p>Lista dos últimos</p>',
       'mais-lidos': '<p>Lista dos mais lidos</p>',
@@ -73,6 +73,13 @@ describe('<Abas>', () => {
     expect(semAoLado).not.toContain('abas__ao-lado');
     const fimDoTablist = comAoLado.indexOf('</div>', comAoLado.indexOf('role="tablist"'));
     expect(comAoLado.indexOf('role="search"')).toBeGreaterThan(fimDoTablist);
+  });
+
+  it('só marca o evento do analytics quando recebe um', async () => {
+    expect(await renderizar()).not.toContain('data-abas-evento');
+    expect(await renderizar({}, { evento: 'troca-de-aba' })).toContain(
+      'data-abas-evento="troca-de-aba"',
+    );
   });
 
   it('derruba a renderização sem nenhuma aba', async () => {

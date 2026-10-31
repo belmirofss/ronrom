@@ -8,6 +8,7 @@ import ListaDePosts from '@/components/post/ListaDePosts.astro';
 import Abas from '@/components/ui/Abas.astro';
 import EstadoVazio from '@/components/ui/EstadoVazio.astro';
 import LayoutComBarraLateral from '@/layouts/LayoutComBarraLateral.astro';
+import { EVENTOS } from '@/lib/analytics';
 import { ultimosSemODestaque } from '@/lib/home';
 import { buscarConfiguracoes, buscarDestaque, buscarUltimos } from '@/lib/sanity/conteudo';
 import { DESCRICAO_DO_SITE } from '@/lib/utils/site';
@@ -46,7 +47,7 @@ const ABAS = [
     <div class="home">
       <Destaque post={destaque} />
 
-      <Abas abas={ABAS} rotulo="Posts">
+      <Abas abas={ABAS} rotulo="Posts" evento={EVENTOS.trocaDeAba}>
         {/* Lugar reservado para o campo de busca, que entra na WEB-15 (#61). */}
         <div slot="ao-lado" class="home__busca"></div>
         <Fragment slot="ultimos">
