@@ -4,6 +4,7 @@ import { readdirSync } from 'node:fs';
 import vercel from '@astrojs/vercel';
 import { defineConfig, envField, fontProviders } from 'astro/config';
 import { loadEnv } from 'vite';
+import { pagefindIntegracao } from './integracao-pagefind.mjs';
 import { idsPublicados } from './src/lib/sanity/ids-publicados';
 import { redirects } from './redirects.mjs';
 import { sitemapDoSite } from './sitemap.mjs';
@@ -135,6 +136,9 @@ export default defineConfig({
     },
   ],
   integrations: [
+    // Índice da busca (#54): o Pagefind indexa os posts no fim do build. Detalhes: docs/busca.md.
+    // A prévia de rascunhos (#43) não tem índice: roda sob demanda, sem HTML gerado no build.
+    ...(ehPrevia ? [] : [pagefindIntegracao()]),
     // Redirects 301 dos endereços antigos dos posts (#53), só no `astro build`: busca no Sanity (ou
     // nas fixtures) os `slugsAnteriores`, junta com os fixos e, no fim, confere que todo destino
     // é uma página gerada. Cadeias são encurtadas; loop, destino inexistente ou redirect por cima

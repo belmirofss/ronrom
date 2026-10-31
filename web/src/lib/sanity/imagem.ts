@@ -166,3 +166,28 @@ export function imagemRecortada(
     .quality(80)
     .url();
 }
+
+// --- Miniatura (resultado da busca) ---
+
+/**
+ * Uma única URL do CDN com `largura` pixels, recortada na `proporcao` e centrada no hotspot, como
+ * a miniatura do resultado da busca (#54). Fora do CDN (modo fixtures), o próprio placeholder, como
+ * no `fontesDaImagem`. `null` se o asset foi apagado.
+ */
+export function urlDaMiniatura(
+  imagem: ImagemDoSanity,
+  largura: number,
+  proporcao: number,
+): string | null {
+  if (!imagem.asset) return null;
+  const projeto = projetoDoCdn(imagem.asset);
+  if (!projeto) return imagem.asset.url;
+  return createImageUrlBuilder(projeto)
+    .image(imagem as SanityImageSource)
+    .width(largura)
+    .height(Math.round(largura / proporcao))
+    .fit('crop')
+    .auto('format')
+    .quality(QUALIDADE)
+    .url();
+}
