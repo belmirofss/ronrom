@@ -1,6 +1,6 @@
 # Busca
 
-O índice da busca do site, gerado pelo [Pagefind](https://pagefind.app) no build, sem servidor (#54, SEO-07). A página `/busca` e o campo da home que usam o índice vêm na #55.
+O índice da busca do site, gerado pelo [Pagefind](https://pagefind.app) no build, sem servidor (#54, SEO-07), e a página `/busca` e o campo da home que o usam (#55, SEO-08). O visual definitivo dos resultados vem na WEB-15 (#61).
 
 ## Como o índice é gerado
 
@@ -66,6 +66,46 @@ O Pagefind roda num Web Worker e compila WebAssembly, então o `script-src` tem 
 ## Tamanho
 
 Com as fixtures (10 posts), a primeira busca baixa cerca de 170 kB antes de compressão: `pagefind.js` (45 kB), `pagefind-worker.js` (41 kB), o WASM `pt-br` (72 kB, já comprimido) e um pedaço do índice (7 kB). O Pagefind divide o índice em pedaços e só baixa os dos termos buscados, então o total cresce devagar com o número de posts. A meta da #54 é ficar abaixo de ~300 kB na primeira busca.
+
+## A página `/busca`
+
+[`busca.astro`](../web/src/pages/busca.astro) é estática: quem busca é o script da página, no navegador. O estado, o carregamento do índice e o formato dos resultados ficam em [`busca-cliente.ts`](../web/src/lib/busca-cliente.ts), separado do `busca.ts` do build para não levar o código do Sanity ao navegador (testes em [`busca-cliente.test.ts`](../web/src/lib/busca-cliente.test.ts)).
+
+**O campo de busca** ([`CampoDeBusca`](../web/src/components/busca/CampoDeBusca.astro)) é um `<form role="search" action="/busca" method="get">` com `input type="search" name="q"`. Na home, fica ao lado das abas e funciona sem JS: o navegador abre `/busca?q=café`. Na `/busca`, o mesmo componente recebe os filtros e o script assume o envio.
+
+**Estado na URL.** A página lê e mantém sincronizados:
+
+| Parâmetro     | Valor                                                | Filtro do Pagefind              |
+| ------------- | ---------------------------------------------------- | ------------------------------- |
+| `?q=`         | o termo                                              | (o termo da busca)              |
+| `?tipo=`      | `review` ou `pensamento`; outro valor é ignorado     | `tipo` (`Review`, `Pensamento`) |
+| `?categoria=` | nome da categoria ou do formato (`Filmes`, `Textos`) | `categoria` **ou** `formato`    |
+| `?tag=`       | nome da tag, sem `#` (`Wim Wenders`)                 | `tags`                          |
+
+Digitar troca a entrada do histórico (`replaceState`); enviar e trocar filtro criam uma nova (`pushState`), e o Voltar refaz a busca anterior. Sem termo, só com filtro (`/busca?tag=Rotina`), a página lista os posts do filtro do mais recente para o mais antigo; com termo, a ordem é a de relevância. Sem termo nem filtro, pede para digitar algo.
+
+**Carregamento.** O `pagefind.js` é importado só na primeira busca (`import()` com `@vite-ignore`, porque o arquivo só existe na saída do build), com `excerptLength: 24`. Cada busca espera 200 ms sem digitação nova, e uma resposta que chega depois de outra busca é descartada. Se o índice não carregar (no dev sem build, por exemplo), a página diz que a busca não carregou, e a próxima busca tenta de novo.
+
+**Resultados.** O tipo `ResultadoDeBusca` é o contrato com a UI:
+
+| Campo                | De onde vem                                    |
+| -------------------- | ---------------------------------------------- |
+| `url`                | `meta.url` (sem barra), ou o `url` sem a barra |
+| `title`              | `meta.title`                                   |
+| `excerpt`            | trecho do Pagefind, com o termo em `<mark>`    |
+| `image`, `image_alt` | `meta.image`, `meta.image_alt`                 |
+| `tipo`               | filtro `tipo` (`review` ou `pensamento`)       |
+| `categoria`          | filtro `categoria` ou `formato`                |
+| `nota`               | `meta.nota` (`4,5 corações`)                   |
+| `data`               | `meta.date` (ISO 8601)                         |
+
+O `excerpt` vai para o `innerHTML`: o Pagefind escapa o texto do post e só acrescenta os `<mark>`. Os outros campos entram como texto. A página mostra 10 resultados e um botão "Carregar mais", que busca os dados só dos 10 seguintes e leva o foco ao primeiro deles.
+
+**Contagem, filtros e estados.** A contagem ("3 resultados para “café”.", "Nenhum resultado para “x”.") e os estados de carregando e erro saem num `role="status"` com `aria-live="polite"`. Os selects de tipo, categoria e tag são montados com o `pagefind.filters()` do índice inteiro, com o total de posts de cada valor; categorias e formatos ficam numa lista só.
+
+**Sem JS** a parte interativa fica `hidden`, e um `<noscript>` explica que a busca precisa de JavaScript e lista as listagens (todos os posts, reviews e categorias, pensamentos e formatos).
+
+**SEO.** `noindex,follow` em produção, canonical `/busca` sem parâmetros e fora do sitemap ([seo-urls.md](seo-urls.md#busca)).
 
 ## Como conferir
 

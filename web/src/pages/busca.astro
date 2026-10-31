@@ -1,0 +1,454 @@
+---
+import CampoDeBusca from '@/components/busca/CampoDeBusca.astro';
+import Container from '@/components/layout/Container.astro';
+import LayoutBase from '@/layouts/LayoutBase.astro';
+import { navegacaoDaBarraLateral } from '@/lib/barra-lateral';
+import { buscarTaxonomia } from '@/lib/sanity/conteudo';
+
+// A busca do Pagefind (#55). Página estática: o termo e os filtros vêm da URL (?q=, ?tipo=,
+// ?categoria=, ?tag=) e quem busca é o script, no navegador, com o índice do build (#54). O estado
+// e o contrato dos resultados ficam em src/lib/busca-cliente.ts; o visual definitivo vem na WEB-15
+// (#61). Fora do sitemap e com noindex,follow (docs/seo-urls.md).
+
+// Sem JS, a página só explica e aponta as listagens: as seções, as categorias e os formatos.
+const { categorias, formatos } = navegacaoDaBarraLateral(await buscarTaxonomia());
+const listagens = [
+  { rotulo: 'Todos os posts', href: '/posts' },
+  { rotulo: 'Reviews', href: '/reviews' },
+  ...categorias,
+  { rotulo: 'Pensamentos', href: '/pensamentos' },
+  ...formatos,
+];
+---
+
+<LayoutBase
+  seo={{
+    title: 'Busca',
+    description: 'Busque nas reviews e nos pensamentos do Ronrom.',
+    canonical: '/busca',
+    noindex: true,
+  }}
+>
+  <Container class="busca">
+    <h1 class="busca__titulo">Busca</h1>
+
+    <noscript>
+      <div class="busca__sem-js">
+        <p>
+          A busca precisa de JavaScript, que está desligado neste navegador. Dá para achar os posts
+          pelas listagens:
+        </p>
+        <ul class="busca__listagens">
+          {listagens.map(({ rotulo, href }) => (
+            <li>
+              <a href={href}>{rotulo}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </noscript>
+
+    {/* Só aparece quando o script roda. */}
+    <div class="busca__app" data-busca hidden>
+      <CampoDeBusca id="busca-termo" rotulo="O que você procura?" rotuloVisivel>
+        <fieldset class="busca__filtros">
+          <legend class="visualmente-oculto">Filtros</legend>
+          <div class="busca__filtro">
+            <label for="busca-tipo">Tipo</label>
+            <select id="busca-tipo" name="tipo" data-filtro="tipos">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="busca__filtro">
+            <label for="busca-categoria">Categoria</label>
+            <select id="busca-categoria" name="categoria" data-filtro="categorias">
+              <option value="">Todas</option>
+            </select>
+          </div>
+          <div class="busca__filtro">
+            <label for="busca-tag">Tag</label>
+            <select id="busca-tag" name="tag" data-filtro="tags">
+              <option value="">Todas</option>
+            </select>
+          </div>
+        </fieldset>
+      </CampoDeBusca>
+
+      {/* A contagem, o carregando, o vazio e o erro, anunciados ao leitor de tela. */}
+      <p class="busca__status" role="status" aria-live="polite" data-status></p>
+
+      <ol class="busca__resultados" data-resultados></ol>
+
+      <button class="busca__mais" type="button" data-mais hidden>
+        Carregar mais
+      </button>
+    </div>
+
+    <template data-modelo>
+      <li class="resultado card-clicavel">
+        <div class="resultado__textos">
+          {/* O script troca pelo h2 com o link do post (um h2 vazio aqui não teria conteúdo). */}
+          <span data-campo="titulo"></span>
+          <p class="resultado__rotulo" data-campo="rotulo"></p>
+          <p class="resultado__trecho" data-campo="trecho"></p>
+          <p class="resultado__meta" data-campo="meta"></p>
+        </div>
+        {/* Decorativa, como nas listagens: o título do link já diz qual é o post. */}
+        <img
+          class="resultado__capa"
+          data-campo="imagem"
+          alt=""
+          width="320"
+          height="240"
+          loading="lazy"
+          decoding="async"
+        />
+      </li>
+    </template>
+  </Container>
+</LayoutBase>
+
+<script>
+  import {
+    criarBusca,
+    lerEstado,
+    rotuloDaContagem,
+    temBusca,
+    urlDaBusca,
+    type EstadoDaBusca,
+    type FiltrosDisponiveis,
+    type PaginaDeResultados,
+    type ResultadoDeBusca,
+  } from '@/lib/busca-cliente';
+  import { EVENTOS, registrarEvento } from '@/lib/analytics';
+  import { formatarData } from '@/lib/utils/data';
+
+  // Uma busca só conta no analytics (#58) depois de 1 s parada: quem digita "gato" letra por letra
+  // gera uma busca no painel, não quatro. Vai só a quantidade de resultados, nunca o texto.
+  const PAUSA_PARA_CONTAR_MS = 1000;
+
+  const raiz = document.querySelector<HTMLElement>('[data-busca]');
+  const modelo = document.querySelector<HTMLTemplateElement>('[data-modelo]');
+  const formulario = raiz?.querySelector('form');
+  const campo = formulario?.querySelector<HTMLInputElement>('input[name="q"]');
+  const status = raiz?.querySelector<HTMLElement>('[data-status]');
+  const lista = raiz?.querySelector<HTMLOListElement>('[data-resultados]');
+  const mais = raiz?.querySelector<HTMLButtonElement>('[data-mais]');
+  const selects = [...(raiz?.querySelectorAll<HTMLSelectElement>('select[data-filtro]') ?? [])];
+
+  if (raiz && modelo && formulario && campo && status && lista && mais) {
+    raiz.hidden = false;
+    const busca = criarBusca();
+    let pagina: PaginaDeResultados | null = null;
+
+    const estadoDoFormulario = (): EstadoDaBusca => {
+      const parametros = new URLSearchParams({ q: campo.value });
+      for (const select of selects) parametros.set(select.name, select.value);
+      return lerEstado(parametros);
+    };
+
+    const preencher = (estado: EstadoDaBusca) => {
+      campo.value = estado.q;
+      for (const select of selects) {
+        const valor = estado[select.name as 'tipo' | 'categoria' | 'tag'] ?? '';
+        // Valor da URL que o índice não tem (tag apagada, link antigo): fica como opção, com 0.
+        if (valor && ![...select.options].some((opcao) => opcao.value === valor)) {
+          select.add(new Option(valor, valor));
+        }
+        select.value = valor;
+      }
+    };
+
+    const mostrarStatus = (texto: string) => {
+      status.textContent = texto;
+    };
+
+    const item = (resultado: ResultadoDeBusca) => {
+      const li = modelo.content.firstElementChild?.cloneNode(true) as HTMLLIElement;
+      const parte = <T extends HTMLElement>(nome: string) =>
+        li.querySelector<T>(`[data-campo="${nome}"]`) as T;
+
+      const titulo = document.createElement('h2');
+      titulo.className = 'resultado__titulo';
+      const link = document.createElement('a');
+      link.className = 'card-clicavel__link';
+      link.href = resultado.url;
+      link.textContent = resultado.title;
+      titulo.append(link);
+      parte('titulo').replaceWith(titulo);
+      parte('rotulo').textContent = [
+        resultado.tipo === 'review' ? 'Review' : 'Pensamento',
+        resultado.categoria,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+      // O Pagefind escapa o texto do post e só acrescenta os <mark> (docs/busca.md).
+      parte('trecho').innerHTML = resultado.excerpt;
+
+      const meta: string[] = [];
+      if (resultado.data) {
+        try {
+          meta.push(formatarData(resultado.data));
+        } catch {
+          // Data inválida no índice: o resultado sai sem ela.
+        }
+      }
+      if (resultado.nota) meta.push(resultado.nota);
+      const linhaDaMeta = parte('meta');
+      if (meta.length > 0) linhaDaMeta.textContent = meta.join(' · ');
+      else linhaDaMeta.remove();
+
+      const imagem = parte<HTMLImageElement>('imagem');
+      if (resultado.image) imagem.src = resultado.image;
+      else imagem.remove();
+      return li;
+    };
+
+    const atualizarMais = () => {
+      mais.hidden = !pagina?.temMais;
+    };
+
+    let contagemPendente: ReturnType<typeof setTimeout> | undefined;
+
+    const buscar = async (estado: EstadoDaBusca) => {
+      clearTimeout(contagemPendente);
+      if (!temBusca(estado)) {
+        pagina = null;
+        lista.replaceChildren();
+        atualizarMais();
+        mostrarStatus('Digite algo para buscar nas reviews e nos pensamentos.');
+        return;
+      }
+      raiz.setAttribute('aria-busy', 'true');
+      mostrarStatus('Buscando…');
+      try {
+        const resposta = await busca.buscar(estado);
+        // Outra busca veio depois desta: ela é que atualiza a página.
+        if (!resposta) return;
+        pagina = resposta;
+        lista.replaceChildren(...resposta.resultados.map(item));
+        atualizarMais();
+        const termo = estado.q ? ` para “${estado.q}”` : '';
+        mostrarStatus(`${rotuloDaContagem(resposta.total)}${termo}.`);
+        raiz.removeAttribute('aria-busy');
+        contagemPendente = setTimeout(
+          () => registrarEvento(EVENTOS.busca, { resultados: resposta.total }),
+          PAUSA_PARA_CONTAR_MS,
+        );
+      } catch (erro) {
+        console.error('[busca]', erro);
+        pagina = null;
+        lista.replaceChildren();
+        atualizarMais();
+        mostrarStatus('A busca não carregou. Recarregue a página para tentar de novo.');
+        raiz.removeAttribute('aria-busy');
+      }
+    };
+
+    // Digitar substitui a entrada do histórico (o Voltar não refaz letra por letra); enviar e
+    // trocar filtro criam uma nova, para o Voltar voltar à busca anterior.
+    const aplicar = (modo: 'push' | 'replace') => {
+      const estado = estadoDoFormulario();
+      const url = urlDaBusca(estado);
+      if (url !== `${location.pathname}${location.search}`) {
+        history[modo === 'push' ? 'pushState' : 'replaceState'](null, '', url);
+      }
+      void buscar(estado);
+    };
+
+    formulario.addEventListener('submit', (evento) => {
+      evento.preventDefault();
+      aplicar('push');
+    });
+    campo.addEventListener('input', () => aplicar('replace'));
+    for (const select of selects) {
+      select.addEventListener('change', () => {
+        registrarEvento(EVENTOS.filtro, {
+          filtro: select.dataset['filtro'] ?? '',
+          valor: select.value || 'todos',
+        });
+        aplicar('push');
+      });
+    }
+
+    window.addEventListener('popstate', () => {
+      const estado = lerEstado(new URLSearchParams(location.search));
+      preencher(estado);
+      void buscar(estado);
+    });
+
+    mais.addEventListener('click', async () => {
+      if (!pagina) return;
+      mais.disabled = true;
+      try {
+        const itens = (await pagina.carregarMais()).map(item);
+        lista.append(...itens);
+        atualizarMais();
+        // O foco vai para o primeiro resultado novo: quem usa teclado continua de onde parou.
+        itens[0]?.querySelector('a')?.focus();
+      } catch (erro) {
+        console.error('[busca] carregar mais', erro);
+        mostrarStatus('Não deu para carregar mais resultados. Tente de novo.');
+      } finally {
+        mais.disabled = false;
+      }
+    });
+
+    const preencherFiltros = (filtros: FiltrosDisponiveis) => {
+      for (const select of selects) {
+        const opcoes = filtros[select.dataset['filtro'] as keyof FiltrosDisponiveis];
+        select.append(
+          ...opcoes.map(({ valor, rotulo, total }) => new Option(`${rotulo} (${total})`, valor)),
+        );
+      }
+    };
+
+    const inicial = lerEstado(new URLSearchParams(location.search));
+    preencher(inicial);
+    void buscar(inicial);
+    // Os filtros chegam depois; o estado da URL é reaplicado para marcar as opções carregadas.
+    busca
+      .filtros()
+      .then((filtros) => {
+        preencherFiltros(filtros);
+        preencher(lerEstado(new URLSearchParams(location.search)));
+      })
+      .catch((erro: unknown) => console.error('[busca] filtros', erro));
+  }
+</script>
+
+<style>
+  :global(.busca) {
+    display: grid;
+    gap: var(--espaco-6);
+    align-content: start;
+    padding-block: var(--espaco-7) var(--espaco-8);
+  }
+
+  .busca__titulo {
+    font-size: var(--texto-3xl);
+  }
+
+  .busca__app {
+    display: grid;
+    gap: var(--espaco-5);
+  }
+
+  .busca__app[hidden] {
+    display: none;
+  }
+
+  .busca__sem-js {
+    display: grid;
+    gap: var(--espaco-4);
+  }
+
+  .busca__listagens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espaco-2) var(--espaco-4);
+    padding: 0;
+    list-style: none;
+  }
+
+  .busca__listagens a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .busca__filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espaco-3);
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .busca__filtro {
+    display: grid;
+    flex: 1 1 10rem;
+    gap: var(--espaco-1);
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+  }
+
+  .busca__filtro select {
+    min-height: 44px;
+    padding-inline: var(--espaco-3);
+    border: 1px solid var(--cor-texto-2);
+    border-radius: var(--raio-md);
+    background-color: var(--cor-superficie);
+    color: var(--cor-texto);
+    font-size: var(--texto-base);
+  }
+
+  .busca__status {
+    color: var(--cor-texto-2);
+  }
+
+  .busca__resultados {
+    display: grid;
+    gap: var(--espaco-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .busca__resultados :global(.resultado) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--espaco-4);
+    padding-block-end: var(--espaco-4);
+    border-block-end: 1px solid var(--cor-borda);
+  }
+
+  .busca__resultados :global(.resultado__textos) {
+    display: grid;
+    gap: var(--espaco-1);
+    align-content: start;
+  }
+
+  .busca__resultados :global(.resultado__titulo) {
+    font-size: var(--texto-xl);
+  }
+
+  .busca__resultados :global(.resultado__rotulo),
+  .busca__resultados :global(.resultado__meta) {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+  }
+
+  .busca__resultados :global(mark) {
+    background-color: var(--cor-creme);
+    color: inherit;
+  }
+
+  .busca__resultados :global(.resultado__capa) {
+    width: clamp(5rem, 22vw, 10rem);
+    aspect-ratio: 4 / 3;
+    border-radius: var(--raio-md);
+    object-fit: cover;
+  }
+
+  .busca__mais {
+    justify-self: start;
+    min-height: 44px;
+    padding: var(--espaco-3) var(--espaco-5);
+    border: 2px solid var(--cor-vinho);
+    border-radius: var(--raio-pilula);
+    background: none;
+    color: var(--cor-vinho);
+    font-weight: var(--peso-medio);
+    cursor: pointer;
+  }
+
+  .busca__mais:hover {
+    background-color: var(--cor-creme);
+  }
+
+  .busca__mais[hidden] {
+    display: none;
+  }
+</style>

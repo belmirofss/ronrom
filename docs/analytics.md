@@ -54,15 +54,15 @@ Os nomes ficam em `EVENTOS`, em [`analytics.ts`](../web/src/lib/analytics.ts). N
 | -------------- | ----------------------------------------- | ------------------- | --------------------------------------------------------------------------- |
 | `troca-de-aba` | A pessoa troca de aba (clique ou teclado) | `{ aba }`           | Abas "Últimos posts" e "Mais lidos" da home, pela prop `evento` do `<Abas>` |
 | `rss`          | Clique no link do RSS                     | —                   | Rodapé, pelo atributo `data-umami-event`                                    |
-| `busca`        | Busca feita                               | `{ resultados }`    | A ligar na página de busca (#55) e no campo da home (#61)                   |
-| `filtro`       | Clique num filtro da busca                | `{ filtro, valor }` | A ligar na página de busca (#55)                                            |
+| `busca`        | Busca com resultado, depois de 1 s parada | `{ resultados }`    | `/busca` (inclui quem chega pelo campo da home)                             |
+| `filtro`       | Troca de um filtro da busca               | `{ filtro, valor }` | `/busca`; `valor` é o slug escolhido ou `todos`                             |
 
 Dois jeitos de mandar um evento:
 
 - **Clique simples:** o atributo `data-umami-event="<evento>"` no elemento (e `data-umami-event-<campo>="…"` para os dados). O script do Umami conta o clique sozinho.
 - **Pelo código:** `registrarEvento(EVENTOS.busca, { resultados: 12 })`, de `@/lib/analytics`. Sem o script (fora de produção, com Do Not Track, bloqueado ou ainda carregando), não faz nada e nunca quebra a página.
 
-Na busca, mande o evento depois de a busca terminar (com debounce, para não contar cada tecla) e só com a quantidade de resultados. O Umami aceita texto, número e booleano nos dados, e nomes de evento de até 50 caracteres.
+Na `/busca`, o evento `busca` só sai 1 s depois do último resultado, então digitar letra por letra conta uma busca só, e leva apenas a quantidade de resultados, nunca o texto. O Umami aceita texto, número e booleano nos dados, e nomes de evento de até 50 caracteres.
 
 ## Configurar o Umami (dono do repositório)
 
@@ -78,7 +78,7 @@ Quando o domínio próprio entrar (#63), o `data-domains` segue o `SITE_URL` soz
 
 1. Abra o site numa aba anônima, com o DevTools aberto. Na aba Network, aparecem o `script.js` de `cloud.umami.is` e um `POST` para `/api/send` em `api-gateway.umami.dev` (ou `cloud.umami.is`).
 2. Em Application → Cookies e Local Storage, nada do Umami (nem do site, além do `sessionStorage` do [contador](visualizacoes.md)).
-3. Troque de aba na home e clique no RSS do rodapé: os eventos aparecem em **Events** no painel em até alguns minutos.
+3. Troque de aba na home, clique no RSS do rodapé, faça uma busca e troque um filtro na `/busca`: os eventos aparecem em **Events** no painel em até alguns minutos.
 4. Com o Do Not Track ligado (Firefox: Configurações → Privacidade → "Enviar sinal de Não rastrear"), recarregue: o `script.js` carrega, mas não sai nenhum `POST`.
 5. Num preview da Vercel, o `script.js` nem aparece no HTML.
 

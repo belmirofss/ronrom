@@ -1,6 +1,7 @@
 ---
 import BarraLateral from '@/components/barra-lateral/BarraLateral.astro';
 import MaisLidos from '@/components/home/MaisLidos.astro';
+import CampoDeBusca from '@/components/busca/CampoDeBusca.astro';
 import TopoHome from '@/components/home/TopoHome.astro';
 import Destaque from '@/components/post/Destaque.astro';
 import JsonLd from '@/components/seo/JsonLd.astro';
@@ -48,8 +49,8 @@ const ABAS = [
       <Destaque post={destaque} />
 
       <Abas abas={ABAS} rotulo="Posts" evento={EVENTOS.trocaDeAba}>
-        {/* Lugar reservado para o campo de busca, que entra na WEB-15 (#61). */}
-        <div slot="ao-lado" class="home__busca"></div>
+        {/* Leva a /busca?q=termo, com ou sem JS (#55). O visual definitivo vem na WEB-15 (#61). */}
+        <CampoDeBusca slot="ao-lado" id="busca-home" />
         <Fragment slot="ultimos">
           {ultimos.length > 0 ? (
             <ListaDePosts posts={ultimos} nivelTitulo={3} />
@@ -80,17 +81,14 @@ const ABAS = [
     gap: var(--espaco-8);
   }
 
-  /* O campo de busca da WEB-15 vai ocupar este espaço ao lado das abas. No celular, ela decide
-     onde ele fica; por enquanto, nada reservado ali. */
-  .home__busca {
-    display: none;
+  /* No celular, o campo ocupa a linha toda embaixo das abas; a partir de 640px, fica ao lado. */
+  .home :global(.abas__ao-lado) {
+    flex: 1 1 100%;
   }
 
   @media (min-width: 40rem) {
-    .home__busca {
-      display: block;
-      inline-size: 16rem;
-      min-block-size: 44px;
+    .home :global(.abas__ao-lado) {
+      flex: 0 1 20rem;
     }
   }
 

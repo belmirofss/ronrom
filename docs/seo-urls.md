@@ -86,7 +86,7 @@ Os nomes de arquivo são a sugestão para as issues de cada página; o que não 
 
 ### Busca
 
-`/busca` recebe o termo em `?q=`. É a única página com query string; o canonical é sempre `/busca`, sem parâmetros, e a página fica fora do [sitemap](#sitemap). Nenhuma outra página usa parâmetros: filtros e paginação viram caminho.
+`/busca` recebe o termo em `?q=` e os filtros em `?tipo=`, `?categoria=` e `?tag=` ([busca.md](busca.md#a-página-busca)). É a única página com query string; o canonical é sempre `/busca`, sem parâmetros, e a página fica fora do [sitemap](#sitemap). Nenhuma outra página usa parâmetros: filtros e paginação viram caminho.
 
 ### Slugs reservados
 

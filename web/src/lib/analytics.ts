@@ -8,9 +8,9 @@ export const SCRIPT_DO_UMAMI = 'https://cloud.umami.is/script.js';
  * pela pessoa: a busca manda só a quantidade de resultados.
  */
 export const EVENTOS = {
-  /** Busca feita (#55, #61). Dados: `{ resultados }`. */
+  /** Busca feita na /busca (#55), depois de 1 s sem mudar. Dados: `{ resultados }`. */
   busca: 'busca',
-  /** Clique num filtro da busca (#55). Dados: `{ filtro, valor }`. */
+  /** Troca de um filtro da /busca (#55). Dados: `{ filtro, valor }`. */
   filtro: 'filtro',
   /** Troca de aba pela pessoa, como "Últimos posts" ↔ "Mais lidos" na home. Dados: `{ aba }`. */
   trocaDeAba: 'troca-de-aba',

@@ -105,6 +105,7 @@ Monorepo com workspaces do pnpm (`pnpm-workspace.yaml`):
 │   └── src/
 │       ├── assets/         # imagens e arquivos processados pelo build
 │       ├── components/
+│       │   ├── busca/      # campo de busca (home e /busca)
 │       │   ├── home/       # blocos da página inicial
 │       │   ├── layout/     # cabeçalho, rodapé e afins
 │       │   ├── post/       # partes da página do post
@@ -138,7 +139,7 @@ Imports dentro de `web/src` usam o alias `@/*` (ex.: `import { NOME_DO_SITE } fr
 | [`docs/cabecalhos.md`](docs/cabecalhos.md)                | Cabeçalhos de segurança, CSP, cache e redirects                             |
 | [`docs/visualizacoes.md`](docs/visualizacoes.md)          | Contador de visualizações: regras, custo no Upstash, provisionar e conferir |
 | [`docs/testes.md`](docs/testes.md)                        | O que é testado no CI e o que é conferido à mão, e como escrever testes     |
-| [`docs/busca.md`](docs/busca.md)                          | Índice da busca (Pagefind): o que entra, filtros, metadados e o dev         |
+| [`docs/busca.md`](docs/busca.md)                          | Busca (Pagefind): o índice, a página /busca, o estado na URL e o dev        |
 | [`docs/adr/`](docs/adr/README.md)                         | Decisões de arquitetura e infraestrutura, com contexto e consequências      |
 | [`web/README.md`](web/README.md#design-tokens-e-css-base) | Site: tokens de design, regra de contraste e carregamento da DM Sans        |
 | [`studio/README.md`](studio/README.md)                    | Studio: rodar, variáveis, tokens e configuração do projeto no Sanity        |
