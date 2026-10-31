@@ -36,7 +36,7 @@ Domínio de produção novo entra na regex do `has` da segunda regra, no mesmo P
 default-src 'self';
 script-src 'self' 'wasm-unsafe-eval' https://www.instagram.com https://cloud.umami.is;
 style-src 'self' 'unsafe-inline';
-img-src 'self' data: https://cdn.sanity.io https://i.ytimg.com;
+img-src 'self' data: https://cdn.sanity.io https://i.ytimg.com https://tile.openstreetmap.org;
 font-src 'self';
 connect-src 'self' https://cloud.umami.is https://gateway.umami.is;
 frame-src https://www.youtube-nocookie.com https://www.instagram.com;
@@ -51,6 +51,7 @@ frame-ancestors …; report-uri /api/csp-report; report-to csp
 | `www.youtube-nocookie.com`           | Player do YouTube, depois do clique (#40)                                           |
 | `www.instagram.com`                  | `embed.js` e o iframe do post, depois do clique (#40)                               |
 | `cloud.umami.is`, `gateway.umami.is` | Script e envio de eventos do Umami Cloud (#58, [`analytics.md`](analytics.md))      |
+| `tile.openstreetmap.org`             | Imagens do mapa do `/mapa`, depois do clique em "Mostrar o mapa" (#136)             |
 | `data:`                              | Imagens de placeholder das fixtures e SVGs pequenos que o Vite põe inline           |
 
 - **Scripts:** só arquivos do próprio site, sem `'unsafe-inline'`. O Astro poria inline, dentro do HTML, os scripts menores que 4 kB (os das fachadas, por exemplo); o `vite.build.assetsInlineLimit` do [`astro.config.mjs`](../web/astro.config.mjs) desliga isso só para JS. **Não use `<script is:inline>` com código dentro** nem atributos `on*=`: a CSP bloqueia. A exceção é um script só com `src` de uma origem liberada, como o do [Umami](analytics.md#como-o-script-entra-na-página): o `is:inline` ali só impede o Astro de empacotá-lo. Se um dia for inevitável, acrescente o hash do script (`'sha256-…'`) ao `script-src`.

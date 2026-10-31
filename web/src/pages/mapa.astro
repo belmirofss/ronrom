@@ -1,0 +1,336 @@
+---
+import Container from '@/components/layout/Container.astro';
+import Coracoes from '@/components/ui/Coracoes.astro';
+import EstadoVazio from '@/components/ui/EstadoVazio.astro';
+import LayoutBase from '@/layouts/LayoutBase.astro';
+import {
+  lugaresPorCidade,
+  pontosDoMapa,
+  resumoDosLugares,
+  seoDoMapa,
+  TITULO_DO_MAPA,
+} from '@/lib/mapa';
+import { buscarLugares } from '@/lib/sanity/conteudo';
+
+// Mapa dos lugares visitados (#136). A lista por cidade é o conteúdo da página e funciona sem JS;
+// o mapa interativo é um extra que só carrega com o clique em "Mostrar o mapa" (o Leaflet e os
+// tiles do OpenStreetMap ficam fora do carregamento da página, veja docs/performance.md e a
+// /privacidade). Só os lugares com "Localização no mapa" na ficha viram ponto.
+const lugares = await buscarLugares();
+const cidades = lugaresPorCidade(lugares);
+const pontos = pontosDoMapa(lugares);
+const foraDoMapa = lugares.length - pontos.length;
+---
+
+<LayoutBase seo={seoDoMapa()}>
+  {/* Sem JS, o botão não faria nada: o quadro do mapa some e fica só a lista. */}
+  <noscript slot="head">
+    <style is:inline>
+      [data-mapa] {
+        display: none;
+      }
+    </style>
+  </noscript>
+
+  <Container class="mapa">
+    <header class="mapa__topo">
+      <h1 class="mapa__titulo">{TITULO_DO_MAPA}</h1>
+      {cidades.length > 0 && (
+        <p class="mapa__resumo">
+          Os restaurantes, cafés e lugares que já ganharam review: {resumoDosLugares(cidades)}.
+        </p>
+      )}
+    </header>
+
+    {cidades.length === 0 ? (
+      <EstadoVazio
+        mensagem="Ainda não tem nenhum lugar com review."
+        link={{ rotulo: 'Que tal ver as reviews?', href: '/reviews' }}
+      />
+    ) : (
+      <>
+        {pontos.length > 0 && (
+          <section class="mapa__secao" aria-labelledby="mapa-interativo" data-mapa>
+            <h2 id="mapa-interativo" class="visualmente-oculto">
+              Mapa interativo
+            </h2>
+            {/* O quadro tem altura fixa antes e depois do clique: o mapa entra sem empurrar a lista. */}
+            <div class="mapa__quadro" data-quadro>
+              <div class="mapa__convite" data-convite>
+                <p>
+                  O mapa usa as imagens do OpenStreetMap, que só carregam quando você pede. A lista
+                  abaixo tem os mesmos lugares.
+                </p>
+                <button class="mapa__botao" type="button" data-mostrar>
+                  Mostrar o mapa
+                </button>
+                <p class="mapa__erro" role="alert" data-erro hidden>
+                  O mapa não carregou. Tente de novo ou use a lista abaixo.
+                </p>
+              </div>
+            </div>
+            {foraDoMapa > 0 && (
+              <p class="mapa__nota">
+                {foraDoMapa === 1
+                  ? 'Um lugar ainda não tem a localização e aparece só na lista.'
+                  : `${foraDoMapa} lugares ainda não têm a localização e aparecem só na lista.`}
+              </p>
+            )}
+            <script
+              type="application/json"
+              data-pontos
+              set:html={JSON.stringify(pontos).replaceAll('<', '\u003c')}
+            />
+          </section>
+        )}
+
+        <section class="mapa__secao" aria-labelledby="mapa-lista">
+          <h2 id="mapa-lista" class="mapa__subtitulo">
+            Por cidade
+          </h2>
+          {cidades.map(({ nome, lugares: daCidade }) => (
+            <div class="mapa__cidade">
+              <h3 class="mapa__cidade-nome">{nome}</h3>
+              <ul class="mapa__lugares">
+                {daCidade.map((lugar) => (
+                  <li class="mapa__lugar">
+                    <a href={lugar.url}>{lugar.titulo}</a>
+                    <p class="mapa__lugar-meta">
+                      {[lugar.categoria, lugar.bairro].filter(Boolean).join(' · ')}
+                    </p>
+                    {typeof lugar.nota === 'number' && (
+                      <Coracoes nota={lugar.nota} tamanho="pequeno" />
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </section>
+      </>
+    )}
+  </Container>
+</LayoutBase>
+
+<script>
+  import type { PontoDoMapa } from '@/lib/mapa';
+
+  const secao = document.querySelector<HTMLElement>('[data-mapa]');
+  const quadro = secao?.querySelector<HTMLElement>('[data-quadro]');
+  const convite = secao?.querySelector<HTMLElement>('[data-convite]');
+  const botao = secao?.querySelector<HTMLButtonElement>('[data-mostrar]');
+  const erro = secao?.querySelector<HTMLElement>('[data-erro]');
+  const dados = secao?.querySelector<HTMLScriptElement>('[data-pontos]');
+
+  if (secao && quadro && convite && botao && erro && dados) {
+    // A área do mapa entra no lugar do convite antes de montar (o Leaflet mede o elemento na
+    // página); se algo falhar, o convite volta, com o erro e o botão para tentar de novo.
+    let area: HTMLElement | undefined;
+
+    botao.addEventListener('click', async () => {
+      botao.disabled = true;
+      erro.hidden = true;
+      quadro.setAttribute('aria-busy', 'true');
+      try {
+        // Só aqui o Leaflet é baixado: um chunk à parte, que traz o CSS dele.
+        const { montarMapa } = await import('@/lib/mapa-cliente');
+        const pontos = JSON.parse(dados.textContent ?? '[]') as PontoDoMapa[];
+        area = document.createElement('div');
+        area.className = 'mapa__area';
+        area.setAttribute('role', 'region');
+        area.setAttribute(
+          'aria-label',
+          'Mapa com os lugares. Use as setas para mover e + e − para aproximar.',
+        );
+        convite.replaceWith(area);
+        await montarMapa(area, pontos);
+        // O foco vai para o mapa, onde as setas movem a vista e o Tab passa pelos pontos.
+        area.focus();
+      } catch (falha) {
+        console.error('[mapa]', falha);
+        area?.replaceWith(convite);
+        erro.hidden = false;
+        botao.disabled = false;
+      } finally {
+        quadro.removeAttribute('aria-busy');
+      }
+    });
+  }
+</script>
+
+<style>
+  :global(.mapa) {
+    display: grid;
+    gap: var(--espaco-7);
+    align-content: start;
+    padding-block: var(--espaco-7) var(--espaco-8);
+  }
+
+  .mapa__topo {
+    display: grid;
+    gap: var(--espaco-2);
+  }
+
+  .mapa__titulo {
+    font-size: var(--texto-3xl);
+  }
+
+  .mapa__resumo,
+  .mapa__nota {
+    color: var(--cor-texto-2);
+  }
+
+  .mapa__nota {
+    font-size: var(--texto-sm);
+  }
+
+  .mapa__secao {
+    display: grid;
+    gap: var(--espaco-4);
+  }
+
+  .mapa__subtitulo {
+    font-size: var(--texto-2xl);
+  }
+
+  .mapa__quadro {
+    display: grid;
+    overflow: hidden;
+    aspect-ratio: 4 / 5;
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-md);
+    background-color: var(--cor-creme);
+  }
+
+  @media (min-width: 48em) {
+    .mapa__quadro {
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  .mapa__convite {
+    display: grid;
+    gap: var(--espaco-4);
+    place-content: center;
+    justify-items: center;
+    padding: var(--espaco-5);
+    text-align: center;
+  }
+
+  .mapa__convite p {
+    max-width: 32rem;
+  }
+
+  .mapa__botao {
+    min-height: 44px;
+    padding: var(--espaco-3) var(--espaco-5);
+    border: 2px solid var(--cor-vinho);
+    border-radius: var(--raio-pilula);
+    background-color: var(--cor-vinho);
+    color: var(--cor-superficie);
+    font-weight: var(--peso-medio);
+    cursor: pointer;
+  }
+
+  .mapa__botao:disabled {
+    opacity: 0.7;
+    cursor: progress;
+  }
+
+  .mapa__erro {
+    color: var(--cor-vinho);
+  }
+
+  .mapa__erro[hidden] {
+    display: none;
+  }
+
+  .mapa__quadro :global(.mapa__area) {
+    width: 100%;
+    height: 100%;
+    font: inherit;
+  }
+
+  /* O ponto: um círculo vinho com borda clara, dentro de um alvo de 28px. */
+  .mapa__quadro :global(.mapa__ponto) {
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+  }
+
+  .mapa__quadro :global(.mapa__ponto)::after {
+    content: '';
+    width: 18px;
+    height: 18px;
+    border: 3px solid var(--cor-superficie);
+    border-radius: 50%;
+    background-color: var(--cor-vinho);
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
+  }
+
+  .mapa__quadro :global(.mapa__ponto:focus-visible) {
+    outline: 3px solid var(--cor-vinho);
+    outline-offset: 2px;
+  }
+
+  .mapa__quadro :global(.mapa__balao) {
+    display: grid;
+    gap: var(--espaco-1);
+  }
+
+  .mapa__quadro :global(.mapa__balao-categoria) {
+    margin: 0;
+    color: var(--cor-texto-2);
+    font-size: var(--texto-xs);
+  }
+
+  .mapa__quadro :global(.mapa__balao a) {
+    color: var(--cor-vinho);
+    font-size: var(--texto-base);
+    font-weight: var(--peso-medio);
+  }
+
+  .mapa__cidade {
+    display: grid;
+    gap: var(--espaco-3);
+  }
+
+  .mapa__cidade + .mapa__cidade {
+    margin-block-start: var(--espaco-4);
+  }
+
+  .mapa__cidade-nome {
+    font-size: var(--texto-lg);
+  }
+
+  .mapa__lugares {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+    gap: var(--espaco-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mapa__lugar {
+    display: grid;
+    gap: var(--espaco-1);
+    align-content: start;
+    padding: var(--espaco-4);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-md);
+  }
+
+  .mapa__lugar a {
+    font-weight: var(--peso-medio);
+  }
+
+  .mapa__lugar-meta {
+    color: var(--cor-texto-2);
+    font-size: var(--texto-sm);
+  }
+
+  .mapa__lugar-meta:empty {
+    display: none;
+  }
+</style>

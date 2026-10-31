@@ -192,6 +192,15 @@ export const campoFicha = defineField({
       validation: (rule) =>
         rule.uri({ scheme: ['https'] }).error('Cole o link completo, começando com https://.'),
     }),
+    // Opcional: só o lugar com localização vira um ponto no /mapa (#136). Sem ela, ele aparece só
+    // na lista da página, pela cidade.
+    defineField({
+      name: 'localizacao',
+      title: 'Localização no mapa',
+      type: 'geopoint',
+      description:
+        'Opcional. Para o lugar aparecer no mapa de lugares visitados. No Google Maps, clique com o botão direito no lugar e copie os números: o primeiro é a latitude, o segundo a longitude.',
+    }),
     defineField({
       name: 'faixaDePreco',
       title: 'Faixa de preço',

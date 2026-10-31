@@ -145,13 +145,15 @@ describe('funções de acesso no modo fixtures', () => {
       expect(review.ficha?.modelo).toBe(review.categoria?.modeloFicha);
     }
 
-    // Ficha completa em todas, menos no mirante, que fica sem os campos de restaurante.
+    // Ficha completa em todas, menos no mirante, que fica sem os campos de restaurante e sem a
+    // localização (o lugar que aparece só na lista do /mapa).
     const vazios = reviews.flatMap((review) =>
       Object.entries(review.ficha ?? {})
         .filter(([, valor]) => valor === null)
         .map(([campo]) => `${review.slug}.${campo}`),
     );
     expect(vazios).toEqual([
+      'mirante-do-morro-azul.localizacao',
       'mirante-do-morro-azul.tipoDeCozinha',
       'mirante-do-morro-azul.instagram',
     ]);

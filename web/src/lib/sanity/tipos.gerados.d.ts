@@ -228,6 +228,7 @@ export type Post = {
         | 'TO';
     };
     linkDoMapa?: string;
+    localizacao?: Geopoint;
     faixaDePreco?: 'R$' | 'R$$' | 'R$$$' | 'R$$$$';
     tipoDeCozinha?: string;
     oQuePedi?: string;
@@ -335,6 +336,13 @@ export type Post = {
     noindex?: boolean;
   };
   slugsAnteriores?: Array<string>;
+};
+
+export type Geopoint = {
+  _type: 'geopoint';
+  lat?: number;
+  lng?: number;
+  alt?: number;
 };
 
 export type Formato = {
@@ -452,13 +460,6 @@ export type SanityImageAsset = {
   source?: SanityAssetSourceData;
 };
 
-export type Geopoint = {
-  _type: 'geopoint';
-  lat?: number;
-  lng?: number;
-  alt?: number;
-};
-
 export type AllSanitySchemaTypes =
   | SanityImageAssetReference
   | Sobre
@@ -472,6 +473,7 @@ export type AllSanitySchemaTypes =
   | FormatoReference
   | TagReference
   | Post
+  | Geopoint
   | Formato
   | Categoria
   | SanityImagePaletteSwatch
@@ -480,8 +482,7 @@ export type AllSanitySchemaTypes =
   | SanityImageMetadata
   | SanityFileAsset
   | SanityAssetSourceData
-  | SanityImageAsset
-  | Geopoint;
+  | SanityImageAsset;
 
 // Source: ../web/src/lib/sanity/consultas.ts
 // Variable: CONSULTA_DAS_CONFIGURACOES
@@ -905,7 +906,7 @@ export type CONSULTA_DA_TAXONOMIA_RESULT = {
 
 // Source: ../web/src/lib/sanity/consultas.ts
 // Variable: CONSULTA_DO_POST
-// Query: *[  _type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == $tipo && slug.current == $slug &&  select(tipo == "review" => categoria->slug.current, formato->slug.current) == $secao][0]{  _id,  _updatedAt,  tipo,  titulo,  subtitulo,  "slug": slug.current,  dataDePublicacao,  "categoria": categoria->{ nome, "slug": slug.current, modeloFicha },  "formato": formato->{ nome, "slug": slug.current },  nota,  "ficha": select(  categoria->modeloFicha == "filme" => ficha{    "modelo": "filme", direcao, ano, duracao, ondeVi, valeAPena  },  categoria->modeloFicha == "serie" => ficha{    "modelo": "serie", criacao, anoDeEstreia, anoDeFim, temporadasVistas, ondeVi, valeAPena  },  categoria->modeloFicha == "livro" => ficha{    "modelo": "livro", autoria, editora, ano, paginas, formatoDoLivro, valeAPena  },  categoria->modeloFicha == "lugar" => ficha{    "modelo": "lugar", endereco, linkDoMapa, faixaDePreco, tipoDeCozinha, oQuePedi, instagram, valeAPena  },  categoria->modeloFicha == "comida" => ficha{    "modelo": "comida", marca, preco, oQueProvei, valeAPena  }),  "capa": capa{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  "corpo": corpo[]{  ...,  _type == "block" => {    markDefs[]{      ...,      _type == "linkInterno" => {        "post": post->{          tipo,          "slug": slug.current,          categoria->{ "slug": slug.current },          formato->{ "slug": slug.current }        }      }    }  },  _type == "imagem" => {  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  _type == "galeria" => {    "imagens": imagens[]{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }}  }},  seo{ titulo, descricao, noindex, "imagem": imagem{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }} }}
+// Query: *[  _type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == $tipo && slug.current == $slug &&  select(tipo == "review" => categoria->slug.current, formato->slug.current) == $secao][0]{  _id,  _updatedAt,  tipo,  titulo,  subtitulo,  "slug": slug.current,  dataDePublicacao,  "categoria": categoria->{ nome, "slug": slug.current, modeloFicha },  "formato": formato->{ nome, "slug": slug.current },  nota,  "ficha": select(  categoria->modeloFicha == "filme" => ficha{    "modelo": "filme", direcao, ano, duracao, ondeVi, valeAPena  },  categoria->modeloFicha == "serie" => ficha{    "modelo": "serie", criacao, anoDeEstreia, anoDeFim, temporadasVistas, ondeVi, valeAPena  },  categoria->modeloFicha == "livro" => ficha{    "modelo": "livro", autoria, editora, ano, paginas, formatoDoLivro, valeAPena  },  categoria->modeloFicha == "lugar" => ficha{    "modelo": "lugar", endereco, linkDoMapa, localizacao, faixaDePreco, tipoDeCozinha, oQuePedi, instagram, valeAPena  },  categoria->modeloFicha == "comida" => ficha{    "modelo": "comida", marca, preco, oQueProvei, valeAPena  }),  "capa": capa{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  "corpo": corpo[]{  ...,  _type == "block" => {    markDefs[]{      ...,      _type == "linkInterno" => {        "post": post->{          tipo,          "slug": slug.current,          categoria->{ "slug": slug.current },          formato->{ "slug": slug.current }        }      }    }  },  _type == "imagem" => {  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  _type == "galeria" => {    "imagens": imagens[]{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }}  }},  seo{ titulo, descricao, noindex, "imagem": imagem{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }} }}
 export type CONSULTA_DO_POST_RESULT = {
   _id: string;
   _updatedAt: string;
@@ -994,6 +995,7 @@ export type CONSULTA_DO_POST_RESULT = {
             | 'TO';
         } | null;
         linkDoMapa: string | null;
+        localizacao: Geopoint | null;
         faixaDePreco: 'R$' | 'R$$' | 'R$$$' | 'R$$$$' | null;
         tipoDeCozinha: string | null;
         oQuePedi: string | null;
@@ -1183,6 +1185,58 @@ export type CONSULTA_DO_LEIA_TAMBEM_RESULT =
   | Array<never>;
 
 // Source: ../web/src/lib/sanity/consultas.ts
+// Variable: CONSULTA_DOS_LUGARES
+// Query: *[  _type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "review" && categoria->modeloFicha == "lugar"] | order(lower(titulo) asc, _id asc){  _id,  tipo,  titulo,  "slug": slug.current,  nota,  "categoria": categoria->{ nome, "slug": slug.current },  "endereco": ficha.endereco{ bairro, cidade, uf },  "localizacao": ficha.localizacao{ lat, lng }}
+export type CONSULTA_DOS_LUGARES_RESULT = Array<{
+  _id: string;
+  tipo: 'pensamento' | 'review';
+  titulo: string;
+  slug: string;
+  nota: number | null;
+  categoria: {
+    nome: string;
+    slug: string;
+  } | null;
+  endereco: {
+    bairro: string | null;
+    cidade: string | null;
+    uf:
+      | 'AC'
+      | 'AL'
+      | 'AM'
+      | 'AP'
+      | 'BA'
+      | 'CE'
+      | 'DF'
+      | 'ES'
+      | 'GO'
+      | 'MA'
+      | 'MG'
+      | 'MS'
+      | 'MT'
+      | 'PA'
+      | 'PB'
+      | 'PE'
+      | 'PI'
+      | 'PR'
+      | 'RJ'
+      | 'RN'
+      | 'RO'
+      | 'RR'
+      | 'RS'
+      | 'SC'
+      | 'SE'
+      | 'SP'
+      | 'TO'
+      | null;
+  } | null;
+  localizacao: {
+    lat: number | null;
+    lng: number | null;
+  } | null;
+}>;
+
+// Source: ../web/src/lib/sanity/consultas.ts
 // Variable: CONSULTA_DO_INDICE_DE_POSTS
 // Query: *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {  _id,  tipo,  titulo,  subtitulo,  "slug": slug.current,  dataDePublicacao,  nota,  "categoria": categoria->{ nome, "slug": slug.current },  "formato": formato->{ nome, "slug": slug.current },  "capa": capa{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }}
 export type CONSULTA_DO_INDICE_DE_POSTS_RESULT = Array<{
@@ -1246,7 +1300,7 @@ export type CONSULTA_DOS_REDIRECTS_RESULT = Array<{
 
 // Source: ../web/src/lib/sanity/consultas.ts
 // Variable: CONSULTA_DO_SITEMAP
-// Query: {  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {    tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current },    _updatedAt,    dataDePublicacao,    "noindex": coalesce(seo.noindex, false)  },  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },  "sobre": *[_id == "sobre"][0]._updatedAt,  "configuracoes": *[_id == "configuracoes"][0]._updatedAt}
+// Query: {  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {    tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current },    _updatedAt,    dataDePublicacao,    "noindex": coalesce(seo.noindex, false),    "lugar": categoria->modeloFicha == "lugar"  },  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },  "sobre": *[_id == "sobre"][0]._updatedAt,  "configuracoes": *[_id == "configuracoes"][0]._updatedAt}
 export type CONSULTA_DO_SITEMAP_RESULT = {
   posts: Array<{
     tipo: 'pensamento' | 'review';
@@ -1260,6 +1314,7 @@ export type CONSULTA_DO_SITEMAP_RESULT = {
     _updatedAt: string;
     dataDePublicacao: string;
     noindex: boolean | false;
+    lugar: false | true;
   }>;
   categorias: Array<{
     slug: string;
@@ -1328,13 +1383,14 @@ declare global {
     '{\n  "categoria": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && slug.current == $categoria][0]{\n    nome, "slug": slug.current, descricao\n  },\n  \n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "review" && categoria->slug.current == $categoria] | order(dataDePublicacao desc, _id asc) [$inicio...$fim]{\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n,\n  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }\n},\n  "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "review" && categoria->slug.current == $categoria])\n\n}': CONSULTA_DOS_POSTS_DA_CATEGORIA_RESULT;
     '{\n  "formato": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && slug.current == $formato][0]{\n    nome, "slug": slug.current, descricao\n  },\n  \n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "pensamento" && formato->slug.current == $formato] | order(dataDePublicacao desc, _id asc) [$inicio...$fim]{\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n,\n  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }\n},\n  "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "pensamento" && formato->slug.current == $formato])\n\n}': CONSULTA_DOS_POSTS_DO_FORMATO_RESULT;
     '{\n  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))] | order(ordem asc){\n    _id, nome, "slug": slug.current, descricao,\n    "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "review" && categoria._ref == ^._id])\n  },\n  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))] | order(ordem asc){\n    _id, nome, "slug": slug.current, descricao,\n    "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "pensamento" && formato._ref == ^._id])\n  }\n}': CONSULTA_DA_TAXONOMIA_RESULT;
-    '*[\n  _type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == $tipo && slug.current == $slug &&\n  select(tipo == "review" => categoria->slug.current, formato->slug.current) == $secao\n][0]{\n  _id,\n  _updatedAt,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  "categoria": categoria->{ nome, "slug": slug.current, modeloFicha },\n  "formato": formato->{ nome, "slug": slug.current },\n  nota,\n  "ficha": select(\n  categoria->modeloFicha == "filme" => ficha{\n    "modelo": "filme", direcao, ano, duracao, ondeVi, valeAPena\n  },\n  categoria->modeloFicha == "serie" => ficha{\n    "modelo": "serie", criacao, anoDeEstreia, anoDeFim, temporadasVistas, ondeVi, valeAPena\n  },\n  categoria->modeloFicha == "livro" => ficha{\n    "modelo": "livro", autoria, editora, ano, paginas, formatoDoLivro, valeAPena\n  },\n  categoria->modeloFicha == "lugar" => ficha{\n    "modelo": "lugar", endereco, linkDoMapa, faixaDePreco, tipoDeCozinha, oQuePedi, instagram, valeAPena\n  },\n  categoria->modeloFicha == "comida" => ficha{\n    "modelo": "comida", marca, preco, oQueProvei, valeAPena\n  }\n),\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  "corpo": corpo[]{\n  ...,\n  _type == "block" => {\n    markDefs[]{\n      ...,\n      _type == "linkInterno" => {\n        "post": post->{\n          tipo,\n          "slug": slug.current,\n          categoria->{ "slug": slug.current },\n          formato->{ "slug": slug.current }\n        }\n      }\n    }\n  },\n  _type == "imagem" => {\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  _type == "galeria" => {\n    "imagens": imagens[]{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n  }\n},\n  seo{ titulo, descricao, noindex, "imagem": imagem{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n} }\n}': CONSULTA_DO_POST_RESULT;
+    '*[\n  _type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == $tipo && slug.current == $slug &&\n  select(tipo == "review" => categoria->slug.current, formato->slug.current) == $secao\n][0]{\n  _id,\n  _updatedAt,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  "categoria": categoria->{ nome, "slug": slug.current, modeloFicha },\n  "formato": formato->{ nome, "slug": slug.current },\n  nota,\n  "ficha": select(\n  categoria->modeloFicha == "filme" => ficha{\n    "modelo": "filme", direcao, ano, duracao, ondeVi, valeAPena\n  },\n  categoria->modeloFicha == "serie" => ficha{\n    "modelo": "serie", criacao, anoDeEstreia, anoDeFim, temporadasVistas, ondeVi, valeAPena\n  },\n  categoria->modeloFicha == "livro" => ficha{\n    "modelo": "livro", autoria, editora, ano, paginas, formatoDoLivro, valeAPena\n  },\n  categoria->modeloFicha == "lugar" => ficha{\n    "modelo": "lugar", endereco, linkDoMapa, localizacao, faixaDePreco, tipoDeCozinha, oQuePedi, instagram, valeAPena\n  },\n  categoria->modeloFicha == "comida" => ficha{\n    "modelo": "comida", marca, preco, oQueProvei, valeAPena\n  }\n),\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  "corpo": corpo[]{\n  ...,\n  _type == "block" => {\n    markDefs[]{\n      ...,\n      _type == "linkInterno" => {\n        "post": post->{\n          tipo,\n          "slug": slug.current,\n          categoria->{ "slug": slug.current },\n          formato->{ "slug": slug.current }\n        }\n      }\n    }\n  },\n  _type == "imagem" => {\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  _type == "galeria" => {\n    "imagens": imagens[]{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n  }\n},\n  seo{ titulo, descricao, noindex, "imagem": imagem{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n} }\n}': CONSULTA_DO_POST_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())]{ tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current } }': CONSULTA_DAS_ROTAS_DOS_POSTS_RESULT;
     'coalesce(*[_type == "post" && _id == $id][0]{\n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && _id != ^._id]{\n    ...,\n    "prioridade": select(\n      tipo == ^.tipo && coalesce(categoria._ref, formato._ref) == coalesce(^.categoria._ref, ^.formato._ref) => 2,\n      tipo == ^.tipo => 1,\n      0\n    )\n  } | order(prioridade desc, dataDePublicacao desc, _id asc) [0...3]{\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n}\n}.posts, [])': CONSULTA_DO_LEIA_TAMBEM_RESULT;
+    '*[\n  _type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "review" && categoria->modeloFicha == "lugar"\n] | order(lower(titulo) asc, _id asc){\n  _id,\n  tipo,\n  titulo,\n  "slug": slug.current,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "endereco": ficha.endereco{ bairro, cidade, uf },\n  "localizacao": ficha.localizacao{ lat, lng }\n}': CONSULTA_DOS_LUGARES_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n,\n  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }\n}': CONSULTA_DO_INDICE_DE_POSTS_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())]._id': CONSULTA_DOS_IDS_PUBLICADOS_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && count(slugsAnteriores) > 0]{ "anteriores": slugsAnteriores, tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current } }': CONSULTA_DOS_REDIRECTS_RESULT;
-    '{\n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {\n    tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current },\n    _updatedAt,\n    dataDePublicacao,\n    "noindex": coalesce(seo.noindex, false)\n  },\n  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "sobre": *[_id == "sobre"][0]._updatedAt,\n  "configuracoes": *[_id == "configuracoes"][0]._updatedAt\n}': CONSULTA_DO_SITEMAP_RESULT;
+    '{\n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {\n    tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current },\n    _updatedAt,\n    dataDePublicacao,\n    "noindex": coalesce(seo.noindex, false),\n    "lugar": categoria->modeloFicha == "lugar"\n  },\n  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "sobre": *[_id == "sobre"][0]._updatedAt,\n  "configuracoes": *[_id == "configuracoes"][0]._updatedAt\n}': CONSULTA_DO_SITEMAP_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) [0...30]{\n  tipo,\n  "slug": slug.current,\n  titulo,\n  subtitulo,\n  dataDePublicacao,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  "corpo": corpo[_type == "block"]{ _type, style, children[]{ text } },\n  seo{ descricao }\n}': CONSULTA_DO_FEED_RESULT;
   }
 }

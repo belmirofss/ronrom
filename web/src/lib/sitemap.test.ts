@@ -15,6 +15,7 @@ const review = (slug: string, atualizado: string, extra: Partial<Post> = {}): Po
   _updatedAt: atualizado,
   dataDePublicacao: '2026-01-01T12:00:00Z',
   noindex: false,
+  lugar: false,
   ...extra,
 });
 
@@ -103,6 +104,20 @@ describe('dadosDoSitemap', () => {
 
     expect(lastmod['/']).toBe('2026-06-01T00:00:00.000Z');
     expect(lastmod['/sobre']).toBe('2026-02-02T00:00:00.000Z');
+  });
+
+  it('dá ao mapa o post de lugar mais recente, ou a home sem nenhum', () => {
+    const dados = {
+      ...vazio,
+      posts: [
+        review('filme-novo', '2026-03-01T00:00:00Z'),
+        review('cafe', '2026-02-01T00:00:00Z', { categoria: { slug: 'lugares' }, lugar: true }),
+      ],
+    };
+    expect(dadosDoSitemap(dados).lastmod['/mapa']).toBe('2026-02-01T00:00:00.000Z');
+    expect(dadosDoSitemap({ ...dados, posts: [dados.posts[0]!] }).lastmod['/mapa']).toBe(
+      '2026-03-01T00:00:00.000Z',
+    );
   });
 
   it('dá à privacidade a última mudança no texto ou no Sobre', () => {

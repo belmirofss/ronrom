@@ -1,3 +1,4 @@
+import { CAMINHO_DO_MAPA } from '@/lib/mapa';
 import { CAMINHO_DA_PRIVACIDADE, PRIVACIDADE_ATUALIZADA_EM } from '@/lib/privacidade';
 import { urlDaCategoria, urlDaPagina, urlDoFormato, urlDoPost } from '@/lib/rotas';
 import { POSTS_POR_PAGINA, totalDePaginas } from '@/lib/sanity/conteudo';
@@ -40,6 +41,7 @@ const iso = (data: number) => new Date(data).toISOString();
  *   cuja descrição a página mostra.
  * - Home: a data mais recente de tudo (destaque, abas e barra lateral). Sobre: o próprio documento.
  * - Privacidade: a última mudança no texto ou no Sobre, de onde vêm o nome e o e-mail da autora.
+ * - Mapa: o post de lugar (restaurantes, cafés e lugares) mais recente.
  * - Sem data própria (listagem vazia de /reviews, /pensamentos ou /posts, Sobre ainda não
  *   publicado), vale a da home: o sitemap sai com lastmod em toda URL.
  */
@@ -89,6 +91,9 @@ export function dadosDoSitemap(dados: CONSULTA_DO_SITEMAP_RESULT): DadosDoSitema
 
   lastmod['/'] = iso(home);
   lastmod['/sobre'] = iso(maisRecente([dados.sobre]) || home);
+  lastmod[CAMINHO_DO_MAPA] = iso(
+    maisRecente(dados.posts.filter((post) => post.lugar).map(dataDoPost)) || home,
+  );
   lastmod[CAMINHO_DA_PRIVACIDADE] = iso(maisRecente([PRIVACIDADE_ATUALIZADA_EM, dados.sobre]));
 
   return { lastmod, noindex };

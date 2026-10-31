@@ -48,6 +48,7 @@ const rotas = await buscarRotasDosPosts();
 | `buscarPost({ tipo, secao, slug })`     | `CONSULTA_DO_POST`                |
 | `buscarRotasDosPosts()`                 | `CONSULTA_DAS_ROTAS_DOS_POSTS`    |
 | `buscarLeiaTambem(id)`                  | `CONSULTA_DO_LEIA_TAMBEM`         |
+| `buscarLugares()`                       | `CONSULTA_DOS_LUGARES`            |
 | `buscarIndiceDePosts()`                 | `CONSULTA_DO_INDICE_DE_POSTS`     |
 | `buscarSitemap()`                       | `CONSULTA_DO_SITEMAP`             |
 | `CONSULTA_DO_FEED`                      | —                                 | Os 30 posts mais recentes, para o `/rss.xml`: rota, título, subtítulo, data, categoria ou formato, capa, texto dos blocos do corpo e `seo.descricao` (#52) |
