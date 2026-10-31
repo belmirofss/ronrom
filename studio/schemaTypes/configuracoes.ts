@@ -118,7 +118,7 @@ export const configuracoes = defineType({
       type: 'array',
       group: 'seo',
       description:
-        'Links para os seus perfis. Aparecem no site e ajudam o Google a saber que os perfis são seus.',
+        'Links para os seus perfis. Aparecem na página de privacidade, como o canal para pedidos sobre os dados, e ajudam o Google a saber que os perfis são seus.',
       of: [
         defineArrayMember({
           name: 'rede',

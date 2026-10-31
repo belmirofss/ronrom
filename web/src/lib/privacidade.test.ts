@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
+  canaisDeContato,
   controladora,
   DESCRICAO_DA_PRIVACIDADE,
   PRIVACIDADE_ATUALIZADA_EM,
@@ -8,7 +9,10 @@ import {
   seoDaPrivacidade,
 } from '@/lib/privacidade';
 import { LIMITE_DA_DESCRICAO } from '@/lib/seo';
-import type { CONSULTA_DO_SOBRE_RESULT } from '@/lib/sanity/tipos.gerados';
+import type {
+  CONSULTA_DAS_CONFIGURACOES_RESULT,
+  CONSULTA_DO_SOBRE_RESULT,
+} from '@/lib/sanity/tipos.gerados';
 
 // As origens de terceiros liberadas nas duas CSPs do vercel.json (#41), menos o próprio site.
 function origensDaCsp(): Set<string> {
@@ -50,15 +54,34 @@ describe('SERVICOS_DE_TERCEIROS', () => {
 });
 
 describe('controladora', () => {
-  const sobre = { nome: ' Ana Ronrom ', email: 'contato@example.com' } as CONSULTA_DO_SOBRE_RESULT;
-
-  it('usa o nome e o e-mail do Sobre', () => {
-    expect(controladora(sobre)).toEqual({ nome: 'Ana Ronrom', email: 'contato@example.com' });
+  it('usa o nome do Sobre', () => {
+    expect(controladora({ nome: ' Ana Ronrom ' } as CONSULTA_DO_SOBRE_RESULT)).toBe('Ana Ronrom');
   });
 
-  it('sem o Sobre (ou sem e-mail), não quebra a página', () => {
-    expect(controladora(null)).toEqual({ nome: 'a autora do Ronrom', email: null });
-    expect(controladora({ ...sobre, email: '  ' } as CONSULTA_DO_SOBRE_RESULT).email).toBeNull();
+  it('sem o Sobre (ou sem nome), não quebra a página', () => {
+    expect(controladora(null)).toBe('a autora do Ronrom');
+    expect(controladora({ nome: '  ' } as CONSULTA_DO_SOBRE_RESULT)).toBe('a autora do Ronrom');
+  });
+});
+
+describe('canaisDeContato', () => {
+  const comRedes = (redes: unknown) => ({ redes }) as CONSULTA_DAS_CONFIGURACOES_RESULT;
+
+  it('usa as redes de Configurações do site, com o nome de cada uma', () => {
+    const redes = [
+      { rede: 'instagram', url: 'https://www.instagram.com/ronrom.blog' },
+      { rede: 'outra', url: 'https://ronrom.social/@ana' },
+    ];
+    expect(canaisDeContato(comRedes(redes))).toEqual([
+      { nome: 'Instagram', url: 'https://www.instagram.com/ronrom.blog' },
+      { nome: 'outra rede', url: 'https://ronrom.social/@ana' },
+    ]);
+  });
+
+  it('sem redes (ou sem link), fica vazio e a página manda para o Sobre', () => {
+    expect(canaisDeContato(null)).toEqual([]);
+    expect(canaisDeContato(comRedes(null))).toEqual([]);
+    expect(canaisDeContato(comRedes([{ rede: 'tiktok', url: null }]))).toEqual([]);
   });
 });
 

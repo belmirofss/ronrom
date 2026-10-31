@@ -132,6 +132,8 @@ Dois documentos únicos, registrados em `document.singletons` no [`sanity.config
 
 O destaque da home saiu do post (era o boolean `destaque`): com um só post escolhido aqui, não existe o caso de dois posts ligados ao mesmo tempo.
 
+As `redes` são o canal da `/privacidade` para os pedidos sobre os dados (a LGPD pede um; o Sobre mim não tem e-mail, #146). Mantenha ao menos uma preenchida: sem nenhuma, a página só manda para o `/sobre`.
+
 **Sobre mim** ([`schemaTypes/sobre.ts`](schemaTypes/sobre.ts)), abas Conteúdo e SEO:
 
 | Campo   | Regras                                                                                                                     |
