@@ -195,7 +195,7 @@ As regras de [`web/src/lib/seo.ts`](../web/src/lib/seo.ts) e o `ogImage` de [`we
 
 As entidades de [`web/src/lib/jsonld.ts`](../web/src/lib/jsonld.ts), com os documentos das fixtures:
 
-- [ ] Cada página tem o seu grafo: home (WebSite e Person), `/sobre` (com o ProfilePage), pensamento (WebPage, BlogPosting e BreadcrumbList), review (WebPage e BreadcrumbList, até a #51) e listagem (CollectionPage e BreadcrumbList).
+- [ ] Cada página tem o seu grafo: home (WebSite e Person), `/sobre` (com o ProfilePage), pensamento (WebPage, BlogPosting e BreadcrumbList), review (WebPage, Review e BreadcrumbList; sem autora, sem a Review) e listagem (CollectionPage e BreadcrumbList).
 - [ ] Nenhum `@id` repetido no grafo e nenhuma referência para um `@id` que não está nele, inclusive sem nome no Sobre (aí não há Person).
 - [ ] O BreadcrumbList repete os itens da trilha, com URL absoluta e posição a partir de 1.
 - [ ] O BlogPosting tem as datas em `-03:00`, as tags em `keywords` (sem a chave quando não há tag), a capa do CDN em 1200×630, 1200×900 e 1200×1200 e a imagem padrão fora do CDN.
