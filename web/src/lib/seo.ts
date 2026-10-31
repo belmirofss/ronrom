@@ -127,15 +127,19 @@ export function descricaoDoPost(post: PostParaSeo): string {
   );
 }
 
-// Metadados da página de um post (#42). A imagem de compartilhamento é a do SEO, se tiver arquivo,
-// ou a capa, que é obrigatória.
+// A imagem de compartilhamento do post: a do SEO, se tiver arquivo, ou a capa, que é obrigatória.
+// É a do og:image e a do JSON-LD (#50).
+export function imagemDoPost(post: Pick<PostParaSeo, 'seo' | 'capa'>) {
+  return post.seo?.imagem?.asset ? post.seo.imagem : post.capa;
+}
+
+// Metadados da página de um post (#42).
 export function seoDoPost(post: PostParaSeo, canonical: string): Metadados {
-  const imagem = post.seo?.imagem?.asset ? post.seo.imagem : post.capa;
   return {
     title: post.seo?.titulo?.trim() || post.titulo,
     description: descricaoDoPost(post),
     canonical,
-    image: imagem,
+    image: imagemDoPost(post),
     type: 'article',
     noindex: post.seo?.noindex ?? false,
     publishedTime: post.dataDePublicacao,

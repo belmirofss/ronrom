@@ -4,6 +4,7 @@ import CardDePost from '@/components/post/CardDePost.astro';
 import CorpoDoPost from '@/components/post/CorpoDoPost.astro';
 import FichaDaReview from '@/components/post/FichaDaReview.astro';
 import RegistroDeVisualizacao from '@/components/post/RegistroDeVisualizacao.astro';
+import JsonLd from '@/components/seo/JsonLd.astro';
 import Breadcrumb from '@/components/ui/Breadcrumb.astro';
 import ChipCategoria from '@/components/ui/ChipCategoria.astro';
 import Data from '@/components/ui/Data.astro';
@@ -38,8 +39,8 @@ const indice = indiceDoPost(post, url);
 ---
 
 <LayoutBase seo={seoDoPost(post, url)}>
-  {/* JSON-LD do post (#50, #51): a página passa pelo slot `head`, que termina no <Seo>. */}
-  <slot name="head" slot="head" />
+  {/* JSON-LD do post (#50; a Review das reviews vem na #51). */}
+  <JsonLd slot="head" pagina={{ tipo: 'post', post }} />
 
   {/* Só o <article> entra no índice da busca (#54): cabeçalho, rodapé e "Leia também" ficam de
       fora. Detalhes: docs/busca.md. */}

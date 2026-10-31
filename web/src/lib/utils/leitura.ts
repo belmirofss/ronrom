@@ -22,13 +22,23 @@ function palavrasDoBloco(bloco: BlocoDoPortableText): number {
 }
 
 /**
+ * Palavras do texto de um post: parágrafos, subtítulos, listas e citações; legendas e `alt` ficam
+ * de fora. É o `wordCount` do JSON-LD (#50) e a base do tempo de leitura.
+ */
+export function contarPalavras(
+  portableText: readonly BlocoDoPortableText[] | null | undefined,
+): number {
+  return (portableText ?? []).reduce((total, bloco) => total + palavrasDoBloco(bloco), 0);
+}
+
+/**
  * "X min de leitura" do texto de um post, a 200 palavras por minuto, arredondando para cima e com
- * mínimo de 1. Conta parágrafos, subtítulos, listas e citações; legendas e `alt` ficam de fora.
+ * mínimo de 1. Conta as mesmas palavras do `contarPalavras`.
  */
 export function tempoDeLeitura(
   portableText: readonly BlocoDoPortableText[] | null | undefined,
 ): string {
-  const palavras = (portableText ?? []).reduce((total, bloco) => total + palavrasDoBloco(bloco), 0);
+  const palavras = contarPalavras(portableText);
   const minutos = Math.max(1, Math.ceil(palavras / PALAVRAS_POR_MINUTO));
   return `${minutos} min de leitura`;
 }
