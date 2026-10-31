@@ -540,12 +540,12 @@ function sobre(assets: Assets): Documento {
   return {
     _id: 'sobre',
     _type: 'sobre',
-    nome: 'Lia',
+    nome: 'Ana Laura',
     foto: imagem(assets.gato, { alt: 'Ilustração de um gato sentado, o mascote do Ronrom' }),
     bio: 'Escrevo sobre filmes, livros, cafés e as pequenas coisas do dia. Gosto de domingo, de caderno pautado e de gato dormindo no sol.',
     texto: [
       paragrafo(
-        'Oi! Eu sou a Lia, e o Ronrom é o meu caderno aberto. Aqui entram as reviews do que eu vi, li, comi e visitei, e os pensamentos que não couberam em outro lugar.',
+        'Oi! Eu sou a Ana Laura, e o Ronrom é o meu caderno aberto. Aqui entram as reviews do que eu vi, li, comi e visitei, e os pensamentos que não couberam em outro lugar.',
       ),
       subtitulo('O que você encontra aqui'),
       ...lista(
