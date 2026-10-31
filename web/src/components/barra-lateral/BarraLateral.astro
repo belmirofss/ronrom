@@ -5,7 +5,7 @@ import { navegacaoDaBarraLateral, rotuloDoTotal } from '@/lib/barra-lateral';
 import { buscarConfiguracoes, buscarSobre, buscarTaxonomia } from '@/lib/sanity/conteudo';
 
 // Conteúdo do slot `barra-lateral` do LayoutComBarraLateral: a autora, as categorias e os formatos
-// e a frase da semana. Tudo vem do Sanity; o que não estiver cadastrado some.
+// e a frase em destaque. Tudo vem do Sanity; o que não estiver cadastrado some.
 const [sobre, configuracoes, taxonomia] = await Promise.all([
   buscarSobre(),
   buscarConfiguracoes(),

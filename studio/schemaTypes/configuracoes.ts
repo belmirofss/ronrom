@@ -30,7 +30,7 @@ export const configuracoes = defineType({
   fields: [
     defineField({
       name: 'fraseDaSemana',
-      title: 'Frase da semana',
+      title: 'Frase em destaque',
       type: 'object',
       group: 'home',
       description:
@@ -65,7 +65,7 @@ export const configuracoes = defineType({
           name: 'data',
           title: 'Data',
           type: 'date',
-          description: 'Opcional. A semana da frase.',
+          description: 'Opcional. A data da frase.',
           options: { dateFormat: 'DD/MM/YYYY' },
         }),
       ],
