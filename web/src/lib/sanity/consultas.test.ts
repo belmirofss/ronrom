@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import * as consultas from './consultas';
 import type {
   CONSULTA_DA_TAXONOMIA_RESULT,
+  CONSULTA_DAS_LISTAS_DO_ANO_RESULT,
   CONSULTA_DO_DESTAQUE_RESULT,
   CONSULTA_DO_LEIA_TAMBEM_RESULT,
   CONSULTA_DO_POST_RESULT,
@@ -239,6 +240,19 @@ describe('listagens paginadas', () => {
       categoria: 'nao-existe',
     })) as CONSULTA_DOS_POSTS_DA_CATEGORIA_RESULT;
     expect(resultado).toEqual({ categoria: null, posts: [], total: 0 });
+  });
+});
+
+describe('CONSULTA_DAS_LISTAS_DO_ANO', () => {
+  it('traz só as reviews de livro, filme ou série, com o modelo da categoria', async () => {
+    const reviews = (await rodar(
+      consultas.CONSULTA_DAS_LISTAS_DO_ANO,
+    )) as CONSULTA_DAS_LISTAS_DO_ANO_RESULT;
+    expect(reviews.map(({ _id, modelo }) => [_id, modelo])).toEqual([
+      ['dias-perfeitos', 'filme'],
+      ['antigo', 'filme'],
+    ]);
+    expect(reviews[0]?.textoDoCorpo).toEqual([{ _type: 'block', children: [{ text: 'Link' }] }]);
   });
 });
 

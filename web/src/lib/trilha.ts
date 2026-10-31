@@ -1,6 +1,8 @@
 import { SECOES, type LinkDeNavegacao } from '@/lib/navegacao';
+import { tituloDaLista } from '@/lib/listas';
 import {
   urlDaCategoria,
+  urlDaListaDoAno,
   urlDaPagina,
   urlDoFormato,
   urlDoPost,
@@ -48,6 +50,11 @@ export function trilhaDaCategoria(categoria: Secao): ItemDaTrilha[] {
     secaoDoCabecalho('/reviews'),
     { rotulo: nomeDa(categoria, 'trilhaDaCategoria'), href: urlDaCategoria(categoria.slug ?? '') },
   ];
+}
+
+/** Início › Reviews › Lidos e assistidos em {ano} (#137) */
+export function trilhaDaListaDoAno(ano: number): ItemDaTrilha[] {
+  return [...trilhaDoTipo('review'), { rotulo: tituloDaLista(ano), href: urlDaListaDoAno(ano) }];
 }
 
 /** Início › Pensamentos › {formato} */
