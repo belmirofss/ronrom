@@ -48,7 +48,7 @@ const temAoLado = Astro.slots.has('ao-lado');
         </button>
       ))}
     </div>
-    {/* Fora do tablist, que só pode ter abas: o campo de busca da home (WEB-15, #61). */}
+    {/* Fora do tablist, que só pode ter abas: o campo de busca da home (#55). */}
     {temAoLado && (
       <div class="abas__ao-lado">
         <slot name="ao-lado" />

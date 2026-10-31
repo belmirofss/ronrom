@@ -1,14 +1,17 @@
 ---
 import CampoDeBusca from '@/components/busca/CampoDeBusca.astro';
 import Container from '@/components/layout/Container.astro';
+import Esqueleto from '@/components/ui/Esqueleto.astro';
+import EstadoVazio from '@/components/ui/EstadoVazio.astro';
 import LayoutBase from '@/layouts/LayoutBase.astro';
 import { navegacaoDaBarraLateral } from '@/lib/barra-lateral';
 import { buscarTaxonomia } from '@/lib/sanity/conteudo';
 
 // A busca do Pagefind (#55). Página estática: o termo e os filtros vêm da URL (?q=, ?tipo=,
 // ?categoria=, ?tag=) e quem busca é o script, no navegador, com o índice do build (#54). O estado
-// e o contrato dos resultados ficam em src/lib/busca-cliente.ts; o visual definitivo vem na WEB-15
-// (#61). Fora do sitemap e com noindex,follow (docs/seo-urls.md).
+// e o contrato dos resultados ficam em src/lib/busca-cliente.ts; os estados (digite algo, carregando,
+// nenhum resultado, erro) e o visual dos resultados, na #61. Fora do sitemap e com noindex,follow
+// (docs/seo-urls.md).
 
 // Sem JS, a página só explica e aponta as listagens: as seções, as categorias e os formatos.
 const { categorias, formatos } = navegacaoDaBarraLateral(await buscarTaxonomia());
@@ -74,8 +77,26 @@ const listagens = [
         </fieldset>
       </CampoDeBusca>
 
-      {/* A contagem, o carregando, o vazio e o erro, anunciados ao leitor de tela. */}
+      {/* A contagem, o carregando, o vazio e o erro, anunciados ao leitor de tela. Com o estado de
+          "nenhum resultado" na tela, o texto fica só para o leitor de tela. */}
       <p class="busca__status" role="status" aria-live="polite" data-status></p>
+
+      {/* Na primeira busca, enquanto o Pagefind carrega. Depois, a lista anterior fica esmaecida. */}
+      <div data-carregando hidden>
+        <Esqueleto quantidade={3} variante="resultado" />
+      </div>
+
+      <div data-sem-resultados hidden>
+        <EstadoVazio link={{ rotulo: 'Ou veja todos os posts', href: '/posts' }}>
+          <span data-com-termo>
+            Nenhum resultado para “<span data-termo></span>”.
+          </span>
+          <span data-so-filtro hidden>
+            Nenhum resultado com esses filtros.
+          </span>
+          Tente uma palavra mais curta ou menos filtros.
+        </EstadoVazio>
+      </div>
 
       <ol class="busca__resultados" data-resultados></ol>
 
@@ -134,9 +155,27 @@ const listagens = [
   const status = raiz?.querySelector<HTMLElement>('[data-status]');
   const lista = raiz?.querySelector<HTMLOListElement>('[data-resultados]');
   const mais = raiz?.querySelector<HTMLButtonElement>('[data-mais]');
+  const carregando = raiz?.querySelector<HTMLElement>('[data-carregando]');
+  const semResultados = raiz?.querySelector<HTMLElement>('[data-sem-resultados]');
+  const termoSemResultados = semResultados?.querySelector<HTMLElement>('[data-termo]');
+  const comTermo = semResultados?.querySelector<HTMLElement>('[data-com-termo]');
+  const soFiltro = semResultados?.querySelector<HTMLElement>('[data-so-filtro]');
   const selects = [...(raiz?.querySelectorAll<HTMLSelectElement>('select[data-filtro]') ?? [])];
 
-  if (raiz && modelo && formulario && campo && status && lista && mais) {
+  if (
+    raiz &&
+    modelo &&
+    formulario &&
+    campo &&
+    status &&
+    lista &&
+    mais &&
+    carregando &&
+    semResultados &&
+    termoSemResultados &&
+    comTermo &&
+    soFiltro
+  ) {
     raiz.hidden = false;
     const busca = criarBusca();
     let pagina: PaginaDeResultados | null = null;
@@ -161,6 +200,24 @@ const listagens = [
 
     const mostrarStatus = (texto: string) => {
       status.textContent = texto;
+    };
+
+    // O esqueleto só quando não há lista para esmaecer (a primeira busca ou depois de uma vazia):
+    // trocar a lista pelo esqueleto a cada letra faria a página piscar.
+    const marcarCarregando = (ligado: boolean) => {
+      raiz.toggleAttribute('aria-busy', ligado);
+      carregando.hidden = !ligado || lista.childElementCount > 0;
+    };
+
+    // Com algum termo ou filtro e nenhum resultado: o estado com o gato e o termo buscado.
+    const marcarSemResultados = (termo: string | null) => {
+      semResultados.hidden = termo === null;
+      status.classList.toggle('visualmente-oculto', termo !== null);
+      if (termo === null) return;
+      termoSemResultados.textContent = termo;
+      // Só filtro, sem termo: a frase fica sem as aspas vazias.
+      comTermo.hidden = termo === '';
+      soFiltro.hidden = termo !== '';
     };
 
     const item = (resultado: ResultadoDeBusca) => {
@@ -216,10 +273,12 @@ const listagens = [
         pagina = null;
         lista.replaceChildren();
         atualizarMais();
+        marcarCarregando(false);
+        marcarSemResultados(null);
         mostrarStatus('Digite algo para buscar nas reviews e nos pensamentos.');
         return;
       }
-      raiz.setAttribute('aria-busy', 'true');
+      marcarCarregando(true);
       mostrarStatus('Buscando…');
       try {
         const resposta = await busca.buscar(estado);
@@ -230,7 +289,8 @@ const listagens = [
         atualizarMais();
         const termo = estado.q ? ` para “${estado.q}”` : '';
         mostrarStatus(`${rotuloDaContagem(resposta.total)}${termo}.`);
-        raiz.removeAttribute('aria-busy');
+        marcarSemResultados(resposta.total === 0 ? estado.q : null);
+        marcarCarregando(false);
         contagemPendente = setTimeout(
           () => registrarEvento(EVENTOS.busca, { resultados: resposta.total }),
           PAUSA_PARA_CONTAR_MS,
@@ -240,8 +300,9 @@ const listagens = [
         pagina = null;
         lista.replaceChildren();
         atualizarMais();
+        marcarSemResultados(null);
         mostrarStatus('A busca não carregou. Recarregue a página para tentar de novo.');
-        raiz.removeAttribute('aria-busy');
+        marcarCarregando(false);
       }
     };
 
@@ -388,6 +449,12 @@ const listagens = [
     color: var(--cor-texto-2);
   }
 
+  /* Enquanto a próxima busca não chega, a lista anterior fica esmaecida, sem sair do lugar. */
+  .busca__app[aria-busy] .busca__resultados {
+    opacity: 0.55;
+    transition: opacity 150ms ease-out;
+  }
+
   .busca__resultados {
     display: grid;
     gap: var(--espaco-4);
@@ -412,6 +479,14 @@ const listagens = [
 
   .busca__resultados :global(.resultado__titulo) {
     font-size: var(--texto-xl);
+  }
+
+  /* Rótulo em vinho, como nas listagens. */
+  .busca__resultados :global(.resultado__rotulo) {
+    order: -1;
+    color: var(--cor-vinho);
+    font-size: var(--texto-xs);
+    font-weight: var(--peso-medio);
   }
 
   .busca__resultados :global(.resultado__rotulo),
