@@ -292,6 +292,7 @@ describe('itemAvaliado', () => {
           addressRegion: 'SP',
           addressCountry: 'BR',
         },
+        geo: { '@type': 'GeoCoordinates', latitude: -23.5869, longitude: -46.6388 },
         hasMap: 'https://maps.google.com/?q=Rua+das+Acacias+120+Sao+Paulo',
         priceRange: 'R$$',
         servesCuisine: 'Cafeteria',

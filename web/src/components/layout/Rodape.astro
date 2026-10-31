@@ -2,8 +2,12 @@
 import { STUDIO_URL } from 'astro:env/server';
 import Container from '@/components/layout/Container.astro';
 import { EVENTOS } from '@/lib/analytics';
+import { anosDasListas } from '@/lib/listas';
+import { CAMINHO_DO_MAPA, TITULO_DO_MAPA } from '@/lib/mapa';
 import { CATEGORIAS_PRINCIPAIS, SECOES } from '@/lib/navegacao';
 import { CAMINHO_DA_PRIVACIDADE } from '@/lib/privacidade';
+import { urlDaListaDoAno } from '@/lib/rotas';
+import { buscarAnosDasListas } from '@/lib/sanity/conteudo';
 import { NOME_DO_SITE } from '@/lib/utils/site';
 
 // Ano do build no fuso de São Paulo (o site é estático e é rebuildado a cada publicação).
@@ -13,10 +17,19 @@ const ano = new Intl.DateTimeFormat('pt-BR', {
 }).format(new Date());
 
 // Os grupos de links não ficam num <nav>: o único landmark de navegação é o do cabeçalho.
+// "Lidos e assistidos" (#137): um link por ano com lista. Sem nenhuma, o grupo não aparece.
+const listas = anosDasListas(await buscarAnosDasListas()).map((anoDaLista) => ({
+  rotulo: String(anoDaLista),
+  href: urlDaListaDoAno(anoDaLista),
+}));
 const grupos = [
   { titulo: 'Navegação', links: SECOES },
-  { titulo: 'Reviews', links: CATEGORIAS_PRINCIPAIS },
-];
+  {
+    titulo: 'Reviews',
+    links: [...CATEGORIAS_PRINCIPAIS, { rotulo: TITULO_DO_MAPA, href: CAMINHO_DO_MAPA }],
+  },
+  { titulo: 'Lidos e assistidos', links: listas },
+].filter(({ links }) => links.length > 0);
 ---
 
 <footer class="rodape">

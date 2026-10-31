@@ -10,7 +10,15 @@ export const CAMPOS_DA_FICHA = {
   filme: ['direcao', 'ano', 'duracao', 'ondeVi'],
   serie: ['criacao', 'anoDeEstreia', 'anoDeFim', 'temporadasVistas', 'ondeVi'],
   livro: ['autoria', 'editora', 'ano', 'paginas', 'formatoDoLivro'],
-  lugar: ['endereco', 'linkDoMapa', 'faixaDePreco', 'tipoDeCozinha', 'oQuePedi', 'instagram'],
+  lugar: [
+    'endereco',
+    'linkDoMapa',
+    'localizacao',
+    'faixaDePreco',
+    'tipoDeCozinha',
+    'oQuePedi',
+    'instagram',
+  ],
 } as const satisfies Record<ModeloDeFicha, readonly string[]>;
 
 // Valem para qualquer modelo e ficam no fim da ficha.
@@ -104,6 +112,6 @@ export const FICHA_NO_GROQ = `select(
     "modelo": "livro", autoria, editora, ano, paginas, formatoDoLivro, valeAPena
   },
   categoria->modeloFicha == "lugar" => ficha{
-    "modelo": "lugar", endereco, linkDoMapa, faixaDePreco, tipoDeCozinha, oQuePedi, instagram, valeAPena
+    "modelo": "lugar", endereco, linkDoMapa, localizacao, faixaDePreco, tipoDeCozinha, oQuePedi, instagram, valeAPena
   }
 )`;

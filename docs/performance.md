@@ -66,6 +66,8 @@ O Lighthouse 12 tirou o suporte aos budgets nativos, então o [`lighthouserc.cjs
 
 **Pagefind.** O orçamento de JS não conta o Pagefind sob demanda: ele só entra na `/busca`. Lá, o `pagefind.js` (cerca de 14 KB) carrega com a página e entra na conta, então a `/busca` tem, na prática, um limite mais apertado; o índice e o WebAssembly baixam por `fetch` e não contam como script. Na última medição, a `/busca` usava cerca de 18 KB de JS, e as outras páginas, menos de 5 KB.
 
+**Mapa.** O `/mapa` (#136) carrega com a página só o script do botão (cerca de 1,3 KB). O Leaflet (cerca de 43 KB de JS, mais o CSS dele) e os tiles do OpenStreetMap só baixam quando alguém clica em "Mostrar o mapa", por `import()` dinâmico; o Lighthouse não clica, então nada disso entra na conta. O CSS do Leaflet entra por `?url` em [`mapa-cliente.ts`](../web/src/lib/mapa-cliente.ts): importado direto, o Astro o poria no `<head>` da página e bloquearia a renderização. O quadro do mapa tem `aspect-ratio` fixo antes e depois do clique, para o mapa não empurrar a lista (CLS).
+
 ## Como ler o resultado
 
 - **Nos checks do PR:** o check `lighthouse / lighthouse` leva à execução. Vermelho é asserção com erro; avisos não mudam a cor.

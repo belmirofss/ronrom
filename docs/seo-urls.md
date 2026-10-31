@@ -64,6 +64,7 @@ A resposta esperada é `308` com `location: /sobre`.
 | `/sobre`                               | `sobre.astro`                        | Autora (texto do CMS)                                       | sim                      | #47   |
 | `/busca`                               | `busca.astro`                        | Busca do Pagefind (`/busca?q=termo`)                        | não: `noindex,follow`    | #55   |
 | `/privacidade`                         | `privacidade.astro`                  | Política de privacidade                                     | sim                      | #59   |
+| `/mapa`                                | `mapa.astro`                         | Mapa e lista por cidade dos lugares                         | sim                      | #136  |
 | qualquer URL inexistente               | `404.astro` (gera `404.html`)        | Página não encontrada, com status 404                       | não                      | #47   |
 | `/rss.xml`                             | `rss.xml.ts`                         | Feed dos últimos 30 posts                                   | —                        | #52   |
 | `/sitemap-index.xml`, `/sitemap-*.xml` | gerados pelo `@astrojs/sitemap`      | Sitemap só com URLs canônicas                               | —                        | #52   |
@@ -129,7 +130,7 @@ Quem decide é o `VERCEL_ENV` do build (variável de sistema da Vercel, lida pel
   - post: a mais recente entre a última edição e a entrada no ar (`dataDePublicacao`);
   - página `n` de uma listagem: o post mais recente entre os que aparecem nela ou antes dela (um post novo empurra os outros) e o documento da categoria ou do formato, cuja descrição a página mostra;
   - lista do ano: a review mais recente da lista;
-  - home: a data mais recente de tudo; `/sobre`: a do documento `sobre`; `/privacidade`: a `PRIVACIDADE_ATUALIZADA_EM` ou a do documento `sobre`, a mais recente;
+  - home: a data mais recente de tudo; `/sobre`: a do documento `sobre`; `/privacidade`: a `PRIVACIDADE_ATUALIZADA_EM` ou a do documento `sobre`, a mais recente; `/mapa`: o post de lugar mais recente;
   - sem data própria (listagem ainda vazia, Sobre não publicado): a da home.
 - **Página nova** (como foi a `/privacidade` da #59) entra sozinha no sitemap, mas sem `lastmod` e com o aviso `[sitemap] … sem lastmod` no build: inclua-a no `dadosDoSitemap`.
 - Sem `changefreq` nem `priority`, que o Google ignora.

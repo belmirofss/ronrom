@@ -4,6 +4,7 @@ import type {
   BreadcrumbList,
   CafeOrCoffeeShop,
   CollectionPage,
+  GeoCoordinates,
   Graph,
   IdReference,
   Movie,
@@ -21,6 +22,7 @@ import type {
   WithActionConstraints,
 } from 'schema-dts';
 import type { Ficha } from '@/lib/ficha';
+import { coordenadas } from '@/lib/mapa';
 import { NOTA_MAXIMA, NOTA_MINIMA, validarNota } from '@/lib/nota';
 import { canonicalUrl, urlDoPost } from '@/lib/rotas';
 import { imagemRecortada } from '@/lib/sanity/imagem';
@@ -263,6 +265,12 @@ function enderecoPostal(endereco: FichaDoModelo<'lugar'>['endereco']): PostalAdd
   };
 }
 
+// A localização da ficha de lugar (#136), a mesma que vira ponto no /mapa.
+function geo(ficha: FichaDoModelo<'lugar'>): GeoCoordinates | undefined {
+  const ponto = coordenadas(ficha);
+  return ponto && { '@type': 'GeoCoordinates', latitude: ponto.lat, longitude: ponto.lng };
+}
+
 // O endereço do Instagram, com o perfil sem @, como na ficha (src/lib/ficha.ts).
 function urlDoInstagram(perfil: string | null): string | undefined {
   const usuario = texto(perfil)?.replace(/^@/, '');
@@ -280,6 +288,7 @@ function lugar(
     name: nome,
     ...opcional('image', imagem),
     ...opcional('address', enderecoPostal(ficha.endereco)),
+    ...opcional('geo', geo(ficha)),
     ...opcional('hasMap', texto(ficha.linkDoMapa)),
   };
   if (categoria !== CATEGORIA_DE_RESTAURANTES) return { '@type': 'TouristAttraction', ...comum };

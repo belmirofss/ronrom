@@ -4,6 +4,7 @@ import {
   CONSULTA_DA_TAXONOMIA,
   CONSULTA_DAS_CONFIGURACOES,
   CONSULTA_DAS_LISTAS_DO_ANO,
+  CONSULTA_DOS_ANOS_DAS_LISTAS,
   CONSULTA_DAS_ROTAS_DOS_POSTS,
   CONSULTA_DO_DESTAQUE,
   CONSULTA_DO_FEED,
@@ -12,6 +13,7 @@ import {
   CONSULTA_DO_POST,
   CONSULTA_DO_SITEMAP,
   CONSULTA_DO_SOBRE,
+  CONSULTA_DOS_LUGARES,
   CONSULTA_DOS_POSTS_DA_CATEGORIA,
   CONSULTA_DOS_POSTS_DO_FORMATO,
   CONSULTA_DOS_POSTS_DO_TIPO,
@@ -21,8 +23,10 @@ import {
 import type {
   CONSULTA_DAS_CONFIGURACOES_RESULT,
   CONSULTA_DAS_LISTAS_DO_ANO_RESULT,
+  CONSULTA_DOS_ANOS_DAS_LISTAS_RESULT,
   CONSULTA_DAS_ROTAS_DOS_POSTS_RESULT,
   CONSULTA_DA_TAXONOMIA_RESULT,
+  CONSULTA_DOS_LUGARES_RESULT,
   CONSULTA_DOS_POSTS_DA_CATEGORIA_RESULT,
   CONSULTA_DOS_POSTS_DO_FORMATO_RESULT,
   CONSULTA_DOS_POSTS_DO_TIPO_RESULT,
@@ -92,6 +96,10 @@ export const buscarTaxonomia = () => consultar<CONSULTA_DA_TAXONOMIA_RESULT>(CON
 export const buscarListasDoAno = () =>
   consultar<CONSULTA_DAS_LISTAS_DO_ANO_RESULT>(CONSULTA_DAS_LISTAS_DO_ANO);
 
+/** Data e modelo das mesmas reviews, sem os cards: os anos com lista, no rodapé. */
+export const buscarAnosDasListas = () =>
+  consultar<CONSULTA_DOS_ANOS_DAS_LISTAS_RESULT>(CONSULTA_DOS_ANOS_DAS_LISTAS);
+
 // --- Post ---
 
 /**
@@ -108,6 +116,11 @@ export const buscarRotasDosPosts = () =>
 /** Até 3 cards para o "Leia também" do post de `_id` `id`. */
 export const buscarLeiaTambem = (id: string) =>
   consultar<CONSULTA_DO_LEIA_TAMBEM_RESULT>(CONSULTA_DO_LEIA_TAMBEM, { id });
+
+// --- Mapa ---
+
+/** As reviews de restaurantes, cafés e lugares, com a cidade e a localização, para o /mapa (#136). */
+export const buscarLugares = () => consultar<CONSULTA_DOS_LUGARES_RESULT>(CONSULTA_DOS_LUGARES);
 
 // --- Dados gerados no build ---
 
