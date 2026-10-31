@@ -6,13 +6,11 @@ import FichaDaReview from '@/components/post/FichaDaReview.astro';
 import RegistroDeVisualizacao from '@/components/post/RegistroDeVisualizacao.astro';
 import JsonLd from '@/components/seo/JsonLd.astro';
 import Breadcrumb from '@/components/ui/Breadcrumb.astro';
-import ChipCategoria from '@/components/ui/ChipCategoria.astro';
 import Data from '@/components/ui/Data.astro';
 import ImagemSanity from '@/components/ui/ImagemSanity.astro';
 import LayoutBase from '@/layouts/LayoutBase.astro';
 import { indiceDoPost } from '@/lib/busca';
-import { tituloDaTag } from '@/lib/listagem';
-import { urlDaTag, urlDoPost } from '@/lib/rotas';
+import { urlDoPost } from '@/lib/rotas';
 import { buscarLeiaTambem, buscarSobre } from '@/lib/sanity/conteudo';
 import type { CONSULTA_DO_POST_RESULT } from '@/lib/sanity/tipos.gerados';
 import { seoDoPost } from '@/lib/seo';
@@ -20,7 +18,7 @@ import { trilhaDoPost } from '@/lib/trilha';
 import { tempoDeLeitura } from '@/lib/utils/leitura';
 
 // A página de um post (#42), review ou pensamento: trilha, título, subtítulo, autora, data e tempo
-// de leitura, a capa 21:9, a ficha (só em review), o texto, as tags e o "Leia também". As páginas
+// de leitura, a capa 21:9, a ficha (só em review), o texto e o "Leia também". As páginas
 // em src/pages só acham o post pelo endereço e passam para cá.
 
 interface Props {
@@ -33,7 +31,6 @@ const { post } = Astro.props;
 const [sobre, leiaTambem] = await Promise.all([buscarSobre(), buscarLeiaTambem(post._id)]);
 
 const autora = sobre?.nome?.trim();
-const tags = post.tags ?? [];
 const url = urlDoPost(post);
 const indice = indiceDoPost(post, url);
 ---
@@ -95,15 +92,6 @@ const indice = indiceDoPost(post, url);
     <Container largura="leitura" class="post__leitura">
       <FichaDaReview post={post} />
       <CorpoDoPost corpo={post.corpo} />
-      {tags.length > 0 && (
-        <ul class="post__tags" aria-label="Tags">
-          {tags.map(({ nome, slug }) => (
-            <li>
-              <ChipCategoria nome={tituloDaTag(nome ?? '')} href={urlDaTag(slug ?? '')} />
-            </li>
-          ))}
-        </ul>
-      )}
     </Container>
   </article>
 
@@ -159,22 +147,6 @@ const indice = indiceDoPost(post, url);
     flex-direction: column;
     gap: var(--espaco-7);
     padding-block: var(--espaco-7);
-  }
-
-  /* Cada linha tem 44px, a área de toque do chip-link: as áreas não se sobrepõem ao quebrar. */
-  .post__tags {
-    display: flex;
-    flex-wrap: wrap;
-    column-gap: var(--espaco-2);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .post__tags li {
-    display: flex;
-    align-items: center;
-    min-height: 44px;
   }
 
   :global(.leia-tambem) {

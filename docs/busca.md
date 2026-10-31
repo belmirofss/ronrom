@@ -22,7 +22,6 @@ Só as páginas de post. A [`PaginaDoPost`](../web/src/components/post/PaginaDoP
 | --------------------------------- | ---------- | ----------------------------------------------------------- |
 | Título, subtítulo e texto         | sim        | O subtítulo tem peso 5 (`data-pagefind-weight`; o h1 tem 7) |
 | Ficha da review                   | sim        | Diretor, autor, endereço, cozinha ajudam a achar a review   |
-| Tags                              | sim        | O nome da tag também é texto buscável                       |
 | Trilha de navegação               | não        | `data-pagefind-ignore` no próprio `Breadcrumb`              |
 | Autora, data e tempo de leitura   | não        | `data-pagefind-ignore` na linha de meta                     |
 | Cabeçalho, rodapé e "Leia também" | não        | Ficam fora do `<article>`                                   |
@@ -33,13 +32,12 @@ Saem de [`indiceDoPost`](../web/src/lib/busca.ts) e vão num `<div hidden data-p
 
 **Filtros** (`data-pagefind-filter`):
 
-| Filtro      | Valores                                                | Em           |
-| ----------- | ------------------------------------------------------ | ------------ |
-| `tipo`      | `Review` ou `Pensamento`                               | todo post    |
-| `categoria` | nome da categoria (`Filmes`, `Séries`…)                | review       |
-| `formato`   | nome do formato (`Textos e opiniões`, `Frases soltas`) | pensamento   |
-| `tags`      | nome de cada tag, sem `#` (vários)                     | post com tag |
-| `nota`      | `4,5 corações`, `1 coração` (`notaPorExtenso`)         | review       |
+| Filtro      | Valores                                                | Em         |
+| ----------- | ------------------------------------------------------ | ---------- |
+| `tipo`      | `Review` ou `Pensamento`                               | todo post  |
+| `categoria` | nome da categoria (`Filmes`, `Séries`…)                | review     |
+| `formato`   | nome do formato (`Textos e opiniões`, `Frases soltas`) | pensamento |
+| `nota`      | `4,5 corações`, `1 coração` (`notaPorExtenso`)         | review     |
 
 **Metadados** (`data-pagefind-meta`), o que o resultado mostra: `title`, `url`, `image`, `image_alt`, `date`, `subtitulo` e `nota`. Campo vazio não entra.
 
@@ -80,9 +78,8 @@ Com as fixtures (10 posts), a primeira busca baixa cerca de 170 kB antes de comp
 | `?q=`         | o termo                                              | (o termo da busca)              |
 | `?tipo=`      | `review` ou `pensamento`; outro valor é ignorado     | `tipo` (`Review`, `Pensamento`) |
 | `?categoria=` | nome da categoria ou do formato (`Filmes`, `Textos`) | `categoria` **ou** `formato`    |
-| `?tag=`       | nome da tag, sem `#` (`Wim Wenders`)                 | `tags`                          |
 
-Digitar troca a entrada do histórico (`replaceState`); enviar e trocar filtro criam uma nova (`pushState`), e o Voltar refaz a busca anterior. Sem termo, só com filtro (`/busca?tag=Rotina`), a página lista os posts do filtro do mais recente para o mais antigo; com termo, a ordem é a de relevância. Sem termo nem filtro, pede para digitar algo.
+Digitar troca a entrada do histórico (`replaceState`); enviar e trocar filtro criam uma nova (`pushState`), e o Voltar refaz a busca anterior. Sem termo, só com filtro (`/busca?categoria=Filmes`), a página lista os posts do filtro do mais recente para o mais antigo; com termo, a ordem é a de relevância. Sem termo nem filtro, pede para digitar algo.
 
 **Carregamento.** O `pagefind.js` é importado só na primeira busca (`import()` com `@vite-ignore`, porque o arquivo só existe na saída do build), com `excerptLength: 24`. Cada busca espera 200 ms sem digitação nova, e uma resposta que chega depois de outra busca é descartada. Se o índice não carregar (no dev sem build, por exemplo), a página diz que a busca não carregou, e a próxima busca tenta de novo.
 
@@ -101,7 +98,7 @@ Digitar troca a entrada do histórico (`replaceState`); enviar e trocar filtro c
 
 O `excerpt` vai para o `innerHTML`: o Pagefind escapa o texto do post e só acrescenta os `<mark>`. Os outros campos entram como texto. A página mostra 10 resultados e um botão "Carregar mais", que busca os dados só dos 10 seguintes e leva o foco ao primeiro deles.
 
-**Contagem, filtros e estados.** A contagem ("3 resultados para “café”.", "Nenhum resultado para “x”.") e os estados de carregando e erro saem num `role="status"` com `aria-live="polite"`. Os selects de tipo, categoria e tag são montados com o `pagefind.filters()` do índice inteiro, com o total de posts de cada valor; categorias e formatos ficam numa lista só.
+**Contagem, filtros e estados.** A contagem ("3 resultados para “café”.", "Nenhum resultado para “x”.") e os estados de carregando e erro saem num `role="status"` com `aria-live="polite"`. Os selects de tipo e categoria são montados com o `pagefind.filters()` do índice inteiro, com o total de posts de cada valor; categorias e formatos ficam numa lista só.
 
 ### Estados da página
 

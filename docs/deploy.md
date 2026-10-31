@@ -95,7 +95,7 @@ Fica em sanity.io/manage → projeto "Ronrom" → API → Webhooks. Ele não é 
 | URL          | a URL do Deploy Hook `sanity-publish` (a mesma do secret `VERCEL_DEPLOY_HOOK_URL`) |
 | Dataset      | `production`                                                                       |
 | Trigger on   | Create, Update e Delete                                                            |
-| Filter       | `_type in ["post", "categoria", "formato", "tag", "configuracoes", "sobre"]`       |
+| Filter       | `_type in ["post", "categoria", "formato", "configuracoes", "sobre"]`              |
 | Projection   | `{_id, _type}`                                                                     |
 | Status       | habilitado                                                                         |
 | HTTP method  | `POST`                                                                             |

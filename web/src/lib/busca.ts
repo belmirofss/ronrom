@@ -15,7 +15,7 @@ export const LARGURA_DA_MINIATURA = 320;
 export const PROPORCAO_DA_MINIATURA = 4 / 3;
 
 export interface IndiceDoPost {
-  /** `data-pagefind-filter`: pares chave/valor, uma chave pode repetir (as tags). */
+  /** `data-pagefind-filter`: pares chave/valor. */
   filtros: [string, string][];
   /** `data-pagefind-meta`: o que o resultado da busca mostra. Sem campos vazios. */
   metadados: [string, string][];
@@ -31,28 +31,18 @@ export interface IndiceDoPost {
 export function indiceDoPost(
   post: Pick<
     Post,
-    | 'tipo'
-    | 'titulo'
-    | 'subtitulo'
-    | 'dataDePublicacao'
-    | 'categoria'
-    | 'formato'
-    | 'nota'
-    | 'tags'
-    | 'capa'
+    'tipo' | 'titulo' | 'subtitulo' | 'dataDePublicacao' | 'categoria' | 'formato' | 'nota' | 'capa'
   >,
   url: string,
 ): IndiceDoPost {
   const ehReview = post.tipo === 'review';
   const nota = ehReview ? notaPorExtenso(post.nota) : undefined;
   const secao = ehReview ? post.categoria?.nome : post.formato?.nome;
-  const tags = (post.tags ?? []).flatMap(({ nome }) => (nome?.trim() ? [nome.trim()] : []));
   const imagem = urlDaMiniatura(post.capa, LARGURA_DA_MINIATURA, PROPORCAO_DA_MINIATURA);
 
   const filtros: [string, string | undefined][] = [
     ['tipo', ehReview ? 'Review' : 'Pensamento'],
     [ehReview ? 'categoria' : 'formato', secao?.trim()],
-    ...tags.map((tag): [string, string] => ['tags', tag]),
     ['nota', nota],
   ];
 

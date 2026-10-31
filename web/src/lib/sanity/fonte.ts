@@ -81,6 +81,6 @@ export function criarConsultar(fonte: FonteDoConteudo, leitura?: ClientConfig): 
   const cliente = criarCliente(fonte, leitura);
   // O tipo QueryParams do cliente proíbe nomes das opções do fetch, como `tag`, para pegar quem
   // misturava opções e parâmetros na API antiga. Aqui não há essa mistura: os parâmetros vão
-  // sempre como `$nome`, e o `$tag` da CONSULTA_DOS_POSTS_DA_TAG chega certo ao Sanity.
+  // sempre como `$nome`.
   return (consulta, params = {}) => cliente.fetch(consulta, params as QueryParams);
 }

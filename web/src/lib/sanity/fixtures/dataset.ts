@@ -1,5 +1,5 @@
 import { CATEGORIAS, FORMATOS } from '../../../../../studio/lib/taxonomia';
-import type { Categoria, Configuracoes, Formato, Post, Sobre, Tag } from '../tipos.gerados';
+import type { Categoria, Configuracoes, Formato, Post, Sobre } from '../tipos.gerados';
 import {
   asset,
   citacao,
@@ -14,7 +14,6 @@ import {
   negrito,
   paragrafo,
   referencia,
-  referenciaComChave,
   sistema,
   subtitulo,
   video,
@@ -46,26 +45,6 @@ const formatos = FORMATOS.map(
       slug: { _type: 'slug', current: slug },
     }) satisfies Formato,
 );
-
-const tag = (slug: string, nome: string) =>
-  ({
-    _id: `tag-${slug}`,
-    _type: 'tag',
-    ...sistema('2026-01-01T12:00:00Z'),
-    nome,
-    slug: { _type: 'slug', current: slug },
-  }) satisfies Tag;
-
-const tags = [
-  tag('cinema', 'Cinema'),
-  tag('rotina', 'Rotina'),
-  tag('sao-paulo', 'São Paulo'),
-  tag('cafe', 'Café'),
-  tag('leitura', 'Leitura'),
-  tag('gatos', 'Gatos'),
-  tag('doces', 'Doces'),
-  tag('internet', 'Internet'),
-];
 
 // --- Imagens (placeholders em SVG) ---
 
@@ -143,7 +122,6 @@ const reviews = [
         ', outro lugar onde a rotina é tudo.',
       ),
     ],
-    tags: [referenciaComChave('tag-cinema'), referenciaComChave('tag-rotina')],
   }),
   post('a-casa-do-farol', {
     tipo: 'review',
@@ -170,7 +148,6 @@ const reviews = [
       subtitulo('h2', 'O que não funciona'),
       paragrafo('A segunda temporada se perde em tramas paralelas que não levam a lugar nenhum.'),
     ],
-    tags: [referenciaComChave('tag-cinema')],
   }),
   post('o-inverno-das-laranjeiras', {
     tipo: 'review',
@@ -199,7 +176,6 @@ const reviews = [
         '.',
       ),
     ],
-    tags: [referenciaComChave('tag-leitura')],
   }),
   post('cafe-do-bairro', {
     tipo: 'review',
@@ -232,7 +208,6 @@ const reviews = [
       itemDeLista('number', ['O pão com manteiga, que chega quentinho.']),
       itemDeLista('number', ['O bolo de laranja, se ainda tiver.']),
     ],
-    tags: [referenciaComChave('tag-cafe'), referenciaComChave('tag-sao-paulo')],
   }),
   // Ficha de lugar sem tipo de cozinha nem Instagram: o caso do campo vazio, que a ficha esconde.
   post('mirante-do-morro-azul', {
@@ -260,7 +235,6 @@ const reviews = [
       ),
       paragrafo('Lá em cima, um banco de madeira e o silêncio. Faltam lixeiras e banheiro.'),
     ],
-    tags: [referenciaComChave('tag-sao-paulo')],
   }),
   post('pao-de-queijo-da-padaria-estrela', {
     tipo: 'review',
@@ -282,7 +256,6 @@ const reviews = [
         ' por dentro. Fica a dúvida se era só um dia ruim.',
       ),
     ],
-    tags: [referenciaComChave('tag-doces')],
   }),
 ];
 
@@ -369,7 +342,6 @@ const pensamentos = [
       ),
       citacaoDestaque('Nenhuma ideia é pequena demais para o caderno.'),
     ],
-    tags: [referenciaComChave('tag-rotina'), referenciaComChave('tag-leitura')],
   }),
   // Post sem subtítulo.
   post('cronica-de-uma-terca-feira', {
@@ -385,7 +357,6 @@ const pensamentos = [
       ),
       paragrafo('À noite, o gato dormiu no meu colo e eu esqueci de reclamar da chuva.'),
     ],
-    tags: [referenciaComChave('tag-rotina'), referenciaComChave('tag-gatos')],
   }),
   // A frase bem curta. Fora do sitemap (`noindex`) e com um endereço antigo, para os redirects (#53).
   post('sobre-gatos', {
@@ -395,7 +366,6 @@ const pensamentos = [
     dataDePublicacao: '2026-10-01T07:30:00-03:00',
     capa: imagem(img.gatos, 'Gato laranja dormindo enrolado numa almofada'),
     corpo: [paragrafo('Gato não pede desculpas, e talvez esteja certo.')],
-    tags: [referenciaComChave('tag-gatos')],
     seo: { noindex: true },
     slugsAnteriores: ['/pensamentos/frases/gatos'],
   }),
@@ -421,7 +391,6 @@ const pensamentos = [
         ' e textos sem pressa.',
       ),
     ],
-    tags: [referenciaComChave('tag-internet')],
     seo: {
       titulo: 'Por que a internet precisa de mais blogs',
       descricao:
@@ -488,7 +457,6 @@ export const DATASET = [
   ...Object.values(img),
   ...categorias,
   ...formatos,
-  ...tags,
   ...reviews,
   ...pensamentos,
   configuracoes,

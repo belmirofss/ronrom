@@ -884,57 +884,8 @@ export type CONSULTA_DOS_POSTS_DO_FORMATO_RESULT = {
 };
 
 // Source: ../web/src/lib/sanity/consultas.ts
-// Variable: CONSULTA_DOS_POSTS_DA_TAG
-// Query: {  "tag": *[_type == "tag" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && slug.current == $tag][0]{ nome, "slug": slug.current },    "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && $tag in tags[]->slug.current] | order(dataDePublicacao desc, _id asc) [$inicio...$fim]{  _id,  tipo,  titulo,  subtitulo,  "slug": slug.current,  dataDePublicacao,  nota,  "categoria": categoria->{ nome, "slug": slug.current },  "formato": formato->{ nome, "slug": slug.current },  "capa": capa{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }},  "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && $tag in tags[]->slug.current])}
-export type CONSULTA_DOS_POSTS_DA_TAG_RESULT = {
-  tag: {
-    nome: string;
-    slug: string;
-  } | null;
-  posts: Array<{
-    _id: string;
-    tipo: 'pensamento' | 'review';
-    titulo: string;
-    subtitulo: string | null;
-    slug: string;
-    dataDePublicacao: string;
-    nota: number | null;
-    categoria: {
-      nome: string;
-      slug: string;
-    } | null;
-    formato: {
-      nome: string;
-      slug: string;
-    } | null;
-    capa: {
-      asset: {
-        _id: string;
-        url: string;
-        largura: number | null;
-        altura: number | null;
-        lqip: string | null;
-      } | null;
-      media?: unknown;
-      hotspot?: SanityImageHotspot;
-      crop?: SanityImageCrop;
-      alt?: string;
-      legenda?: string;
-      _type: 'image';
-    };
-    textoDoCorpo: Array<{
-      _type: 'block';
-      children: Array<{
-        text: string | null;
-      }> | null;
-    }> | null;
-  }>;
-  total: number;
-};
-
-// Source: ../web/src/lib/sanity/consultas.ts
 // Variable: CONSULTA_DA_TAXONOMIA
-// Query: {  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))] | order(ordem asc){    _id, nome, "slug": slug.current, descricao,    "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "review" && categoria._ref == ^._id])  },  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))] | order(ordem asc){    _id, nome, "slug": slug.current, descricao,    "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "pensamento" && formato._ref == ^._id])  },  "tags": *[_type == "tag" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{    _id, nome, "slug": slug.current,    "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && ^._id in tags[]._ref])  }[total > 0] | order(nome asc)}
+// Query: {  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))] | order(ordem asc){    _id, nome, "slug": slug.current, descricao,    "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "review" && categoria._ref == ^._id])  },  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))] | order(ordem asc){    _id, nome, "slug": slug.current, descricao,    "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "pensamento" && formato._ref == ^._id])  }}
 export type CONSULTA_DA_TAXONOMIA_RESULT = {
   categorias: Array<{
     _id: string;
@@ -950,17 +901,11 @@ export type CONSULTA_DA_TAXONOMIA_RESULT = {
     descricao: string | null;
     total: number;
   }>;
-  tags: Array<{
-    _id: string;
-    nome: string;
-    slug: string;
-    total: number;
-  }>;
 };
 
 // Source: ../web/src/lib/sanity/consultas.ts
 // Variable: CONSULTA_DO_POST
-// Query: *[  _type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == $tipo && slug.current == $slug &&  select(tipo == "review" => categoria->slug.current, formato->slug.current) == $secao][0]{  _id,  _updatedAt,  tipo,  titulo,  subtitulo,  "slug": slug.current,  dataDePublicacao,  "categoria": categoria->{ nome, "slug": slug.current, modeloFicha },  "formato": formato->{ nome, "slug": slug.current },  nota,  "ficha": select(  categoria->modeloFicha == "filme" => ficha{    "modelo": "filme", direcao, ano, duracao, ondeVi, valeAPena  },  categoria->modeloFicha == "serie" => ficha{    "modelo": "serie", criacao, anoDeEstreia, anoDeFim, temporadasVistas, ondeVi, valeAPena  },  categoria->modeloFicha == "livro" => ficha{    "modelo": "livro", autoria, editora, ano, paginas, formatoDoLivro, valeAPena  },  categoria->modeloFicha == "lugar" => ficha{    "modelo": "lugar", endereco, linkDoMapa, faixaDePreco, tipoDeCozinha, oQuePedi, instagram, valeAPena  },  categoria->modeloFicha == "comida" => ficha{    "modelo": "comida", marca, preco, oQueProvei, valeAPena  }),  "capa": capa{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  "corpo": corpo[]{  ...,  _type == "block" => {    markDefs[]{      ...,      _type == "linkInterno" => {        "post": post->{          tipo,          "slug": slug.current,          categoria->{ "slug": slug.current },          formato->{ "slug": slug.current }        }      }    }  },  _type == "imagem" => {  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  _type == "galeria" => {    "imagens": imagens[]{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }}  }},  "tags": (tags[]->)[defined(slug.current)]{ nome, "slug": slug.current },  seo{ titulo, descricao, noindex, "imagem": imagem{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }} }}
+// Query: *[  _type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == $tipo && slug.current == $slug &&  select(tipo == "review" => categoria->slug.current, formato->slug.current) == $secao][0]{  _id,  _updatedAt,  tipo,  titulo,  subtitulo,  "slug": slug.current,  dataDePublicacao,  "categoria": categoria->{ nome, "slug": slug.current, modeloFicha },  "formato": formato->{ nome, "slug": slug.current },  nota,  "ficha": select(  categoria->modeloFicha == "filme" => ficha{    "modelo": "filme", direcao, ano, duracao, ondeVi, valeAPena  },  categoria->modeloFicha == "serie" => ficha{    "modelo": "serie", criacao, anoDeEstreia, anoDeFim, temporadasVistas, ondeVi, valeAPena  },  categoria->modeloFicha == "livro" => ficha{    "modelo": "livro", autoria, editora, ano, paginas, formatoDoLivro, valeAPena  },  categoria->modeloFicha == "lugar" => ficha{    "modelo": "lugar", endereco, linkDoMapa, faixaDePreco, tipoDeCozinha, oQuePedi, instagram, valeAPena  },  categoria->modeloFicha == "comida" => ficha{    "modelo": "comida", marca, preco, oQueProvei, valeAPena  }),  "capa": capa{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  "corpo": corpo[]{  ...,  _type == "block" => {    markDefs[]{      ...,      _type == "linkInterno" => {        "post": post->{          tipo,          "slug": slug.current,          categoria->{ "slug": slug.current },          formato->{ "slug": slug.current }        }      }    }  },  _type == "imagem" => {  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  _type == "galeria" => {    "imagens": imagens[]{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }}  }},  seo{ titulo, descricao, noindex, "imagem": imagem{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }} }}
 export type CONSULTA_DO_POST_RESULT = {
   _id: string;
   _updatedAt: string;
@@ -1164,10 +1109,6 @@ export type CONSULTA_DO_POST_RESULT = {
         _key: string;
       }
   > | null;
-  tags: Array<{
-    nome: string;
-    slug: string;
-  }> | null;
   seo: {
     titulo: string | null;
     descricao: string | null;
@@ -1305,7 +1246,7 @@ export type CONSULTA_DOS_REDIRECTS_RESULT = Array<{
 
 // Source: ../web/src/lib/sanity/consultas.ts
 // Variable: CONSULTA_DO_SITEMAP
-// Query: {  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {    tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current },    _updatedAt,    dataDePublicacao,    "noindex": coalesce(seo.noindex, false),    "tags": (tags[]->)[defined(slug.current)].slug.current  },  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },  "tags": *[_type == "tag" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },  "sobre": *[_id == "sobre"][0]._updatedAt,  "configuracoes": *[_id == "configuracoes"][0]._updatedAt}
+// Query: {  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {    tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current },    _updatedAt,    dataDePublicacao,    "noindex": coalesce(seo.noindex, false)  },  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },  "sobre": *[_id == "sobre"][0]._updatedAt,  "configuracoes": *[_id == "configuracoes"][0]._updatedAt}
 export type CONSULTA_DO_SITEMAP_RESULT = {
   posts: Array<{
     tipo: 'pensamento' | 'review';
@@ -1319,7 +1260,6 @@ export type CONSULTA_DO_SITEMAP_RESULT = {
     _updatedAt: string;
     dataDePublicacao: string;
     noindex: boolean | false;
-    tags: Array<string> | null;
   }>;
   categorias: Array<{
     slug: string;
@@ -1329,17 +1269,13 @@ export type CONSULTA_DO_SITEMAP_RESULT = {
     slug: string;
     _updatedAt: string;
   }>;
-  tags: Array<{
-    slug: string;
-    _updatedAt: string;
-  }>;
   sobre: string | null;
   configuracoes: string | null;
 };
 
 // Source: ../web/src/lib/sanity/consultas.ts
 // Variable: CONSULTA_DO_FEED
-// Query: *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) [0...30]{  tipo,  "slug": slug.current,  titulo,  subtitulo,  dataDePublicacao,  "categoria": categoria->{ nome, "slug": slug.current },  "formato": formato->{ nome, "slug": slug.current },  "tags": (tags[]->)[defined(slug.current)]{ nome },  "capa": capa{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  "corpo": corpo[_type == "block"]{ _type, style, children[]{ text } },  seo{ descricao }}
+// Query: *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) [0...30]{  tipo,  "slug": slug.current,  titulo,  subtitulo,  dataDePublicacao,  "categoria": categoria->{ nome, "slug": slug.current },  "formato": formato->{ nome, "slug": slug.current },  "capa": capa{  ...,  "asset": asset->{    _id,    url,    "largura": metadata.dimensions.width,    "altura": metadata.dimensions.height,    "lqip": metadata.lqip  }},  "corpo": corpo[_type == "block"]{ _type, style, children[]{ text } },  seo{ descricao }}
 export type CONSULTA_DO_FEED_RESULT = Array<{
   tipo: 'pensamento' | 'review';
   slug: string;
@@ -1354,9 +1290,6 @@ export type CONSULTA_DO_FEED_RESULT = Array<{
     nome: string;
     slug: string;
   } | null;
-  tags: Array<{
-    nome: string;
-  }> | null;
   capa: {
     asset: {
       _id: string;
@@ -1394,16 +1327,15 @@ declare global {
     '{\n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == $tipo] | order(dataDePublicacao desc, _id asc) [$inicio...$fim]{\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n,\n  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }\n},\n  "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == $tipo])\n}': CONSULTA_DOS_POSTS_DO_TIPO_RESULT;
     '{\n  "categoria": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && slug.current == $categoria][0]{\n    nome, "slug": slug.current, descricao\n  },\n  \n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "review" && categoria->slug.current == $categoria] | order(dataDePublicacao desc, _id asc) [$inicio...$fim]{\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n,\n  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }\n},\n  "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "review" && categoria->slug.current == $categoria])\n\n}': CONSULTA_DOS_POSTS_DA_CATEGORIA_RESULT;
     '{\n  "formato": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && slug.current == $formato][0]{\n    nome, "slug": slug.current, descricao\n  },\n  \n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "pensamento" && formato->slug.current == $formato] | order(dataDePublicacao desc, _id asc) [$inicio...$fim]{\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n,\n  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }\n},\n  "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "pensamento" && formato->slug.current == $formato])\n\n}': CONSULTA_DOS_POSTS_DO_FORMATO_RESULT;
-    '{\n  "tag": *[_type == "tag" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && slug.current == $tag][0]{ nome, "slug": slug.current },\n  \n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && $tag in tags[]->slug.current] | order(dataDePublicacao desc, _id asc) [$inicio...$fim]{\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n,\n  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }\n},\n  "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && $tag in tags[]->slug.current])\n\n}': CONSULTA_DOS_POSTS_DA_TAG_RESULT;
-    '{\n  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))] | order(ordem asc){\n    _id, nome, "slug": slug.current, descricao,\n    "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "review" && categoria._ref == ^._id])\n  },\n  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))] | order(ordem asc){\n    _id, nome, "slug": slug.current, descricao,\n    "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "pensamento" && formato._ref == ^._id])\n  },\n  "tags": *[_type == "tag" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{\n    _id, nome, "slug": slug.current,\n    "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && ^._id in tags[]._ref])\n  }[total > 0] | order(nome asc)\n}': CONSULTA_DA_TAXONOMIA_RESULT;
-    '*[\n  _type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == $tipo && slug.current == $slug &&\n  select(tipo == "review" => categoria->slug.current, formato->slug.current) == $secao\n][0]{\n  _id,\n  _updatedAt,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  "categoria": categoria->{ nome, "slug": slug.current, modeloFicha },\n  "formato": formato->{ nome, "slug": slug.current },\n  nota,\n  "ficha": select(\n  categoria->modeloFicha == "filme" => ficha{\n    "modelo": "filme", direcao, ano, duracao, ondeVi, valeAPena\n  },\n  categoria->modeloFicha == "serie" => ficha{\n    "modelo": "serie", criacao, anoDeEstreia, anoDeFim, temporadasVistas, ondeVi, valeAPena\n  },\n  categoria->modeloFicha == "livro" => ficha{\n    "modelo": "livro", autoria, editora, ano, paginas, formatoDoLivro, valeAPena\n  },\n  categoria->modeloFicha == "lugar" => ficha{\n    "modelo": "lugar", endereco, linkDoMapa, faixaDePreco, tipoDeCozinha, oQuePedi, instagram, valeAPena\n  },\n  categoria->modeloFicha == "comida" => ficha{\n    "modelo": "comida", marca, preco, oQueProvei, valeAPena\n  }\n),\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  "corpo": corpo[]{\n  ...,\n  _type == "block" => {\n    markDefs[]{\n      ...,\n      _type == "linkInterno" => {\n        "post": post->{\n          tipo,\n          "slug": slug.current,\n          categoria->{ "slug": slug.current },\n          formato->{ "slug": slug.current }\n        }\n      }\n    }\n  },\n  _type == "imagem" => {\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  _type == "galeria" => {\n    "imagens": imagens[]{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n  }\n},\n  "tags": (tags[]->)[defined(slug.current)]{ nome, "slug": slug.current },\n  seo{ titulo, descricao, noindex, "imagem": imagem{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n} }\n}': CONSULTA_DO_POST_RESULT;
+    '{\n  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))] | order(ordem asc){\n    _id, nome, "slug": slug.current, descricao,\n    "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "review" && categoria._ref == ^._id])\n  },\n  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))] | order(ordem asc){\n    _id, nome, "slug": slug.current, descricao,\n    "total": count(*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == "pensamento" && formato._ref == ^._id])\n  }\n}': CONSULTA_DA_TAXONOMIA_RESULT;
+    '*[\n  _type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && tipo == $tipo && slug.current == $slug &&\n  select(tipo == "review" => categoria->slug.current, formato->slug.current) == $secao\n][0]{\n  _id,\n  _updatedAt,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  "categoria": categoria->{ nome, "slug": slug.current, modeloFicha },\n  "formato": formato->{ nome, "slug": slug.current },\n  nota,\n  "ficha": select(\n  categoria->modeloFicha == "filme" => ficha{\n    "modelo": "filme", direcao, ano, duracao, ondeVi, valeAPena\n  },\n  categoria->modeloFicha == "serie" => ficha{\n    "modelo": "serie", criacao, anoDeEstreia, anoDeFim, temporadasVistas, ondeVi, valeAPena\n  },\n  categoria->modeloFicha == "livro" => ficha{\n    "modelo": "livro", autoria, editora, ano, paginas, formatoDoLivro, valeAPena\n  },\n  categoria->modeloFicha == "lugar" => ficha{\n    "modelo": "lugar", endereco, linkDoMapa, faixaDePreco, tipoDeCozinha, oQuePedi, instagram, valeAPena\n  },\n  categoria->modeloFicha == "comida" => ficha{\n    "modelo": "comida", marca, preco, oQueProvei, valeAPena\n  }\n),\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  "corpo": corpo[]{\n  ...,\n  _type == "block" => {\n    markDefs[]{\n      ...,\n      _type == "linkInterno" => {\n        "post": post->{\n          tipo,\n          "slug": slug.current,\n          categoria->{ "slug": slug.current },\n          formato->{ "slug": slug.current }\n        }\n      }\n    }\n  },\n  _type == "imagem" => {\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  _type == "galeria" => {\n    "imagens": imagens[]{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n  }\n},\n  seo{ titulo, descricao, noindex, "imagem": imagem{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n} }\n}': CONSULTA_DO_POST_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())]{ tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current } }': CONSULTA_DAS_ROTAS_DOS_POSTS_RESULT;
     'coalesce(*[_type == "post" && _id == $id][0]{\n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && _id != ^._id]{\n    ...,\n    "prioridade": select(\n      tipo == ^.tipo && coalesce(categoria._ref, formato._ref) == coalesce(^.categoria._ref, ^.formato._ref) => 2,\n      tipo == ^.tipo => 1,\n      0\n    )\n  } | order(prioridade desc, dataDePublicacao desc, _id asc) [0...3]{\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n}\n}.posts, [])': CONSULTA_DO_LEIA_TAMBEM_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {\n  _id,\n  tipo,\n  titulo,\n  subtitulo,\n  "slug": slug.current,\n  dataDePublicacao,\n  nota,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n}\n,\n  "textoDoCorpo": corpo[_type == "block"]{ _type, children[]{ text } }\n}': CONSULTA_DO_INDICE_DE_POSTS_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())]._id': CONSULTA_DOS_IDS_PUBLICADOS_RESULT;
     '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now()) && count(slugsAnteriores) > 0]{ "anteriores": slugsAnteriores, tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current } }': CONSULTA_DOS_REDIRECTS_RESULT;
-    '{\n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {\n    tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current },\n    _updatedAt,\n    dataDePublicacao,\n    "noindex": coalesce(seo.noindex, false),\n    "tags": (tags[]->)[defined(slug.current)].slug.current\n  },\n  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "tags": *[_type == "tag" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "sobre": *[_id == "sobre"][0]._updatedAt,\n  "configuracoes": *[_id == "configuracoes"][0]._updatedAt\n}': CONSULTA_DO_SITEMAP_RESULT;
-    '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) [0...30]{\n  tipo,\n  "slug": slug.current,\n  titulo,\n  subtitulo,\n  dataDePublicacao,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "tags": (tags[]->)[defined(slug.current)]{ nome },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  "corpo": corpo[_type == "block"]{ _type, style, children[]{ text } },\n  seo{ descricao }\n}': CONSULTA_DO_FEED_RESULT;
+    '{\n  "posts": *[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) {\n    tipo, "slug": slug.current, categoria->{ "slug": slug.current }, formato->{ "slug": slug.current },\n    _updatedAt,\n    dataDePublicacao,\n    "noindex": coalesce(seo.noindex, false)\n  },\n  "categorias": *[_type == "categoria" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "formatos": *[_type == "formato" && !(_id in path("drafts.**")) && !(_id in path("versions.**"))]{ "slug": slug.current, _updatedAt },\n  "sobre": *[_id == "sobre"][0]._updatedAt,\n  "configuracoes": *[_id == "configuracoes"][0]._updatedAt\n}': CONSULTA_DO_SITEMAP_RESULT;
+    '*[_type == "post" && !(_id in path("drafts.**")) && !(_id in path("versions.**")) && dateTime(dataDePublicacao) <= dateTime(now())] | order(dataDePublicacao desc, _id asc) [0...30]{\n  tipo,\n  "slug": slug.current,\n  titulo,\n  subtitulo,\n  dataDePublicacao,\n  "categoria": categoria->{ nome, "slug": slug.current },\n  "formato": formato->{ nome, "slug": slug.current },\n  "capa": capa{\n  ...,\n  "asset": asset->{\n    _id,\n    url,\n    "largura": metadata.dimensions.width,\n    "altura": metadata.dimensions.height,\n    "lqip": metadata.lqip\n  }\n},\n  "corpo": corpo[_type == "block"]{ _type, style, children[]{ text } },\n  seo{ descricao }\n}': CONSULTA_DO_FEED_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

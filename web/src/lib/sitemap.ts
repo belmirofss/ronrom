@@ -1,5 +1,5 @@
 import { CAMINHO_DA_PRIVACIDADE, PRIVACIDADE_ATUALIZADA_EM } from '@/lib/privacidade';
-import { urlDaCategoria, urlDaPagina, urlDaTag, urlDoFormato, urlDoPost } from '@/lib/rotas';
+import { urlDaCategoria, urlDaPagina, urlDoFormato, urlDoPost } from '@/lib/rotas';
 import { POSTS_POR_PAGINA, totalDePaginas } from '@/lib/sanity/conteudo';
 import type { CONSULTA_DO_SITEMAP_RESULT } from '@/lib/sanity/tipos.gerados';
 
@@ -36,8 +36,8 @@ const iso = (data: number) => new Date(data).toISOString();
  * O mapa do sitemap a partir da `CONSULTA_DO_SITEMAP`.
  * - Post: a última edição ou a entrada no ar.
  * - Página `n` de uma listagem: o post mais recente entre os que aparecem nela ou antes dela (um
- *   post novo empurra todos os outros uma posição), ou o documento da categoria, do formato ou da
- *   tag, cuja descrição a página mostra.
+ *   post novo empurra todos os outros uma posição), ou o documento da categoria ou do formato,
+ *   cuja descrição a página mostra.
  * - Home: a data mais recente de tudo (destaque, abas e barra lateral). Sobre: o próprio documento.
  * - Privacidade: a última mudança no texto ou no Sobre, de onde vêm o nome e o e-mail da autora.
  * - Sem data própria (listagem vazia de /reviews, /pensamentos ou /posts, Sobre ainda não
@@ -49,7 +49,7 @@ export function dadosDoSitemap(dados: CONSULTA_DO_SITEMAP_RESULT): DadosDoSitema
 
   const home = maisRecente([
     ...dados.posts.map(dataDoPost),
-    ...[...dados.categorias, ...dados.formatos, ...dados.tags].map((doc) => doc._updatedAt),
+    ...[...dados.categorias, ...dados.formatos].map((doc) => doc._updatedAt),
     dados.configuracoes,
     dados.sobre,
   ]);
@@ -85,11 +85,6 @@ export function dadosDoSitemap(dados: CONSULTA_DO_SITEMAP_RESULT): DadosDoSitema
   for (const { slug, _updatedAt } of dados.formatos) {
     const posts = dados.posts.filter((p) => p.tipo === 'pensamento' && p.formato?.slug === slug);
     listagem(urlDoFormato(slug), posts, _updatedAt);
-  }
-  for (const { slug, _updatedAt } of dados.tags) {
-    const posts = dados.posts.filter((p) => p.tags?.includes(slug));
-    // Tag sem post não tem página (CONSULTA_DA_TAXONOMIA).
-    if (posts.length > 0) listagem(urlDaTag(slug), posts, _updatedAt);
   }
 
   lastmod['/'] = iso(home);

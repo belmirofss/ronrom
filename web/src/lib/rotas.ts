@@ -55,11 +55,6 @@ export function urlDoFormato(slug: string): string {
   return `/pensamentos/${validarSlug(slug, 'urlDoFormato')}`;
 }
 
-/** `/tags/{slug}` */
-export function urlDaTag(slug: string): string {
-  return `/tags/${validarSlug(slug, 'urlDaTag')}`;
-}
-
 /** Página `n` de uma listagem: a própria `base` na página 1 e `{base}/pagina/{n}` da 2 em diante. */
 export function urlDaPagina(base: string, n: number): string {
   if (!FORMATO_DA_BASE.test(base)) {

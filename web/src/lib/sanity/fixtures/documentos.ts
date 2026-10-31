@@ -8,7 +8,7 @@ export function sistema(criadoEm: string, atualizadoEm = criadoEm) {
   return { _createdAt: criadoEm, _updatedAt: atualizadoEm, _rev: 'fixture' };
 }
 
-// `_key` de cada item de array (blocos, spans, imagens da galeria, tags). Só precisa ser única
+// `_key` de cada item de array (blocos, spans, imagens da galeria). Só precisa ser única
 // dentro do array; um contador do módulo é determinístico entre um build e outro.
 let ultimaChave = 0;
 export function chave(): string {
@@ -17,8 +17,6 @@ export function chave(): string {
 }
 
 export const referencia = (id: string) => ({ _type: 'reference' as const, _ref: id });
-
-export const referenciaComChave = (id: string) => ({ ...referencia(id), _key: chave() });
 
 // --- Imagens ---
 

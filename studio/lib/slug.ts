@@ -1,5 +1,5 @@
 // Regras de slug da política de URLs (docs/seo-urls.md#slugs). Usado pelos schemas de
-// categoria, formato, tag e post, e pelo script da taxonomia inicial.
+// categoria, formato e post, e pelo script da taxonomia inicial.
 
 // Minúsculas, números e hífens simples, sem hífen no começo nem no fim.
 export const FORMATO_DO_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

@@ -12,7 +12,6 @@ import {
   CONSULTA_DO_SITEMAP,
   CONSULTA_DO_SOBRE,
   CONSULTA_DOS_POSTS_DA_CATEGORIA,
-  CONSULTA_DOS_POSTS_DA_TAG,
   CONSULTA_DOS_POSTS_DO_FORMATO,
   CONSULTA_DOS_POSTS_DO_TIPO,
   CONSULTA_DOS_REDIRECTS,
@@ -23,7 +22,6 @@ import type {
   CONSULTA_DAS_ROTAS_DOS_POSTS_RESULT,
   CONSULTA_DA_TAXONOMIA_RESULT,
   CONSULTA_DOS_POSTS_DA_CATEGORIA_RESULT,
-  CONSULTA_DOS_POSTS_DA_TAG_RESULT,
   CONSULTA_DOS_POSTS_DO_FORMATO_RESULT,
   CONSULTA_DOS_POSTS_DO_TIPO_RESULT,
   CONSULTA_DOS_REDIRECTS_RESULT,
@@ -85,14 +83,7 @@ export const buscarPostsDoFormato = (formato: string, pagina = 1) =>
     ...fatiaDaPagina(pagina),
   });
 
-/** `tag` vem `null` se o slug não existe. */
-export const buscarPostsDaTag = (tag: string, pagina = 1) =>
-  consultar<CONSULTA_DOS_POSTS_DA_TAG_RESULT>(CONSULTA_DOS_POSTS_DA_TAG, {
-    tag,
-    ...fatiaDaPagina(pagina),
-  });
-
-/** Categorias, formatos e tags (só as com post), com o total de posts no ar de cada um. */
+/** Categorias e formatos, com o total de posts no ar de cada um. */
 export const buscarTaxonomia = () => consultar<CONSULTA_DA_TAXONOMIA_RESULT>(CONSULTA_DA_TAXONOMIA);
 
 // --- Post ---

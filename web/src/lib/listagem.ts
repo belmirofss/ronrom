@@ -1,6 +1,6 @@
 import { urlDaPagina } from '@/lib/rotas';
 
-// O que as listagens paginadas (/posts, /reviews, /pensamentos, categoria, formato e tag, #46)
+// O que as listagens paginadas (/posts, /reviews, /pensamentos, categoria e formato, #46)
 // calculam além dos dados: as páginas a gerar, os títulos e o canonical/prev/next de cada página.
 // O número de páginas vem do `totalDePaginas(total)` de @/lib/sanity/conteudo.
 
@@ -41,11 +41,6 @@ export function tituloComPagina(titulo: string, pagina: number): string {
 /** "Reviews de filmes", "Reviews de restaurantes e cafés". */
 export function tituloDaCategoria(nome: string): string {
   return `Reviews de ${nome.toLocaleLowerCase('pt-BR')}`;
-}
-
-/** "#café" */
-export function tituloDaTag(nome: string): string {
-  return `#${nome}`;
 }
 
 /** Os textos de uma listagem que a `Listagem.astro` recebe, além dos dados. */
@@ -98,14 +93,5 @@ export function textosDoFormato({ nome, descricao }: Taxonomia): TextosDaListage
     descricao,
     descricaoPadrao: `${nome} do Ronrom, dos mais recentes aos mais antigos.`,
     mensagemVazia: `Ainda não tem nenhum post em ${nome} por aqui.`,
-  };
-}
-
-export function textosDaTag({ nome }: Pick<Taxonomia, 'nome'>): TextosDaListagem {
-  const titulo = tituloDaTag(nome);
-  return {
-    titulo,
-    descricaoPadrao: `Posts com a tag ${titulo} no Ronrom, dos mais recentes aos mais antigos.`,
-    mensagemVazia: `Ainda não tem nenhum post com a tag ${titulo}.`,
   };
 }

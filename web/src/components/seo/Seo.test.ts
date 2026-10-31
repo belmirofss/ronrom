@@ -62,7 +62,6 @@ describe('<Seo>', () => {
       description: 'Review.',
       canonical: '/reviews/filmes/dias-perfeitos',
       publishedTime: '2026-03-14T12:00:00-03:00',
-      tags: ['Japão', 'Cinema'],
       section: 'Filmes',
     };
 
@@ -72,7 +71,7 @@ describe('<Seo>', () => {
     expect(html).toContain('property="og:type" content="article"');
     expect(html).toContain('property="article:published_time"');
     expect(html).toContain('property="article:section" content="Filmes"');
-    expect(contar(html, 'property="article:tag"')).toBe(2);
+    expect(html).not.toContain('article:tag');
   });
 
   it('liga as páginas vizinhas de uma listagem com prev e next absolutos', async () => {

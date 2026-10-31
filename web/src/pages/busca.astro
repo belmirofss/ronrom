@@ -9,7 +9,7 @@ import { TEXTO_SEM_TERMO } from '@/lib/busca-cliente';
 import { buscarTaxonomia } from '@/lib/sanity/conteudo';
 
 // A busca do Pagefind (#55). Página estática: o termo e os filtros vêm da URL (?q=, ?tipo=,
-// ?categoria=, ?tag=) e quem busca é o script, no navegador, com o índice do build (#54). O estado
+// ?categoria=) e quem busca é o script, no navegador, com o índice do build (#54). O estado
 // e o contrato dos resultados ficam em src/lib/busca-cliente.ts; os estados (digite algo, carregando,
 // nenhum resultado, erro) e o visual dos resultados, na #61. Fora do sitemap e com noindex,follow
 // (docs/seo-urls.md).
@@ -76,12 +76,6 @@ const listagens = [
           <div class="busca__filtro">
             <label for="busca-categoria">Categoria</label>
             <select id="busca-categoria" name="categoria" data-filtro="categorias">
-              <option value="">Todas</option>
-            </select>
-          </div>
-          <div class="busca__filtro">
-            <label for="busca-tag">Tag</label>
-            <select id="busca-tag" name="tag" data-filtro="tags">
               <option value="">Todas</option>
             </select>
           </div>
@@ -203,8 +197,8 @@ const listagens = [
     const preencher = (estado: EstadoDaBusca) => {
       campo.value = estado.q;
       for (const select of selects) {
-        const valor = estado[select.name as 'tipo' | 'categoria' | 'tag'] ?? '';
-        // Valor da URL que o índice não tem (tag apagada, link antigo): fica como opção, com 0.
+        const valor = estado[select.name as 'tipo' | 'categoria'] ?? '';
+        // Valor da URL que o índice não tem (categoria apagada, link antigo): fica como opção, com 0.
         if (valor && ![...select.options].some((opcao) => opcao.value === valor)) {
           select.add(new Option(valor, valor));
         }

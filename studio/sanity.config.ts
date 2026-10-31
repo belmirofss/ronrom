@@ -60,9 +60,9 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
     // O modelo padrão do post (sem tipo) sai do menu "Criar": no lugar dele, "Nova review" e
-    // "Novo pensamento".
+    // "Novo pensamento". A tag também sai: o site não mostra mais tags (#145).
     templates: (anteriores) => [
-      ...anteriores.filter((modelo) => modelo.id !== 'post'),
+      ...anteriores.filter((modelo) => modelo.id !== 'post' && modelo.id !== 'tag'),
       ...modelosDePost,
     ],
   },

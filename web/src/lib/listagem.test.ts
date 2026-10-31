@@ -3,7 +3,6 @@ import {
   paginasExtras,
   seoDaPaginacao,
   textosDaCategoria,
-  textosDaTag,
   textosDoFormato,
   tituloComPagina,
 } from '@/lib/listagem';
@@ -41,9 +40,9 @@ describe('seoDaPaginacao', () => {
   });
 
   it('a última não tem próxima', () => {
-    expect(seoDaPaginacao('/tags/cafe', 3, 3)).toEqual({
-      canonical: '/tags/cafe/pagina/3',
-      prev: '/tags/cafe/pagina/2',
+    expect(seoDaPaginacao('/pensamentos/frases', 3, 3)).toEqual({
+      canonical: '/pensamentos/frases/pagina/3',
+      prev: '/pensamentos/frases/pagina/2',
       next: undefined,
     });
   });
@@ -67,11 +66,10 @@ describe('títulos e textos', () => {
     });
   });
 
-  it('usa o nome do formato e a tag com #', () => {
+  it('usa o nome do formato', () => {
     expect(textosDoFormato({ nome: 'Frases soltas', descricao: 'Curtinhas.' })).toMatchObject({
       titulo: 'Frases soltas',
       descricao: 'Curtinhas.',
     });
-    expect(textosDaTag({ nome: 'café' }).titulo).toBe('#café');
   });
 });

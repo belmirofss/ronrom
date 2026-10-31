@@ -45,39 +45,39 @@ O token precisa do papel **Deploy Studio** (ou Administrator). Com Editor, o dep
 
 ## Schemas
 
-Ficam em [`schemaTypes/`](schemaTypes); campos repetidos (nome, slug, descrição, ordem, tags, texto alternativo, legenda, descrição e imagem de SEO) em [`schemaTypes/campos.ts`](schemaTypes/campos.ts).
+Ficam em [`schemaTypes/`](schemaTypes); campos repetidos (nome, slug, descrição, ordem, texto alternativo, legenda, descrição e imagem de SEO) em [`schemaTypes/campos.ts`](schemaTypes/campos.ts).
 
 | Tipo            | Campos                                              | Observação                                                     |
 | --------------- | --------------------------------------------------- | -------------------------------------------------------------- |
 | `post`          | veja [Post](#post)                                  | Review e pensamento num tipo só, separados pelo campo `tipo`   |
 | `categoria`     | `nome`, `slug`, `descricao`, `ordem`, `modeloFicha` | Categorias das reviews; `modeloFicha` define a ficha da review |
 | `formato`       | `nome`, `slug`, `descricao`, `ordem`                | Formatos dos pensamentos                                       |
-| `tag`           | `nome`, `slug`                                      | Criada direto do post, pelo "Criar novo" do campo de tags      |
+| `tag`           | `nome`, `slug`                                      | Escondido: o site não mostra mais tags (#145)                  |
 | `configuracoes` | veja [Singletons](#singletons)                      | Singleton com `_id` `configuracoes`                            |
 | `sobre`         | veja [Singletons](#singletons)                      | Singleton com `_id` `sobre`                                    |
 
-Slugs seguem a [política de URLs](../docs/seo-urls.md#slugs): o botão "Gerar" usa o `slugify` de [`lib/slug.ts`](lib/slug.ts), que tira acentos e cedilha ("Séries" vira `series`), e a validação recusa slug fora do formato e o reservado `pagina`. A unicidade é a padrão do Sanity, dentro do mesmo tipo: duas tags não podem ter o mesmo slug, mas uma tag e uma categoria podem. O post usa o mesmo `campoSlug` e o `campoTags`.
+Slugs seguem a [política de URLs](../docs/seo-urls.md#slugs): o botão "Gerar" usa o `slugify` de [`lib/slug.ts`](lib/slug.ts), que tira acentos e cedilha ("Séries" vira `series`), e a validação recusa slug fora do formato e o reservado `pagina`. A unicidade é a padrão do Sanity, dentro do mesmo tipo: duas categorias não podem ter o mesmo slug, mas uma categoria e um formato podem. O post usa o mesmo `campoSlug`.
 
 ### Post
 
 Um único tipo `post`, com o campo `tipo` (`review` ou `pensamento`), para que slug, listagens, "Mais lidos" e busca usem um namespace e uma consulta só. O formulário tem três abas: **Conteúdo**, **Review** (só em review) e **SEO**.
 
-| Campo              | Regras                                                                                                                   |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| `tipo`             | Obrigatório; fica só leitura assim que é escolhido, porque faz parte do endereço                                         |
-| `categoria`        | Referência, obrigatória e visível só em review                                                                           |
-| `formato`          | Referência, obrigatória e visível só em pensamento                                                                       |
-| `nota`             | De meio a 5 corações, em passos de meio; obrigatória e visível só em review, recusada em pensamento                      |
-| `ficha`            | Dados técnicos da review, que mudam conforme o modelo de ficha da categoria; veja "Ficha da review" abaixo               |
-| `titulo`           | Obrigatório; aviso acima de 70 caracteres                                                                                |
-| `subtitulo`        | Opcional                                                                                                                 |
-| `slug`             | Gerado do título, obrigatório e único entre os posts                                                                     |
-| `dataDePublicacao` | Obrigatória, começa com a hora da criação e não aceita data no futuro (não há agendamento)                               |
-| `capa`             | Imagem com hotspot, obrigatória; `alt` obrigatório e `legenda` (legenda ou crédito) opcional                             |
-| `corpo`            | Portable Text com estilos, listas, links, imagem, galeria, vídeo e citação em destaque; veja "Texto do post" abaixo      |
-| `tags`             | Referências a `tag`, sem repetir                                                                                         |
-| `seo`              | `titulo` (aviso acima de 60), `descricao` (aviso acima de 160), `imagem` (`alt` obrigatório se houver imagem), `noindex` |
-| `slugsAnteriores`  | Caminhos antigos do post, só leitura, dentro de "Avançado" na aba SEO                                                    |
+| Campo              | Regras                                                                                                                                                                                                                                              |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tipo`             | Obrigatório; fica só leitura assim que é escolhido, porque faz parte do endereço                                                                                                                                                                    |
+| `categoria`        | Referência, obrigatória e visível só em review                                                                                                                                                                                                      |
+| `formato`          | Referência, obrigatória e visível só em pensamento                                                                                                                                                                                                  |
+| `nota`             | De meio a 5 corações, em passos de meio; obrigatória e visível só em review, recusada em pensamento                                                                                                                                                 |
+| `ficha`            | Dados técnicos da review, que mudam conforme o modelo de ficha da categoria; veja "Ficha da review" abaixo                                                                                                                                          |
+| `titulo`           | Obrigatório; aviso acima de 70 caracteres                                                                                                                                                                                                           |
+| `subtitulo`        | Opcional                                                                                                                                                                                                                                            |
+| `slug`             | Gerado do título, obrigatório e único entre os posts                                                                                                                                                                                                |
+| `dataDePublicacao` | Obrigatória, começa com a hora da criação e não aceita data no futuro (não há agendamento)                                                                                                                                                          |
+| `capa`             | Imagem com hotspot, obrigatória; `alt` obrigatório e `legenda` (legenda ou crédito) opcional                                                                                                                                                        |
+| `corpo`            | Portable Text com estilos, listas, links, imagem, galeria, vídeo e citação em destaque; veja "Texto do post" abaixo                                                                                                                                 |
+| `tags`             | Escondido (#145): o site não mostra mais tags; o campo fica só para não perder o que já foi preenchido. O tipo `tag` continua registrado pelo mesmo motivo, fora da estrutura e do menu "Criar". Para tirar de vez, apague os dois com uma migração |
+| `seo`              | `titulo` (aviso acima de 60), `descricao` (aviso acima de 160), `imagem` (`alt` obrigatório se houver imagem), `noindex`                                                                                                                            |
+| `slugsAnteriores`  | Caminhos antigos do post, só leitura, dentro de "Avançado" na aba SEO                                                                                                                                                                               |
 
 A lista de posts mostra a capa, o título e um subtítulo como "Review · Filmes · ♥♥♥½" ou "Pensamento · Frases soltas"; as funções puras por trás disso (caminho, slugs anteriores, data, corações) ficam em [`lib/post.ts`](lib/post.ts), com testes.
 
@@ -161,9 +161,9 @@ A lista da esquerda é montada em [`estrutura.ts`](estrutura.ts), com os filtros
 - **Pensamentos**: "Todos os pensamentos" e uma subpasta por formato.
 - **Rascunhos**: todo post com mudança não publicada (`_originalId in path("drafts.**")`: as listas consultam na perspectiva de rascunhos, em que o `_id` já vem sem o `drafts.`), o que nunca foi ao ar e o que foi editado depois, do mais recente para o mais antigo (`_updatedAt`).
 - Configurações do site e Sobre mim.
-- Categorias, Formatos e Tags.
+- Categorias e Formatos.
 
-As listas de posts começam ordenadas pela data de publicação, mais recente primeiro. O "+" de cada lista cria o post certo: "Nova review" e "Novo pensamento" já vêm com o `tipo`; dentro de uma subpasta, também com a categoria ou o formato (modelos `review-da-categoria` e `pensamento-do-formato`, com o `_id` como parâmetro). Com o `keepPanesOnCreate` do `structureTool`, o post novo abre ao lado da lista, sem esconder as pastas. No menu "Criar" do topo aparecem só "Nova review" e "Novo pensamento", além de categoria, formato e tag: o modelo padrão do post, sem tipo, foi tirado.
+As listas de posts começam ordenadas pela data de publicação, mais recente primeiro. O "+" de cada lista cria o post certo: "Nova review" e "Novo pensamento" já vêm com o `tipo`; dentro de uma subpasta, também com a categoria ou o formato (modelos `review-da-categoria` e `pensamento-do-formato`, com o `_id` como parâmetro). Com o `keepPanesOnCreate` do `structureTool`, o post novo abre ao lado da lista, sem esconder as pastas. No menu "Criar" do topo aparecem só "Nova review" e "Novo pensamento", além de categoria e formato: o modelo padrão do post, sem tipo, e o da tag (#145) foram tirados.
 
 As subpastas são lidas ao abrir Reviews ou Pensamentos: uma categoria ou um formato novo aparece depois de recarregar o Studio.
 
@@ -209,7 +209,7 @@ Rode no `development` do mesmo jeito (o `pnpm seed` já grava os posts no format
 Conteúdo de exemplo para desenvolver e testar o site antes da autora escrever. Grava **só no dataset `development`**: [`scripts/seed.ts`](scripts/seed.ts) grava a taxonomia inicial e, depois, o conteúdo de [`seed/conteudo.ts`](seed/conteudo.ts):
 
 - **12 posts:** uma review por categoria, com nota e ficha preenchidas, e pensamentos dos dois formatos. Entre eles, uma frase bem curta ("Café primeiro."), um texto longo ("Por que eu ainda escrevo à mão"), três posts sem subtítulo e a review de "Dias Perfeitos", com todos os blocos do texto (imagem, galeria, vídeo do YouTube e do Instagram, citação em destaque, citação, listas, link externo e link para outro post).
-- **13 tags**, as **Configurações do site** (frase em destaque, post em destaque, SEO e redes) e o **Sobre mim**.
+- As **Configurações do site** (frase em destaque, post em destaque, SEO e redes) e o **Sobre mim**.
 - **11 imagens** de [`seed/imagens`](seed/imagens): ilustrações próprias com a paleta do Ronrom, sem direitos de terceiros, enviadas como assets.
 
 Com `studio/.env` preenchido e `sanity login` feito (o token do usuário é o token de escrita, como na taxonomia), na raiz:
@@ -222,7 +222,7 @@ pnpm seed
 pnpm seed --reset
 ```
 
-Os documentos têm `_id` fixo com o prefixo `seed-` (`seed-post-01`, `seed-tag-cafe`), as datas são fixas e tudo é gravado com `createOrReplace`: rodar de novo não duplica nada e desfaz edições feitas nos documentos do seed. As imagens não duplicam, porque o Sanity identifica o asset pelo conteúdo do arquivo. Leva menos de 10 segundos.
+Os documentos têm `_id` fixo com o prefixo `seed-` (`seed-post-01`), as datas são fixas e tudo é gravado com `createOrReplace`: rodar de novo não duplica nada e desfaz edições feitas nos documentos do seed. As imagens não duplicam, porque o Sanity identifica o asset pelo conteúdo do arquivo. Leva menos de 10 segundos.
 
 O `--reset` apaga antes todos os documentos `seed-*`, publicados e rascunhos, inclusive os que saíram do seed, e tira o destaque da home se ele for um post do seed. Não apaga a taxonomia, os singletons (que o seed sobrescreve) nem os assets. Se um documento seu referenciar um post do seed, o Sanity recusa o reset e mostra qual.
 

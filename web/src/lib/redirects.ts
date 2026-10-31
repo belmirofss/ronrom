@@ -33,17 +33,16 @@ export interface PostComAnteriores extends RotaDoPost {
   anteriores: string[] | null;
 }
 
-/** Uma categoria, um formato ou uma tag, com o total de posts da listagem. */
+/** Uma categoria ou um formato, com o total de posts da listagem. */
 export interface ItemComListagem {
   slug: string;
   total: number;
 }
 
-/** Categorias, formatos e tags com post, cada um com a listagem dele. */
+/** Categorias e formatos, cada um com a listagem dele. */
 export interface TaxonomiaComPagina {
   categorias: ItemComListagem[];
   formatos: ItemComListagem[];
-  tags: ItemComListagem[];
 }
 
 /**
@@ -121,12 +120,11 @@ export function montarRedirects({
   paginas,
 }: DadosDosRedirects) {
   const avisos: string[] = [];
-  // As listagens nos mesmos caminhos do urlDaCategoria, urlDoFormato e urlDaTag (rotas.ts), com
-  // o número de páginas de cada uma.
+  // As listagens nos mesmos caminhos do urlDaCategoria e do urlDoFormato (rotas.ts), com o número
+  // de páginas de cada uma.
   const listagens = new Map<string, number>([
     ...taxonomia.categorias.map(({ slug, total }) => [`/reviews/${slug}`, total] as const),
     ...taxonomia.formatos.map(({ slug, total }) => [`/pensamentos/${slug}`, total] as const),
-    ...taxonomia.tags.map(({ slug, total }) => [`/tags/${slug}`, total] as const),
   ]);
   const noAr = new Set([...paginas, ...rotasDosPosts.map(caminho), ...listagens.keys()]);
   const mapa = new Map<string, RedirectComOrigem>();

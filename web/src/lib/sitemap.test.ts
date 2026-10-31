@@ -15,7 +15,6 @@ const review = (slug: string, atualizado: string, extra: Partial<Post> = {}): Po
   _updatedAt: atualizado,
   dataDePublicacao: '2026-01-01T12:00:00Z',
   noindex: false,
-  tags: ['cafe'],
   ...extra,
 });
 
@@ -24,14 +23,12 @@ const pensamento = (slug: string, atualizado: string): Post => ({
   tipo: 'pensamento',
   categoria: null,
   formato: { slug: 'frases' },
-  tags: null,
 });
 
 const vazio: CONSULTA_DO_SITEMAP_RESULT = {
   posts: [],
   categorias: [],
   formatos: [],
-  tags: [],
   sobre: null,
   configuracoes: null,
 };
@@ -79,7 +76,7 @@ describe('dadosDoSitemap', () => {
     expect(lastmod['/sobre']).toBe('2026-01-20T00:00:00.000Z');
   });
 
-  it('cobre categoria, formato e tag, inclusive a categoria sem post', () => {
+  it('cobre categoria e formato, inclusive a categoria sem post', () => {
     const { lastmod } = dadosDoSitemap({
       ...vazio,
       posts: [review('dias-perfeitos', '2026-03-20T10:00:00Z')],
@@ -88,18 +85,12 @@ describe('dadosDoSitemap', () => {
         { slug: 'livros', _updatedAt: '2026-02-01T00:00:00Z' },
       ],
       formatos: [{ slug: 'frases', _updatedAt: '2026-05-01T00:00:00Z' }],
-      tags: [
-        { slug: 'cafe', _updatedAt: '2026-01-01T00:00:00Z' },
-        { slug: 'sem-post', _updatedAt: '2026-01-01T00:00:00Z' },
-      ],
     });
 
     expect(lastmod['/reviews/filmes']).toBe('2026-03-20T10:00:00.000Z');
     expect(lastmod['/reviews/livros']).toBe('2026-02-01T00:00:00.000Z');
     // A descrição do formato mudou depois do último post.
     expect(lastmod['/pensamentos/frases']).toBe('2026-05-01T00:00:00.000Z');
-    expect(lastmod['/tags/cafe']).toBe('2026-03-20T10:00:00.000Z');
-    expect(lastmod['/tags/sem-post']).toBeUndefined();
   });
 
   it('dá à home a data mais recente de tudo e ao Sobre a do próprio documento', () => {

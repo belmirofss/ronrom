@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   trilhaDaCategoria,
   trilhaDaPagina,
-  trilhaDaTag,
   trilhaDeTodosOsPosts,
   trilhaDoFormato,
   trilhaDoPost,
@@ -99,13 +98,6 @@ describe('trilhas das listagens', () => {
       rotulo: 'Pensamentos',
       href: '/pensamentos',
     });
-  });
-
-  it('põe a tag com # logo depois do Início', () => {
-    expect(trilhaDaTag({ nome: 'café', slug: 'cafe' })).toEqual([
-      { rotulo: 'Início', href: '/' },
-      { rotulo: '#café', href: '/tags/cafe' },
-    ]);
   });
 
   it('acrescenta "Página n" só da 2 em diante', () => {

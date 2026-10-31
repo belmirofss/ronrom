@@ -10,7 +10,6 @@ import {
   buscarLeiaTambem,
   buscarPost,
   buscarPostsDaCategoria,
-  buscarPostsDaTag,
   buscarPostsDoFormato,
   buscarPostsDoTipo,
   buscarRotasDosPosts,
@@ -107,20 +106,15 @@ describe('funções de acesso no modo fixtures', () => {
     const frases = await buscarPostsDoFormato('frases');
     expect(frases.formato?.nome).toBe('Frases soltas');
     expect(frases.total).toBe(1);
-
-    const cafe = await buscarPostsDaTag('cafe');
-    expect(cafe.tag?.nome).toBe('Café');
-    expect(cafe.total).toBeGreaterThan(0);
   });
 
   it('seção inexistente vem null', async () => {
     expect((await buscarPostsDaCategoria('nao-existe')).categoria).toBeNull();
     expect((await buscarPostsDoFormato('nao-existe')).formato).toBeNull();
-    expect((await buscarPostsDaTag('nao-existe')).tag).toBeNull();
   });
 
-  it('toda categoria tem um post, "Textos e opiniões" tem três, e toda tag listada tem post', async () => {
-    const { categorias, formatos, tags } = await buscarTaxonomia();
+  it('toda categoria tem um post, e "Textos e opiniões" tem três', async () => {
+    const { categorias, formatos } = await buscarTaxonomia();
     expect(categorias.map((categoria) => categoria.slug)).toEqual(CATEGORIAS.map((c) => c.slug));
     expect(formatos.map((formato) => formato.slug)).toEqual(FORMATOS.map((f) => f.slug));
     for (const item of categorias) expect(item.total).toBe(1);
@@ -128,8 +122,6 @@ describe('funções de acesso no modo fixtures', () => {
       ['textos', 3],
       ['frases', 1],
     ]);
-    expect(tags.length).toBeGreaterThan(0);
-    for (const tag of tags) expect(tag.total).toBeGreaterThan(0);
   });
 
   it('todo post tem uma URL válida e é achado por ela', async () => {

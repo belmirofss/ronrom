@@ -104,11 +104,13 @@ O `astro.config.mjs` passa a lista para o `redirects` do Astro, e o adapter da V
 - Não redirecione um caminho que ainda existe como página: o redirect ganha e a página some.
 - Um redirect de uma listagem para outra (`/pensamentos/artigos` → `/pensamentos/textos`, da #143) leva junto as páginas: o build cria `/pensamentos/artigos/pagina/N` → `/pensamentos/textos/pagina/N` para cada página que o destino tem. Não escreva a paginação com parâmetro (`/pagina/[n]`): o Astro só aceita redirect com parâmetro para uma rota de mesmo formato, e `/pensamentos/textos/pagina/[n]` não é uma rota (a rota é `/pensamentos/[formato]/pagina/[n]`).
 
+Redirect com parâmetro para uma página fixa não cabe no Astro, que exige no destino os mesmos parâmetros da origem. O único caso, `/tags/*` → `/busca` (301), de quando o site deixou de ter tags (#145), fica nos `redirects` do [`web/vercel.json`](../web/vercel.json), que a Vercel aplica antes de procurar o arquivo estático.
+
 Os redirects de post com slug, categoria ou formato alterados não entram aqui: saem do `slugsAnteriores` no Sanity (veja abaixo). Redirect de domínio (`www` para o domínio sem `www`, `ronrom-blog.vercel.app` para o domínio próprio) é configurado em Settings → Domains da Vercel, na #63.
 
 ### Slug alterado
 
-Quando a autora muda o slug, a categoria ou o formato de um post publicado, o botão "Publicar" do Studio guarda o caminho antigo em `slugsAnteriores` ([`docs/seo-urls.md`](seo-urls.md#posts-e-tags)). A publicação dispara o deploy hook ([deploy](deploy.md#conteúdo-rebuild-ao-publicar)), e o build transforma cada caminho antigo num `301` para o endereço atual do post. Quem faz é a integração `ronrom:redirects` do [`astro.config.mjs`](../web/astro.config.mjs), só no `astro build` (no `astro dev` os caminhos antigos dão 404):
+Quando a autora muda o slug, a categoria ou o formato de um post publicado, o botão "Publicar" do Studio guarda o caminho antigo em `slugsAnteriores` ([`docs/seo-urls.md`](seo-urls.md#posts)). A publicação dispara o deploy hook ([deploy](deploy.md#conteúdo-rebuild-ao-publicar)), e o build transforma cada caminho antigo num `301` para o endereço atual do post. Quem faz é a integração `ronrom:redirects` do [`astro.config.mjs`](../web/astro.config.mjs), só no `astro build` (no `astro dev` os caminhos antigos dão 404):
 
 1. No `astro:config:setup`, busca no Sanity (ou nas [fixtures](../web/src/lib/sanity/README.md#modo-fixtures)), com a mesma fonte do resto do site, os posts com `slugsAnteriores`, a rota de todos os posts e a taxonomia ([`web/src/lib/sanity/redirects.ts`](../web/src/lib/sanity/redirects.ts)).
 2. O `montarRedirects` ([`web/src/lib/redirects.ts`](../web/src/lib/redirects.ts)) junta os fixos de `redirects.mjs` com os dos posts e passa tudo ao `redirects` do Astro. O log do build mostra quantos são.
