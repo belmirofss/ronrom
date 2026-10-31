@@ -66,6 +66,7 @@ Para passar para o modo enforce:
 
 1. Com a CSP em Report-Only em produção, navegue pelas páginas com cada tipo de bloco (YouTube, Instagram, imagens, analytics), com o DevTools aberto. Confira o console e os logs `[csp]`.
 2. Para cada violação legítima, libere a origem nas duas cópias (e na tabela acima). Violação vinda de extensão do navegador (`chrome-extension://`, `moz-extension://`) é ruído: ignore.
+   - **Vercel Toolbar nos previews:** a barra da Vercel (comentários, feedback) carrega `https://vercel.live/_next-live/feedback/feedback.js` e um iframe de `https://vercel.live`, e gera violações de `script-src-elem` e `frame-src` só nos previews (visto no preview desta PR, #41). Em produção ela não aparece. Antes do enforce, decida: liberar `https://vercel.live` só na cópia dos previews (em `script-src`, `frame-src`, `connect-src`, `img-src` e `style-src`, e ajustar o teste que compara as cópias) ou desligar a toolbar dos previews em Settings → General → Vercel Toolbar.
 3. Sem violações legítimas por alguns dias de uso, troque a chave `Content-Security-Policy-Report-Only` por `Content-Security-Policy` nas duas regras do `vercel.json`, num PR próprio, e confira de novo os embeds no preview.
 4. Mantenha o `report-uri`/`report-to`: com a política em vigor, os relatórios mostram o que foi bloqueado de verdade.
 
