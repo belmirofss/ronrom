@@ -3,6 +3,7 @@ import Container from '@/components/layout/Container.astro';
 import CardDePost from '@/components/post/CardDePost.astro';
 import CorpoDoPost from '@/components/post/CorpoDoPost.astro';
 import FichaDaReview from '@/components/post/FichaDaReview.astro';
+import RegistroDeVisualizacao from '@/components/post/RegistroDeVisualizacao.astro';
 import Breadcrumb from '@/components/ui/Breadcrumb.astro';
 import ChipCategoria from '@/components/ui/ChipCategoria.astro';
 import Data from '@/components/ui/Data.astro';
@@ -62,9 +63,7 @@ const indice = indiceDoPost(post, url);
         <span aria-hidden="true"> · </span>
         <span>{tempoDeLeitura(post.corpo)}</span>
       </p>
-      {/* Ponto de inserção do contador de visualizações (#56): o script dele acha o post por aqui.
-          Sem estilo nem conteúdo, não ocupa espaço. */}
-      <div data-visualizacoes={post._id}></div>
+      <RegistroDeVisualizacao id={post._id} />
       {/* Filtros, metadados do resultado e a data de ordenação da busca. Oculto e fora do texto
           indexado (o data-pagefind-ignore sem "all" ainda lê filtros, metadados e ordenação). */}
       <div hidden data-pagefind-ignore>
@@ -161,13 +160,20 @@ const indice = indiceDoPost(post, url);
     padding-block: var(--espaco-7);
   }
 
+  /* Cada linha tem 44px, a área de toque do chip-link: as áreas não se sobrepõem ao quebrar. */
   .post__tags {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--espaco-2);
+    column-gap: var(--espaco-2);
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+
+  .post__tags li {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
   }
 
   :global(.leia-tambem) {

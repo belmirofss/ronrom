@@ -18,6 +18,7 @@ O **Ronrom** é um blog de reviews (filmes, séries, livros, restaurantes, lugar
 - **Site** (`web/`): [Astro](https://astro.build) 7 com TypeScript no modo `strictest`, saída estática e só algumas rotas sob demanda numa Vercel Function ([ADR 0001](docs/adr/0001-site-estatico-com-rotas-sob-demanda.md)).
 - **CMS** (`studio/`): [Sanity Studio](https://www.sanity.io/docs/studio) 6, hospedado pelo Sanity. Conteúdo novo entra no site por rebuild ([ADR 0005](docs/adr/0005-rebuild-por-deploy-hook.md)).
 - **Hospedagem:** Vercel, plano Hobby, com preview em todo PR e produção na `main`.
+- **Contador de visualizações:** [Upstash Redis](https://upstash.com) pelo Marketplace da Vercel, no plano grátis (500 mil comandos/mês). Cada visualização nova custa cerca de 2 comandos, o que dá margem para cerca de 250 mil visualizações por mês ([`docs/visualizacoes.md`](docs/visualizacoes.md#custo)).
 - **Ferramentas:** pnpm com workspaces ([ADR 0003](docs/adr/0003-pnpm-e-monorepo-web-studio.md)), ESLint e Prettier ([ADR 0002](docs/adr/0002-eslint-e-prettier-em-vez-de-biome.md)), GitHub Actions e Dependabot ([ADR 0004](docs/adr/0004-dependabot-para-atualizar-dependencias.md)).
 
 ## Pré-requisitos
@@ -135,6 +136,7 @@ Imports dentro de `web/src` usam o alias `@/*` (ex.: `import { NOME_DO_SITE } fr
 | [`docs/deploy.md`](docs/deploy.md)                        | Como uma mudança vai ao ar, como conferir, redeploy, rollback e rebuild     |
 | [`docs/seo-urls.md`](docs/seo-urls.md)                    | Rotas, slugs, barra no final, URL base e helpers de URL                     |
 | [`docs/cabecalhos.md`](docs/cabecalhos.md)                | Cabeçalhos de segurança, CSP, cache e redirects                             |
+| [`docs/visualizacoes.md`](docs/visualizacoes.md)          | Contador de visualizações: regras, custo no Upstash, provisionar e conferir |
 | [`docs/testes.md`](docs/testes.md)                        | O que é testado no CI e o que é conferido à mão, e como escrever testes     |
 | [`docs/busca.md`](docs/busca.md)                          | Índice da busca (Pagefind): o que entra, filtros, metadados e o dev         |
 | [`docs/adr/`](docs/adr/README.md)                         | Decisões de arquitetura e infraestrutura, com contexto e consequências      |
