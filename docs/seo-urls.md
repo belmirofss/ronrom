@@ -20,7 +20,7 @@ O `site` do [`astro.config.mjs`](../web/astro.config.mjs) vem da variável `SITE
 
 Onde cada valor é cadastrado: [`docs/ambientes.md`](ambientes.md#variáveis-de-ambiente). O domínio padrão aparece só no `astro.config.mjs` e no `web/.env.example`; qualquer outro lugar que precise da URL base usa `URL_DO_SITE` ou `canonicalUrl`.
 
-**Domínio próprio (#63):** o site foi lançado em `ronrom-blog.vercel.app` e passou para `ronrom.blog`. A `SITE_URL` de Production aponta para ele, o que atualiza canonical, sitemap, RSS e JSON-LD. O domínio antigo redireciona com 308 para o novo, preservando o caminho (regra de host no `web/vercel.json`), e o Search Console recebe a mudança de endereço (#64). Os caminhos não mudaram.
+**Domínio próprio (#63):** o site foi lançado em `ronrom-blog.vercel.app` e passou para `ronrom.blog`. A `SITE_URL` de Production aponta para ele, o que atualiza canonical, sitemap, RSS e JSON-LD. O domínio antigo redireciona com 308 para o novo, preservando o caminho (regra de host no `web/vercel.json`), e o Search Console já nasceu no domínio novo ([Search Console e Bing](#search-console-e-bing)). Os caminhos não mudaram.
 
 ## Barra no final e formato do build
 
@@ -154,6 +154,30 @@ curl -s https://ronrom.blog/robots.txt
 ```bash
 curl -s https://ronrom.blog/sitemap-0.xml
 ```
+
+### Search Console e Bing
+
+Definidos na #64, já com o domínio próprio (#63).
+
+- **Google Search Console:** propriedade de **domínio** `sc-domain:ronrom.blog`, que cobre `https://`, `http://` e o `www`. Foi verificada em 01/11/2026 por um registro TXT `google-site-verification=…` no DNS da Hostinger. **Não apague esse TXT:** sem ele a propriedade perde a verificação. Por isso o site não tem a meta `google-site-verification`. O `ronrom-blog.vercel.app` nunca teve propriedade, então a ferramenta de mudança de endereço não foi usada: o redirect 308 basta.
+- **Sitemap:** `https://ronrom.blog/sitemap-index.xml`, enviado ao GSC em 01/11/2026 e processado sem erros.
+- **Bing Webmaster Tools:** site `https://ronrom.blog/`, adicionado à mão (sem importar do GSC, para não dar ao Bing acesso à conta do Google) e verificado em 01/11/2026 por um CNAME `23bfad46da5f1c1ca35964f973f6c0b6` → `verify.bing.com` no DNS da Hostinger. **Não apague esse CNAME.** O mesmo `sitemap-index.xml` foi enviado em 01/11/2026.
+- **Acesso da autora:** no GSC, Configurações → Usuários e permissões → Adicionar usuário, com permissão **Restrita** (só leitura).
+
+#### Checklist pós-publicação
+
+Depois de publicar um post (ou de uma leva deles):
+
+1. Confira que a URL entrou no sitemap: `curl -s https://ronrom.blog/sitemap-0.xml | grep <slug>`.
+2. No GSC, cole a URL em **Inspecionar qualquer URL** e clique em **Solicitar indexação**. Faça isso nos primeiros posts e nos mais importantes; o resto o Google encontra pelo sitemap.
+3. Para uma review, rode o [teste de pesquisa aprimorada](https://search.google.com/test/rich-results) na URL. Ele deve detectar a `Review` sem erros bloqueantes.
+
+E uma vez, uma a duas semanas depois do lançamento (e a cada mês, depois):
+
+- **Páginas** (cobertura): nenhuma URL do sitemap em "Erro"; "Detectada, mas não indexada no momento" é normal nas primeiras semanas.
+- **Snippets de avaliação** (em Melhorias): as reviews aparecem como válidas.
+- **Core Web Vitals**: sem URLs em "Ruim". Com pouco tráfego o relatório fica vazio, o que é esperado.
+- No Bing, o sitemap aparece como processado.
 
 ## Slugs
 
