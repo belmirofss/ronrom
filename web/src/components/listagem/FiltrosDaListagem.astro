@@ -1,0 +1,93 @@
+---
+import { navegacaoDaBarraLateral } from '@/lib/barra-lateral';
+import { buscarTaxonomia } from '@/lib/sanity/conteudo';
+
+// Atalhos para as categorias (em /reviews) ou formatos (em /pensamentos) no topo da listagem,
+// numa linha que rola de lado. Só abaixo de 60em: no desktop, a barra lateral já mostra os mesmos
+// links. Fora dessas seções (como /posts), não aparece.
+
+interface Props {
+  /** A URL da página 1 da listagem, como no Listagem. */
+  base: string;
+}
+
+const { base } = Astro.props;
+
+const secao = base.startsWith('/reviews')
+  ? { raiz: '/reviews', rotulo: 'Categorias das reviews', chave: 'categorias' as const }
+  : base.startsWith('/pensamentos')
+    ? { raiz: '/pensamentos', rotulo: 'Formatos dos pensamentos', chave: 'formatos' as const }
+    : null;
+
+const itens = secao ? navegacaoDaBarraLateral(await buscarTaxonomia())[secao.chave] : [];
+const links = secao && itens.length > 0 ? [{ rotulo: 'Todos', href: secao.raiz }, ...itens] : [];
+---
+
+{secao && links.length > 0 && (
+  <nav class="filtros" aria-label={secao.rotulo}>
+    <ul class="filtros__lista">
+      {links.map(({ rotulo, href }) => (
+        <li>
+          <a class="filtros__link" href={href} aria-current={href === base ? 'page' : undefined}>
+            {rotulo}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}
+
+<style>
+  /* Rola de lado e vai até a borda da tela, sem barra de rolagem visível. */
+  .filtros {
+    margin-inline: calc(-1 * var(--gutter));
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .filtros::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (min-width: 60em) {
+    .filtros {
+      display: none;
+    }
+  }
+
+  .filtros__lista {
+    display: flex;
+    gap: var(--espaco-2);
+    width: max-content;
+    margin: 0;
+    padding: 0 var(--gutter);
+    list-style: none;
+  }
+
+  /* 44px de altura: o alvo de toque mínimo. */
+  .filtros__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--espaco-4);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-pilula);
+    background-color: var(--cor-superficie);
+    color: var(--cor-texto);
+    font-size: var(--texto-sm);
+    font-weight: var(--peso-medio);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .filtros__link:hover {
+    border-color: var(--cor-vinho);
+    color: var(--cor-vinho);
+  }
+
+  .filtros__link[aria-current] {
+    border-color: var(--cor-vinho);
+    background-color: var(--cor-vinho);
+    color: var(--cor-creme);
+  }
+</style>

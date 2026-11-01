@@ -4,15 +4,15 @@ Cabeçalhos HTTP de segurança e de cache do site e o mecanismo de redirects, de
 
 ## Cabeçalhos de segurança
 
-| Cabeçalho                             | Valor                                                                                     | Onde        |
-| ------------------------------------- | ----------------------------------------------------------------------------------------- | ----------- |
-| `Strict-Transport-Security`           | `max-age=63072000; includeSubDomains`                                                     | tudo        |
-| `X-Content-Type-Options`              | `nosniff`                                                                                 | tudo        |
-| `Referrer-Policy`                     | `strict-origin-when-cross-origin`                                                         | tudo        |
-| `Permissions-Policy`                  | `camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()`        | tudo        |
-| `X-Frame-Options`                     | `DENY`                                                                                    | só produção |
-| `Content-Security-Policy-Report-Only` | a [CSP](#csp), com `frame-ancestors 'none'` na produção e liberando o Studio nos previews | tudo        |
-| `Reporting-Endpoints`                 | `csp="/api/csp-report"`, para onde o Chrome manda as violações                            | tudo        |
+| Cabeçalho                   | Valor                                                                                     | Onde        |
+| --------------------------- | ----------------------------------------------------------------------------------------- | ----------- |
+| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains`                                                     | tudo        |
+| `X-Content-Type-Options`    | `nosniff`                                                                                 | tudo        |
+| `Referrer-Policy`           | `strict-origin-when-cross-origin`                                                         | tudo        |
+| `Permissions-Policy`        | `camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()`        | tudo        |
+| `X-Frame-Options`           | `DENY`                                                                                    | só produção |
+| `Content-Security-Policy`   | a [CSP](#csp), com `frame-ancestors 'none'` na produção e liberando o Studio nos previews | tudo        |
+| `Reporting-Endpoints`       | `csp="/api/csp-report"`, para onde o Chrome manda as violações                            | tudo        |
 
 Por que assim:
 
@@ -60,17 +60,28 @@ frame-ancestors …; report-uri /api/csp-report; report-to csp
 - **Política dupla:** a CSP está duas vezes no `vercel.json` (previews e produção), que não aceita variável. Ao mudar uma, mude a outra: o [`csp.test.ts`](../web/src/lib/csp.test.ts) falha se elas diferirem em algo além do `frame-ancestors`.
 - **Serviço novo** (outro embed, outro analytics): acrescente a origem na diretiva certa nas duas cópias, na tabela acima e em `SERVICOS_DE_TERCEIROS` ([`privacidade.ts`](../web/src/lib/privacidade.ts)), que a página `/privacidade` (#59) lista, no mesmo PR. O [`privacidade.test.ts`](../web/src/lib/privacidade.test.ts) falha se uma origem da CSP não estiver lá.
 
-### Report-Only e a passagem para enforce
+### Modo enforce e relatórios
 
-A CSP começa em `Content-Security-Policy-Report-Only`: o navegador não bloqueia nada, só avisa no console e manda o relatório. Os relatórios chegam no [`/api/csp-report`](../web/src/pages/api/csp-report.ts), que escreve uma linha `[csp] {…}` por violação no log da função (Vercel → projeto → Logs, filtre por `[csp]`). No Hobby o log fica só **1 hora**, então confira logo depois de navegar.
+A CSP está em vigor (`Content-Security-Policy`): o navegador bloqueia o que ela não libera. Ela começou em `Content-Security-Policy-Report-Only` (#41) e passou para enforce depois de uma rodada sem violações legítimas, conferida em 31/10/2026:
 
-Para passar para o modo enforce:
+- todas as páginas do build com as fixtures, servidas localmente com a política de produção em enforce, incluindo os cliques nas fachadas do YouTube e do Instagram, a busca (Pagefind) e o "Mostrar o mapa";
+- o site em produção com o Umami ligado, ainda em Report-Only.
 
-1. Com a CSP em Report-Only em produção, navegue pelas páginas com cada tipo de bloco (YouTube, Instagram, imagens, analytics), com o DevTools aberto. Confira o console e os logs `[csp]`.
-2. Para cada violação legítima, libere a origem nas duas cópias (e na tabela acima). Violação vinda de extensão do navegador (`chrome-extension://`, `moz-extension://`) é ruído: ignore.
-   - **Vercel Toolbar nos previews:** a barra da Vercel (comentários, feedback) carrega `https://vercel.live/_next-live/feedback/feedback.js` e um iframe de `https://vercel.live`, e gera violações de `script-src-elem` e `frame-src` só nos previews (visto no preview desta PR, #41). Em produção ela não aparece. Antes do enforce, decida: liberar `https://vercel.live` só na cópia dos previews (em `script-src`, `frame-src`, `connect-src`, `img-src` e `style-src`, e ajustar o teste que compara as cópias) ou desligar a toolbar dos previews em Settings → General → Vercel Toolbar.
-3. Sem violações legítimas por alguns dias de uso, troque a chave `Content-Security-Policy-Report-Only` por `Content-Security-Policy` nas duas regras do `vercel.json`, num PR próprio, e confira de novo os embeds no preview.
-4. Mantenha o `report-uri`/`report-to`: com a política em vigor, os relatórios mostram o que foi bloqueado de verdade.
+Os relatórios continuam chegando no [`/api/csp-report`](../web/src/pages/api/csp-report.ts), que escreve uma linha `[csp] {…}` por violação no log da função (Vercel → projeto → Logs, filtre por `[csp]`). Agora eles mostram o que foi bloqueado de verdade. No Hobby o log fica só **1 hora**, então confira logo depois de navegar. Violação vinda de extensão do navegador (`chrome-extension://`, `moz-extension://`) é ruído: ignore.
+
+Para conferir uma página sem depender do log, rode no console do navegador, depois de ela carregar:
+
+```js
+new ReportingObserver((r) => console.table(r.map((x) => x.body)), {
+  types: ['csp-violation'],
+  buffered: true,
+}).observe();
+```
+
+O `buffered: true` traz também as violações do carregamento, de antes de o código rodar.
+
+- **Algo parou de carregar:** libere a origem nas duas cópias da política, na tabela acima e em `SERVICOS_DE_TERCEIROS`, como num serviço novo. Para voltar ao modo só de relatório numa emergência, troque a chave de volta para `Content-Security-Policy-Report-Only` nas duas regras do `vercel.json`.
+- **Vercel Toolbar nos previews:** a barra da Vercel (comentários, feedback) carrega `https://vercel.live/_next-live/feedback/feedback.js` e um iframe de `https://vercel.live`, que a CSP bloqueia. Nos previews de PR ela não aparece e gera relatórios `[csp]` de `script-src-elem` e `frame-src`; em produção ela já não aparece. Para tê-la de volta, libere `https://vercel.live` só na cópia dos previews (em `script-src`, `frame-src`, `connect-src`, `img-src` e `style-src`, ajustando o teste que compara as cópias). Para tirar o ruído dos logs, desligue a toolbar dos previews em Settings → General → Vercel Toolbar.
 
 ## Cache
 

@@ -1,0 +1,51 @@
+---
+// Barra fina no topo da tela que enche conforme a leitura do texto do post (.post__leitura, no PaginaDoPost).
+// Só visual: o leitor de tela não precisa dela. Sem JS, não aparece.
+---
+
+<div class="progresso" data-progresso hidden aria-hidden="true">
+  <div class="progresso__barra"></div>
+</div>
+
+<script>
+  const progresso = document.querySelector<HTMLElement>('[data-progresso]');
+  const texto = document.querySelector<HTMLElement>('.post__leitura');
+  if (progresso && texto) {
+    progresso.hidden = false;
+    let agendado = false;
+    const atualizar = () => {
+      agendado = false;
+      const { top, height } = texto.getBoundingClientRect();
+      const percorrido = window.innerHeight - top;
+      const total = height + window.innerHeight * 0.5;
+      const fracao = Math.min(1, Math.max(0, percorrido / total));
+      progresso.style.setProperty('--progresso', String(fracao));
+    };
+    const agendar = () => {
+      if (agendado) return;
+      agendado = true;
+      requestAnimationFrame(atualizar);
+    };
+    window.addEventListener('scroll', agendar, { passive: true });
+    window.addEventListener('resize', agendar, { passive: true });
+    atualizar();
+  }
+</script>
+
+<style>
+  .progresso {
+    position: fixed;
+    z-index: 60;
+    inset: 0 0 auto;
+    height: 3px;
+    pointer-events: none;
+    view-transition-name: progresso;
+  }
+
+  .progresso__barra {
+    height: 100%;
+    background-color: var(--cor-vinho);
+    transform: scaleX(var(--progresso, 0));
+    transform-origin: left;
+  }
+</style>

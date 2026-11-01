@@ -35,7 +35,104 @@ const QUADRADOS: { Forma: typeof Gato; fundo: Tom; forma: Tom }[] = [
   ))}
 </div>
 
+<script>
+  // Surpresa escondida: um clique (ou toque) no gato faz ele ronronar forte e deixa um rastro de
+  // patinhas atravessando a tela. Fica fora do teclado e do leitor de tela, como o resto do mosaico,
+  // que é decorativo. Com movimento reduzido, as patinhas só aparecem e somem, sem o tremor.
+  const PATA =
+    '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><ellipse cx="12" cy="16" rx="5" ry="4.2"/><circle cx="5.5" cy="10" r="2.2"/><circle cx="9.5" cy="6" r="2.2"/><circle cx="14.5" cy="6" r="2.2"/><circle cx="18.5" cy="10" r="2.2"/></svg>';
+  const PASSOS = 12;
+  const INTERVALO = 110;
+
+  const gato = document.querySelector<HTMLElement>('.mosaico__quadrado:first-child');
+  let andando = false;
+
+  gato?.addEventListener('click', () => {
+    if (andando) return;
+    andando = true;
+    const reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!reduzido) {
+      gato
+        .querySelector('.mosaico__forma')
+        ?.animate(
+          [
+            { transform: 'rotate(0)' },
+            { transform: 'rotate(-10deg) scale(1.1)' },
+            { transform: 'rotate(10deg) scale(1.1)' },
+          ],
+          { duration: 90, iterations: 8, direction: 'alternate', easing: 'ease-in-out' },
+        );
+    }
+
+    // O rastro sai do gato e anda na direção do meio da tela, alternando pata esquerda e direita.
+    const caixa = gato.getBoundingClientRect();
+    const x0 = caixa.left + caixa.width / 2;
+    const y0 = caixa.top + caixa.height / 2;
+    const alvoX = window.innerWidth * (x0 > window.innerWidth / 2 ? 0.15 : 0.85);
+    const alvoY = Math.min(window.innerHeight * 0.9, y0 + window.innerHeight * 0.5);
+    const angulo = Math.atan2(alvoY - y0, alvoX - x0);
+    const passo = Math.hypot(alvoX - x0, alvoY - y0) / PASSOS;
+    const tamanho = Math.max(22, Math.min(36, caixa.width * 0.3));
+
+    const rastro = document.createElement('div');
+    rastro.className = 'rastro';
+    document.body.append(rastro);
+
+    const animacoes = Array.from({ length: PASSOS }, (_, i) => {
+      const lado = i % 2 === 0 ? 1 : -1;
+      const distancia = passo * (i + 1);
+      const x = x0 + Math.cos(angulo) * distancia - Math.sin(angulo) * lado * tamanho * 0.45;
+      const y = y0 + Math.sin(angulo) * distancia + Math.cos(angulo) * lado * tamanho * 0.45;
+      const pata = document.createElement('span');
+      pata.className = 'rastro__pata';
+      pata.innerHTML = PATA;
+      pata.style.width = `${tamanho}px`;
+      pata.style.left = `${x - tamanho / 2}px`;
+      pata.style.top = `${y - tamanho / 2}px`;
+      pata.style.rotate = `${angulo + Math.PI / 2}rad`;
+      rastro.append(pata);
+      return pata.animate(
+        [
+          { opacity: 0, transform: reduzido ? 'none' : 'scale(0.6)' },
+          { opacity: 0.85, transform: 'none', offset: 0.15 },
+          { opacity: 0.85, offset: 0.6 },
+          { opacity: 0 },
+        ],
+        { duration: 1800, delay: i * INTERVALO, fill: 'both', easing: 'ease-out' },
+      ).finished;
+    });
+
+    // Some quando as patinhas terminam; o tempo-limite cobre a aba em segundo plano, onde as
+    // animações ficam paradas.
+    const limpar = () => {
+      rastro.remove();
+      andando = false;
+    };
+    void Promise.all(animacoes).finally(limpar);
+    window.setTimeout(limpar, PASSOS * INTERVALO + 2500);
+  });
+</script>
+
 <style>
+  /* O rastro de patinhas da surpresa (script acima): por cima de tudo, sem pegar cliques. */
+  :global(.rastro) {
+    position: fixed;
+    z-index: 70;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  :global(.rastro__pata) {
+    position: absolute;
+    color: var(--cor-malva);
+  }
+
+  .mosaico__quadrado:first-child {
+    cursor: pointer;
+  }
+
   /* O tamanho vem todo do CSS (largura do contêiner + aspect-ratio), sem esperar o SVG: sem CLS. */
   .mosaico {
     display: grid;
