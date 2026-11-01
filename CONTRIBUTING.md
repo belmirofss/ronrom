@@ -50,11 +50,12 @@ Como o merge é sempre squash, **o título do PR vira a mensagem do commit na `m
 
 ## CI
 
-Todo PR e todo push na `main` rodam o [`ci.yml`](.github/workflows/ci.yml), com três checks em paralelo e um quarto depois do build:
+Todo PR e todo push na `main` rodam o [`ci.yml`](.github/workflows/ci.yml), com quatro checks em paralelo e um quinto depois do build:
 
 - `ci / quality`: `pnpm format:check`, `pnpm lint` e `pnpm check`.
 - `ci / unit`: `pnpm test` (Vitest; o que é testado em [`docs/testes.md`](docs/testes.md)).
-- `ci / build`: `pnpm build`, publicando as páginas estáticas (`web/dist/client`) como artifact `web-dist` por 3 dias.
+- `ci / build`: `pnpm build` com as fixtures, publicando as páginas estáticas (`web/dist/client`) como artifact `web-dist` por 3 dias.
+- `ci / build-producao`: o mesmo `pnpm build`, lendo o dataset `production` (só leitura), como faz a Vercel. Pega o código que depende de uma migração de conteúdo ainda não rodada em `production`: rode a migração antes do merge ([ordem](studio/README.md#migrações)) e depois Re-run no job. Nos PRs do Dependabot, sem as variáveis do repositório, ele é pulado.
 - `ci / links`: depois do `build`, o lychee confere os links internos e as âncoras nesse artifact. Ainda não bloqueante; detalhes em [`docs/testes.md`](docs/testes.md#links-internos).
 
 Para reproduzir localmente antes de abrir o PR, rode os mesmos comandos na raiz. Um push novo no PR cancela a execução anterior, para economizar a cota de minutos do Actions.

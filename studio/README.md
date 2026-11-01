@@ -182,6 +182,17 @@ pnpm --filter studio taxonomia --dataset production
 
 O dataset é sempre explícito: sem `--dataset`, o script não grava nada.
 
+### Migrações
+
+Um PR que muda o conteúdo com um script de `scripts/` (como os dois abaixo) entra em produção em duas partes: o script, que alguém roda à mão em cada dataset, e o código, que vai ao ar no merge. A Vercel builda a `main` contra o `production`, então **a migração vem antes do merge**:
+
+1. No PR, escreva a migração e o código que depende dela. O script tem de deixar o código no ar funcionando: entre a migração e o merge, o site é o código antigo com o dataset novo.
+2. Rode o script no `development` e no `production`, primeiro sem `--gravar` (confira o plano) e depois com `--gravar`.
+3. Rode de novo o check `ci / build-producao` do PR (Re-run jobs). Ele faz o mesmo build da Vercel, só lendo o `production`, e fica vermelho enquanto o código depender de algo que o dataset ainda não tem, como um redirect fixo por cima de uma listagem que ainda está no ar (#150, #155).
+4. Só com ele verde, faça o merge.
+
+Merge antes da migração não derruba o site, mas o deploy da Vercel falha e a produção fica presa no anterior até alguém gravar a migração e fazer um redeploy.
+
 ### Revisão das categorias
 
 Na #142, Documentários entrou (ficha de filme, logo depois de Séries), Lugares passou a se chamar "Outros lugares" (o slug `lugares` continua) e Comidas saiu, junto com o modelo de ficha `comida` ([`docs/seo-urls.md`](../docs/seo-urls.md#categorias-reviews)). O [`scripts/revisar-categorias.ts`](scripts/revisar-categorias.ts) leva cada dataset para a taxonomia nova, numa transação só:

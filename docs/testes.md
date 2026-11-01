@@ -18,6 +18,7 @@ Poucos testes, nos lugares certos:
 | Formatação, lint e tipos                            | Prettier, ESLint, `astro check` | `ci / quality`, em todo PR                   | sim                      | #5       |
 | Testes unitários e de componente                    | Vitest + Container API do Astro | `ci / unit`, em todo PR                      | sim                      | #16      |
 | Build (variáveis, rotas, `urlDoPost` com slug ruim) | `astro build`                   | `ci / build`, em todo PR                     | sim                      | #5       |
+| Build com o conteúdo de `production` (redirects)    | `astro build`                   | `ci / build-producao`, em todo PR            | sim                      | —        |
 | Página 404 servida com status 404                   | `scripts/conferir-404.mjs`      | `ci / build`, depois do build                | sim                      | #47      |
 | Links internos e âncoras                            | lychee no HTML do build         | `ci / links`, em todo PR                     | depois de estabilizar    | #45      |
 | Smoke E2E dos caminhos principais                   | Playwright                      | Contra o preview da Vercel e a produção      | sim (check do PR)        | #49      |
