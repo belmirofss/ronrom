@@ -16,7 +16,7 @@ import { buscarDadosDosRedirects } from './src/lib/sanity/redirects.ts';
 // .env / ambiente. As variáveis, onde vivem e quem é dona: docs/ambientes.md.
 const env = loadEnv(process.env['NODE_ENV'] ?? 'production', process.cwd(), '');
 
-const URL_PADRAO = 'https://ronrom-blog.vercel.app';
+const URL_PADRAO = 'https://ronrom.blog';
 
 // VERCEL_ENV só existe nos builds da Vercel: production, preview ou development.
 const ehProducao = env['VERCEL_ENV'] === 'production';

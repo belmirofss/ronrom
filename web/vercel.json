@@ -6,7 +6,15 @@
   "ignoreCommand": "bash ../scripts/vercel-ignorar-build.sh",
   "trailingSlash": false,
   "regions": ["gru1"],
-  "redirects": [{ "source": "/tags/:caminho*", "destination": "/busca", "statusCode": 301 }],
+  "redirects": [
+    {
+      "source": "/:caminho*",
+      "has": [{ "type": "host", "value": "ronrom-blog.vercel.app" }],
+      "destination": "https://ronrom.blog/:caminho*",
+      "statusCode": 308
+    },
+    { "source": "/tags/:caminho*", "destination": "/busca", "statusCode": 301 }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -33,7 +41,7 @@
       "has": [
         {
           "type": "host",
-          "value": "^(?:ronrom-blog\\.vercel\\.app|(?:www\\.)?ronrom\\.com\\.br)$"
+          "value": "^(?:ronrom-blog\\.vercel\\.app|(?:www\\.)?ronrom\\.blog)$"
         }
       ],
       "headers": [

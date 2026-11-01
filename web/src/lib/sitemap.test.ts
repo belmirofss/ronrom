@@ -3,7 +3,7 @@ import type { CONSULTA_DO_SITEMAP_RESULT } from '@/lib/sanity/tipos.gerados';
 import { PRIVACIDADE_ATUALIZADA_EM } from '@/lib/privacidade';
 import { dadosDoSitemap } from '@/lib/sitemap';
 
-vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
+vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom.blog' }));
 
 type Post = CONSULTA_DO_SITEMAP_RESULT['posts'][number];
 

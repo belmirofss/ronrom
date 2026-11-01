@@ -85,7 +85,7 @@ Link quebrado de verdade se corrige no post, no Studio; a issue fecha sozinha na
 Para rodar localmente, com o [lychee instalado](https://lychee.cli.rs/installation/), na raiz do repositório (Git Bash no Windows):
 
 ```bash
-lychee --config lychee-externos.toml $(curl -fsS https://ronrom-blog.vercel.app/sitemap-0.xml | grep -o '<loc>[^<]*</loc>' | sed -e 's|<loc>||' -e 's|</loc>||')
+lychee --config lychee-externos.toml $(curl -fsS https://ronrom.blog/sitemap-0.xml | grep -o '<loc>[^<]*</loc>' | sed -e 's|<loc>||' -e 's|</loc>||')
 ```
 
 ## Como escrever um teste
@@ -99,7 +99,7 @@ lychee --config lychee-externos.toml $(curl -fsS https://ronrom-blog.vercel.app/
   ```ts
   import { vi } from 'vitest';
 
-  vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
+  vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom.blog' }));
   ```
 
 - **Fuso horário:** os testes rodam sempre em UTC (`TZ=UTC` no `vitest.config.ts`), como o build da Vercel. Assim, uma data formatada sem `timeZone: 'America/Sao_Paulo'` quebra o teste também numa máquina em Brasília, e não só no CI. O [`ambiente.test.ts`](../web/src/ambiente.test.ts) falha se essa configuração sumir.

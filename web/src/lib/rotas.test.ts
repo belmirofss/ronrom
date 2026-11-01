@@ -9,7 +9,7 @@ import {
 } from '@/lib/rotas';
 
 // A URL base não pode depender do web/.env de quem roda o teste (docs/testes.md).
-vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
+vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom.blog' }));
 
 // Os exemplos de docs/seo-urls.md#exemplos-viram-casos-de-teste, um `it` por linha.
 describe('exemplos do seo-urls.md', () => {
@@ -46,17 +46,17 @@ describe('exemplos do seo-urls.md', () => {
   });
 
   it('canonical da home termina em /', () => {
-    expect(canonicalUrl('/')).toBe('https://ronrom-blog.vercel.app/');
+    expect(canonicalUrl('/')).toBe('https://ronrom.blog/');
   });
 
   it('canonical tira a barra final', () => {
     expect(canonicalUrl('/reviews/filmes/dias-perfeitos/')).toBe(
-      'https://ronrom-blog.vercel.app/reviews/filmes/dias-perfeitos',
+      'https://ronrom.blog/reviews/filmes/dias-perfeitos',
     );
   });
 
   it('canonical tira a query string', () => {
-    expect(canonicalUrl('/busca?q=cafe')).toBe('https://ronrom-blog.vercel.app/busca');
+    expect(canonicalUrl('/busca?q=cafe')).toBe('https://ronrom.blog/busca');
   });
 
   it('canonical recusa URL absoluta', () => {
@@ -156,7 +156,7 @@ describe('barra final', () => {
   });
 
   it('/sobre/, /sobre/index.html, /sobre.html e /sobre dão a mesma canonical', () => {
-    const esperado = 'https://ronrom-blog.vercel.app/sobre';
+    const esperado = 'https://ronrom.blog/sobre';
     expect(canonicalUrl('/sobre/')).toBe(esperado);
     expect(canonicalUrl('/sobre/index.html')).toBe(esperado);
     expect(canonicalUrl('/sobre.html')).toBe(esperado);
@@ -164,8 +164,8 @@ describe('barra final', () => {
   });
 
   it('/index.html e /?q=x viram a canonical da home', () => {
-    expect(canonicalUrl('/index.html')).toBe('https://ronrom-blog.vercel.app/');
-    expect(canonicalUrl('/?q=x')).toBe('https://ronrom-blog.vercel.app/');
+    expect(canonicalUrl('/index.html')).toBe('https://ronrom.blog/');
+    expect(canonicalUrl('/?q=x')).toBe('https://ronrom.blog/');
   });
 });
 
@@ -176,26 +176,23 @@ describe('canonicalUrl', () => {
   });
 
   it('tira o #fragmento', () => {
-    expect(canonicalUrl('/sobre#autora')).toBe('https://ronrom-blog.vercel.app/sobre');
-    expect(canonicalUrl('/busca?q=cafe#resultados')).toBe('https://ronrom-blog.vercel.app/busca');
+    expect(canonicalUrl('/sobre#autora')).toBe('https://ronrom.blog/sobre');
+    expect(canonicalUrl('/busca?q=cafe#resultados')).toBe('https://ronrom.blog/busca');
   });
 
-  it.each(['//outro.site/x', 'sobre', 'http://ronrom-blog.vercel.app/sobre', ''])(
-    'recusa "%s"',
-    (path) => {
-      expect(() => canonicalUrl(path)).toThrow();
-    },
-  );
+  it.each(['//outro.site/x', 'sobre', 'http://ronrom.blog/sobre', ''])('recusa "%s"', (path) => {
+    expect(() => canonicalUrl(path)).toThrow();
+  });
 
-  it.each(['https://ronrom.com.br', 'https://ronrom.com.br/'])(
+  it.each(['https://ronrom.blog', 'https://ronrom.blog/'])(
     'usa a origem da SITE_URL, com ou sem barra no fim (%s)',
     async (siteUrl) => {
       vi.resetModules();
       vi.doMock('astro:env/client', () => ({ SITE_URL: siteUrl }));
       const rotas = await import('@/lib/rotas');
 
-      expect(rotas.canonicalUrl('/')).toBe('https://ronrom.com.br/');
-      expect(rotas.canonicalUrl('/reviews/filmes/')).toBe('https://ronrom.com.br/reviews/filmes');
+      expect(rotas.canonicalUrl('/')).toBe('https://ronrom.blog/');
+      expect(rotas.canonicalUrl('/reviews/filmes/')).toBe('https://ronrom.blog/reviews/filmes');
     },
   );
 });

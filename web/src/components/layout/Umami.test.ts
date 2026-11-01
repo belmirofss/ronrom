@@ -10,7 +10,7 @@ const ambiente = vi.hoisted(() => ({
   PUBLIC_SANITY_VISUAL_EDITING_ENABLED: false,
 }));
 
-vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
+vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom.blog' }));
 vi.mock('astro:env/server', () => ambiente);
 
 async function renderizar(): Promise<string> {
@@ -31,7 +31,7 @@ describe('<Umami>', () => {
     expect(html).toContain('src="https://cloud.umami.is/script.js"');
     expect(html).toMatch(/<script[^>]* defer/);
     expect(html).toContain(`data-website-id="${ID}"`);
-    expect(html).toContain('data-domains="ronrom-blog.vercel.app"');
+    expect(html).toContain('data-domains="ronrom.blog"');
     expect(html).toContain('data-do-not-track="true"');
     expect(html).toContain('data-exclude-search="true"');
   });

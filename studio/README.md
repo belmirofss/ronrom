@@ -288,7 +288,7 @@ Configuração feita uma vez, em [sanity.io/manage](https://www.sanity.io/manage
 
 - **Projeto:** "Ronrom", plano Free (até 20 usuários, 2 datasets públicos, 10 mil documentos, papéis Administrator e Viewer, histórico de 3 dias, sem backups).
 - **Datasets:** `production` e `development`, ambos públicos (o Free não permite privados).
-- **CORS** (API → CORS origins): `http://localhost:3333` **com** credenciais (o Studio faz login por cookie) e, sem credenciais, `http://localhost:4321` (Astro dev) e `https://ronrom-blog.vercel.app` (o site em produção, #27). O domínio próprio (#63) entra quando for ligado, também sem credenciais. Os previews da Vercel não estão na lista: o site busca o conteúdo no build, não no navegador.
+- **CORS** (API → CORS origins): `http://localhost:3333` **com** credenciais (o Studio faz login por cookie) e, sem credenciais, `http://localhost:4321` (Astro dev) e `https://ronrom.blog` (o site em produção, no domínio próprio da #63). Os previews da Vercel não estão na lista: o site busca o conteúdo no build, não no navegador.
 
 Pela CLI, depois de `pnpm --filter studio sanity login`:
 
@@ -297,7 +297,7 @@ pnpm --filter studio sanity datasets create production --visibility public
 pnpm --filter studio sanity datasets create development --visibility public
 pnpm --filter studio sanity cors add http://localhost:3333 --credentials
 pnpm --filter studio sanity cors add http://localhost:4321 --no-credentials
-pnpm --filter studio sanity cors add https://ronrom-blog.vercel.app --no-credentials
+pnpm --filter studio sanity cors add https://ronrom.blog --no-credentials
 pnpm --filter studio sanity tokens add viewer --role viewer
 ```
 

@@ -60,11 +60,11 @@ No console do Upstash (aba **Data Browser** ou **CLI**), com o `_id` de um post:
 3. Um bot e um `id` inválido não gravam nada (o `ZSCORE` não muda):
 
    ```bash
-   curl -i -X POST https://ronrom-blog.vercel.app/api/views -H 'Content-Type: application/json' -A 'Googlebot/2.1' -d '{"id":"<_id>"}'
+   curl -i -X POST https://ronrom.blog/api/views -H 'Content-Type: application/json' -A 'Googlebot/2.1' -d '{"id":"<_id>"}'
    ```
 
    ```bash
-   curl -i -X POST https://ronrom-blog.vercel.app/api/views -H 'Content-Type: application/json' -A 'Mozilla/5.0' -d '{"id":"nao-existe"}'
+   curl -i -X POST https://ronrom.blog/api/views -H 'Content-Type: application/json' -A 'Mozilla/5.0' -d '{"id":"nao-existe"}'
    ```
 
 Para ver o ranking inteiro: `ZRANGE views:all 0 -1 REV WITHSCORES`.
@@ -75,8 +75,8 @@ Para ver o ranking inteiro: `ZRANGE views:all 0 -1 REV WITHSCORES`.
 2. O cache, pelo `x-vercel-cache`: o primeiro pedido depois do deploy é `MISS`, os seguintes, por uma hora, `HIT`, e depois `STALE` uma vez (a cópia antiga, enquanto a nova é buscada).
 
    ```bash
-   curl -sI https://ronrom-blog.vercel.app/api/mais-lidos?limite=10 | grep -iE 'x-vercel-cache|cache-control|age'
+   curl -sI https://ronrom.blog/api/mais-lidos?limite=10 | grep -iE 'x-vercel-cache|cache-control|age'
    ```
 
 3. Para conferir o critério de "no máximo cerca de 24 leituras por dia": no console do Upstash, em **Usage**, os comandos de leitura do dia ficam na casa das dezenas, por mais que a home seja aberta.
-4. Um parâmetro estranho não chega ao Redis: `curl -i 'https://ronrom-blog.vercel.app/api/mais-lidos?limite=10&x=1'` responde `400`.
+4. Um parâmetro estranho não chega ao Redis: `curl -i 'https://ronrom.blog/api/mais-lidos?limite=10&x=1'` responde `400`.

@@ -155,7 +155,7 @@ describe('montarRedirects', () => {
   });
 
   it('falha com caminho fora do formato', () => {
-    for (const caminho of ['sobre', '/sobre/', 'https://ronrom.com.br/sobre', '/a?b=1']) {
+    for (const caminho of ['sobre', '/sobre/', 'https://ronrom.blog/sobre', '/a?b=1']) {
       expect(() => montarRedirects(dados({ fixos: { [caminho]: '/' } }))).toThrow(
         'não é um caminho do site',
       );

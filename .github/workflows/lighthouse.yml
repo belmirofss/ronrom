@@ -18,7 +18,7 @@ on:
       url:
         description: URL base do deploy, sem barra no final
         required: true
-        default: https://ronrom-blog.vercel.app
+        default: https://ronrom.blog
       ambiente:
         description: preview (sem is-crawlable, Performance só avisa) ou producao
         type: choice
@@ -91,7 +91,7 @@ jobs:
         env:
           URL_MANUAL: ${{ inputs.url }}
           PR: ${{ github.event.pull_request.number }}
-          SITE_URL: ${{ vars.SITE_URL || 'https://ronrom-blog.vercel.app' }}
+          SITE_URL: ${{ vars.SITE_URL || 'https://ronrom.blog' }}
           SEGREDO: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
           if [ -n "$URL_MANUAL" ]; then

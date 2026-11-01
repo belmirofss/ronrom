@@ -8,7 +8,7 @@ import {
   trilhaDoTipo,
 } from '@/lib/trilha';
 
-vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
+vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom.blog' }));
 
 const FILMES = { nome: 'Filmes', slug: 'filmes' };
 const FRASES = { nome: 'Frases soltas', slug: 'frases' };

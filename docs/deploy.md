@@ -14,7 +14,7 @@ São caminhos independentes:
 ## Código: preview e produção
 
 1. **Push numa branch ou PR:** a Vercel builda um **preview** e comenta o link no PR. Os previews ficam atrás da Vercel Authentication: abra logado na conta do dono.
-2. **Merge na `main`** (squash): a Vercel builda e publica em **produção**, em https://ronrom-blog.vercel.app.
+2. **Merge na `main`** (squash): a Vercel builda e publica em **produção**, em https://ronrom.blog.
 3. **Ignored Build Step:** num preview, se desde o último deploy da branch só mudaram `docs/`, `studio/`, `.github/` ou arquivos `.md`, o deploy termina como `CANCELED` em segundos, sem build ([`scripts/vercel-ignorar-build.sh`](../scripts/vercel-ignorar-build.sh)). Ele ainda conta na cota diária de deploys. **Produção sempre builda**, mesmo num merge só de docs, para não cancelar o rebuild de conteúdo pelo deploy hook ([veja abaixo](#por-que-a-produção-não-pula-o-build)).
 
 Install, build, Ignored Build Step e região ficam em [`web/vercel.json`](../web/vercel.json), que tem prioridade sobre o painel.
@@ -26,7 +26,7 @@ Os builds do Hobby rodam um de cada vez: com vários pushes seguidos, os deploys
 A rota de fumaça devolve o commit que está no ar:
 
 ```bash
-curl -s https://ronrom-blog.vercel.app/api/health
+curl -s https://ronrom.blog/api/health
 ```
 
 O `commit` da resposta tem que ser o hash do merge na `main` (`git log -1 --format=%H origin/main`). Num preview, abra `/api/health` no navegador logado na Vercel. Mais verificações (cabeçalhos, cache das páginas estáticas) em [`ambientes.md`](ambientes.md#conferir-em-produção) e, para os cabeçalhos de segurança e a CSP, em [`cabecalhos.md`](cabecalhos.md#conferir).

@@ -23,7 +23,7 @@ Por que assim:
 
 ### Produção e previews
 
-O `vercel.json` não distingue produção de preview, só o host do pedido. A primeira regra (`/(.*)`) vale para todo deploy; a segunda casa só com os hosts de produção (`ronrom-blog.vercel.app` e, desde já, `ronrom.com.br` e `www.ronrom.com.br`, da #63) e, por vir depois, sobrescreve a CSP e acrescenta o `X-Frame-Options`:
+O `vercel.json` não distingue produção de preview, só o host do pedido. A primeira regra (`/(.*)`) vale para todo deploy; a segunda casa só com os hosts de produção (`ronrom.blog` e `www.ronrom.blog`, da #63, e `ronrom-blog.vercel.app`, o domínio de lançamento, que hoje só redireciona) e, por vir depois, sobrescreve a CSP e acrescenta o `X-Frame-Options`:
 
 - **Produção:** `frame-ancestors 'none'` e `X-Frame-Options: DENY`. Ninguém põe o site num iframe.
 - **Previews:** `frame-ancestors 'self' https://ronrom.sanity.studio http://localhost:3333`, para o Presentation do Sanity (#43) mostrar o preview dentro do Studio publicado e do Studio local.
@@ -118,7 +118,7 @@ O `astro.config.mjs` passa a lista para o `redirects` do Astro, e o adapter da V
 
 Redirect com parâmetro para uma página fixa não cabe no Astro, que exige no destino os mesmos parâmetros da origem. O único caso, `/tags/*` → `/busca` (301), de quando o site deixou de ter tags (#145), fica nos `redirects` do [`web/vercel.json`](../web/vercel.json), que a Vercel aplica antes de procurar o arquivo estático.
 
-Os redirects de post com slug, categoria ou formato alterados não entram aqui: saem do `slugsAnteriores` no Sanity (veja abaixo). Redirect de domínio (`www` para o domínio sem `www`, `ronrom-blog.vercel.app` para o domínio próprio) é configurado em Settings → Domains da Vercel, na #63.
+Os redirects de post com slug, categoria ou formato alterados não entram aqui: saem do `slugsAnteriores` no Sanity (veja abaixo). Redirect de domínio (#63): `www.ronrom.blog` para `ronrom.blog` é configurado em Settings → Domains da Vercel; `ronrom-blog.vercel.app` para `ronrom.blog` é uma regra de host no `redirects` do `web/vercel.json`, versionada com o resto da configuração.
 
 ### Slug alterado
 
@@ -151,17 +151,17 @@ URL inexistente, que não é página nem redirect, recebe a página 404 customiz
 Em produção:
 
 ```bash
-curl -sI https://ronrom-blog.vercel.app/ | grep -iE "strict-transport|content-security|x-frame|x-content-type|referrer|permissions|cache-control"
+curl -sI https://ronrom.blog/ | grep -iE "strict-transport|content-security|x-frame|x-content-type|referrer|permissions|cache-control"
 ```
 
 ```bash
-curl -sI https://ronrom-blog.vercel.app/api/health | grep -i cache-control
+curl -sI https://ronrom.blog/api/health | grep -i cache-control
 ```
 
 Um caminho antigo de post deve responder `301` com o `Location` do endereço novo:
 
 ```bash
-curl -sI https://ronrom-blog.vercel.app/reviews/filmes/slug-antigo | grep -iE "^HTTP|^location"
+curl -sI https://ronrom.blog/reviews/filmes/slug-antigo | grep -iE "^HTTP|^location"
 ```
 
-E a nota em [securityheaders.com](https://securityheaders.com/?q=https%3A%2F%2Fronrom-blog.vercel.app&followRedirects=on), que deve ser A ou melhor (A+ só depois do modo enforce). Para um asset, pegue um `/_astro/*.css` do HTML da home e confira o `immutable`. Nos previews, por causa da Vercel Authentication, confira os cabeçalhos no DevTools do navegador logado (aba Network, o documento).
+E a nota em [securityheaders.com](https://securityheaders.com/?q=https%3A%2F%2Fronrom.blog&followRedirects=on), que deve ser A ou melhor (A+ só depois do modo enforce). Para um asset, pegue um `/_astro/*.css` do HTML da home e confira o `immutable`. Nos previews, por causa da Vercel Authentication, confira os cabeçalhos no DevTools do navegador logado (aba Network, o documento).

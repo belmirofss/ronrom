@@ -14,11 +14,13 @@ O site (`web/`) é publicado na Vercel, plano **Hobby** (grátis), no projeto `r
 | Ignored Build Step    | `bash ../scripts/vercel-ignorar-build.sh`                 |
 | Function Region       | `gru1` (São Paulo), junto do Redis em `sa-east-1`         |
 | Node.js               | `22.x`, pelo `engines` do `web/package.json`              |
-| Production Branch     | `main` → https://ronrom-blog.vercel.app                   |
+| Production Branch     | `main` → https://ronrom.blog                              |
 | Preview               | todo push em outra branch e todo PR, com comentário no PR |
 | Deployment Protection | Vercel Authentication (padrão) nos previews               |
 
-O subdomínio `ronrom.vercel.app` já pertence a outro projeto da Vercel, então a produção usa `ronrom-blog.vercel.app`, configurado em Settings → Domains. O `ronrom-chi.vercel.app`, que a Vercel atribuiu na criação do projeto, foi removido sem redirect. Ele fica como endereço de produção até o domínio próprio da #63.
+A produção usa o domínio próprio `ronrom.blog` (#63), registrado na Hostinger, e o `www.ronrom.blog` redireciona para ele (308, em Settings → Domains). O site foi lançado em `ronrom-blog.vercel.app` (o `ronrom.vercel.app` já pertence a outro projeto da Vercel), que agora redireciona com 308 para `ronrom.blog`, preservando o caminho, por uma regra de host em [`web/vercel.json`](../web/vercel.json). Mantenha esse redirect por pelo menos um ano. O `ronrom-chi.vercel.app`, que a Vercel atribuiu na criação do projeto, foi removido sem redirect.
+
+**Vencimento do domínio:** `ronrom.blog` renova automaticamente na Hostinger em **04/10/2027**. Confira a renovação 60 e 15 dias antes.
 
 Install, build, Ignored Build Step e região das funções ficam versionados em [`web/vercel.json`](../web/vercel.json), que tem prioridade sobre o painel. Mudar esses comandos é um PR comum.
 
@@ -46,7 +48,7 @@ A aba **Apresentação** do Studio (o Presentation do Sanity) mostra o rascunho 
 - `output: 'server'`: toda página roda sob demanda na função, porque um rascunho novo não existe no build. As páginas com parâmetro funcionam sem o `getStaticPaths` ([`web/src/lib/previa.ts`](../web/src/lib/previa.ts)): endereço inexistente responde 404 e a paginação lê o número da URL.
 - O cliente do Sanity lê a perspectiva `drafts` com o token viewer e marca os textos com o stega ([README do conteúdo](../web/src/lib/sanity/README.md#prévia-de-rascunhos)).
 - Entram, só neste build, os arquivos de [`web/src/previa`](../web/src/previa): as rotas `/api/previa/ativar` e `/api/previa/desativar`, o middleware e o script da edição visual (`@sanity/visual-editing`).
-- O build recusa a prévia sem `SANITY_API_READ_TOKEN`, `SANITY_PROJECT_ID` e `SANITY_DATASET`, com `SANITY_FIXTURES=true` ou com o `SITE_URL` do site (`ronrom-blog.vercel.app` ou `ronrom.com.br`).
+- O build recusa a prévia sem `SANITY_API_READ_TOKEN`, `SANITY_PROJECT_ID` e `SANITY_DATASET`, com `SANITY_FIXTURES=true` ou com o `SITE_URL` do site (`ronrom.blog`).
 
 **Como a prévia abre.** O Presentation grava no dataset um segredo que vale por uma hora e abre `/api/previa/ativar?sanity-preview-secret=...` no iframe. A rota confere o segredo com o token viewer (`@sanity/preview-url-secret`), grava o cookie `ronrom-previa` e leva ao endereço pedido. O cookie é `HttpOnly`, `Secure`, `SameSite=None` e `Partitioned` (vale só dentro do Studio, mesmo com cookies de terceiros bloqueados) e traz a validade (8 horas) assinada com HMAC, usando o próprio token como chave: trocar o token derruba as sessões. Sem o cookie, toda página responde **401** com "abra pela aba Apresentação do Studio"; só `/api/health` e as rotas `/api/previa/*` ficam livres. Toda resposta da prévia sai com `X-Robots-Tag: noindex, nofollow` e `Cache-Control: private, no-store`; os arquivos estáticos ganham o mesmo `X-Robots-Tag` por um cabeçalho do `web/vercel.json` que só vale no host `ronrom-previa.vercel.app`. A prévia não tem sitemap próprio: o sitemap (#52) é o do site.
 
@@ -118,7 +120,7 @@ A [`404.astro`](../web/src/pages/404.astro) (#47) é estática: o build gera o `
 Para conferir num deploy:
 
 ```bash
-curl -sI https://ronrom-blog.vercel.app/essa-pagina-nao-existe
+curl -sI https://ronrom.blog/essa-pagina-nao-existe
 ```
 
 A resposta esperada é `HTTP/2 404`, com o HTML do "Esse gato fugiu".
@@ -142,13 +144,13 @@ A resposta esperada é `HTTP/2 404`, com o HTML do "Esse gato fugiu".
 ### Conferir em produção
 
 ```bash
-curl -si https://ronrom-blog.vercel.app/api/health
+curl -si https://ronrom.blog/api/health
 ```
 
 Deve responder `200`, `cache-control: no-store` e o hash do commit que está no ar. Uma página estática, como a home, responde com `x-vercel-cache: HIT` (ou `PRERENDER` logo depois do deploy):
 
 ```bash
-curl -sI https://ronrom-blog.vercel.app/
+curl -sI https://ronrom.blog/
 ```
 
 ### Conferir no preview
@@ -194,7 +196,7 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 
 | Variável                               | Tipo    | Obrigatória   | Local (`web/.env*`) | Vercel Production                           | Vercel Preview e Development | GitHub Actions           | Dona         |
 | -------------------------------------- | ------- | ------------- | ------------------- | ------------------------------------------- | ---------------------------- | ------------------------ | ------------ |
-| `SITE_URL`                             | pública | em produção   | opcional            | `https://ronrom-blog.vercel.app`            | não definida (\*)            | variável, não cadastrada | `area:infra` |
+| `SITE_URL`                             | pública | em produção   | opcional            | `https://ronrom.blog`                       | não definida (\*)            | variável, não cadastrada | `area:infra` |
 | `STUDIO_URL`                           | pública | não (padrão)  | opcional            | não definida                                | não definida                 | não usada                | `area:cms`   |
 | `SANITY_PROJECT_ID`                    | pública | em produção   | opcional            | `fq2685cq`                                  | `fq2685cq`                   | não usada (fixtures)     | `area:cms`   |
 | `SANITY_DATASET`                       | pública | em produção   | opcional            | `production`                                | `development`                | não usada (fixtures)     | `area:cms`   |
@@ -208,7 +210,7 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 | `VERCEL_ENV`                           | pública | não           | não definida        | sistema da Vercel                           | sistema da Vercel            | não usada                | `area:infra` |
 | `VERCEL_GIT_COMMIT_SHA`                | pública | não           | não definida        | sistema da Vercel                           | sistema da Vercel            | não usada                | `area:infra` |
 
-(\*) Sem `SITE_URL`, o `astro.config.mjs` usa `https://` + `VERCEL_URL` nos previews (a URL do próprio deploy) e `https://ronrom-blog.vercel.app` no resto (local e CI). `VERCEL_ENV` e `VERCEL_URL` são variáveis de sistema da Vercel, expostas no build sem cadastro.
+(\*) Sem `SITE_URL`, o `astro.config.mjs` usa `https://` + `VERCEL_URL` nos previews (a URL do próprio deploy) e `https://ronrom.blog` no resto (local e CI). `VERCEL_ENV` e `VERCEL_URL` são variáveis de sistema da Vercel, expostas no build sem cadastro.
 
 **Dona** é a área (label) que decide o nome, o formato e o valor da variável. Quem cadastra segredos na Vercel e no GitHub é sempre o dono do repositório, porque o valor não deve passar por outras mãos.
 

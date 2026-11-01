@@ -3,7 +3,7 @@ import { itemDoIndice } from '@/lib/indice-de-posts';
 import { buscarIndiceDePosts } from '@/lib/sanity/conteudo';
 import type { CONSULTA_DO_INDICE_DE_POSTS_RESULT } from '@/lib/sanity/tipos.gerados';
 
-vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom-blog.vercel.app' }));
+vi.mock('astro:env/client', () => ({ SITE_URL: 'https://ronrom.blog' }));
 
 type Post = CONSULTA_DO_INDICE_DE_POSTS_RESULT[number];
 
