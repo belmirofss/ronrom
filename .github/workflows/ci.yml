@@ -1,7 +1,7 @@
 # Formatação, lint, diagnóstico de tipos, testes e build. Sem branch protection no plano Free,
 # estes checks são a principal barreira de qualidade: não faça merge com check vermelho.
 # Repositório privado tem cota mensal de minutos do Actions, então o workflow é enxuto:
-# três jobs em paralelo, cache do store do pnpm e cancelamento de execuções antigas.
+# quatro jobs em paralelo, cache do store do pnpm e cancelamento de execuções antigas.
 name: ci
 
 on:
@@ -98,6 +98,40 @@ jobs:
           path: web/dist/client
           retention-days: 3
           if-no-files-found: error
+
+  # O mesmo build, com o conteúdo do dataset production (só leitura, sem token: o dataset é
+  # público para o conteúdo publicado). O `build` acima usa as fixtures e não vê o que está no
+  # Sanity: um redirect fixo novo por cima de uma listagem que ainda existe em production passava
+  # no CI e derrubava o deploy da Vercel (#150, #155). Aqui ele falha antes do merge. A correção é
+  # rodar a migração em production (studio/README.md#migrações) e rodar o job de novo.
+  build-producao:
+    name: build-producao
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SANITY_PROJECT_ID: ${{ vars.SANITY_STUDIO_PROJECT_ID }}
+    steps:
+      # Os PRs do Dependabot não recebem as variáveis do repositório: sem o project ID, o build
+      # cairia nas fixtures e repetiria o job `build`.
+      - name: sem project ID, pula
+        if: env.SANITY_PROJECT_ID == ''
+        run: echo "::notice::Sem vars.SANITY_STUDIO_PROJECT_ID (PR do Dependabot?), o build contra production foi pulado."
+      - if: env.SANITY_PROJECT_ID != ''
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - if: env.SANITY_PROJECT_ID != ''
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - if: env.SANITY_PROJECT_ID != ''
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - if: env.SANITY_PROJECT_ID != ''
+        run: pnpm install --frozen-lockfile
+      - if: env.SANITY_PROJECT_ID != ''
+        run: pnpm build
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          SANITY_DATASET: production
 
   # Links internos e âncoras quebrados no HTML do build (#45). Usa o artifact do `build`, sem
   # buildar de novo, e não depende do preview protegido da Vercel. Configuração: lychee.toml.

@@ -229,7 +229,7 @@ Fora de produção, sem `SANITY_PROJECT_ID` e `SANITY_DATASET` (ou com `SANITY_F
 
 ### GitHub Actions
 
-O build do CI roda com as fixtures, sem rede e sem segredo, então não precisa de nenhuma variável do Sanity. Ele repassa só `vars.SITE_URL` (não cadastrada; vale o padrão). Os Secrets `SANITY_API_READ_TOKEN` e `SANITY_AUTH_TOKEN` já existem em Settings → Secrets and variables → Actions, para o backup (#28) e o deploy do Studio. Se um workflow passar a precisar de um segredo, ele também deve ser cadastrado em Settings → Secrets and variables → Dependabot (veja o [CONTRIBUTING](../CONTRIBUTING.md#dependências-dependabot)).
+O build do CI (`ci / build`) roda com as fixtures, sem rede e sem segredo, então não precisa de nenhuma variável do Sanity. Ele repassa só `vars.SITE_URL` (não cadastrada; vale o padrão). O `ci / build-producao` builda contra o dataset `production`, sem token (o conteúdo publicado é público), com o project ID da variável `SANITY_STUDIO_PROJECT_ID`, a mesma do deploy do Studio; sem ela, como nos PRs do Dependabot, o job é pulado. Os Secrets `SANITY_API_READ_TOKEN` e `SANITY_AUTH_TOKEN` já existem em Settings → Secrets and variables → Actions, para o backup (#28) e o deploy do Studio. Se um workflow passar a precisar de um segredo, ele também deve ser cadastrado em Settings → Secrets and variables → Dependabot (veja o [CONTRIBUTING](../CONTRIBUTING.md#dependências-dependabot)).
 
 ### Puxar as variáveis da Vercel para o local
 

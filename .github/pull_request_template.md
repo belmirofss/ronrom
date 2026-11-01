@@ -17,6 +17,7 @@ Closes #
 - [ ] `pnpm build` passa localmente (e `pnpm lint` / `pnpm check` / `pnpm test`)
 - [ ] Acessibilidade revisada (teclado, foco visível, contraste, textos alternativos)
 - [ ] Prints em mobile e desktop anexados (se mudou algo visual)
+- [ ] Migração de conteúdo (`studio/scripts/`): rodada em `development` e `production` (simulação e `--gravar`) antes do merge, com o `ci / build-producao` verde ([ordem](studio/README.md#migrações))
 - [ ] Documentação atualizada (README, `docs/`, ADR), se mexeu em infra, scripts, variáveis ou dependências de build
 - [ ] Link do preview da Vercel: <!-- cole aqui -->
 
