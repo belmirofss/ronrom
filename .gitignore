@@ -27,5 +27,8 @@ pnpm-debug.log*
 .DS_Store
 .idea/
 
+# configuração local do Claude Code (worktrees e servidores de preview)
+.claude/
+
 # relatórios do Lighthouse CI rodado localmente (docs/performance.md)
 .lighthouseci/

@@ -23,12 +23,11 @@
 /** @type {Record<string, import('./src/lib/redirects.ts').RedirectFixo>} */
 export const redirects = {
   // Artigos e Opiniões viraram "Textos e opiniões", no slug `textos` (#143). Os posts levam o
-  // caminho antigo em `slugsAnteriores` (studio/scripts/unificar-formatos.ts); aqui ficam as
+  // caminho antigo em `slugsAnteriores`, gravado na migração; aqui ficam as
   // listagens, e o build acrescenta as páginas (`/pagina/N`). A nova tem todos os posts das
   // antigas, então cada página antiga tem para onde ir.
   '/pensamentos/artigos': '/pensamentos/textos',
   '/pensamentos/opinioes': '/pensamentos/textos',
-  // A categoria Comidas saiu na #142, sem nenhum post publicado: a listagem vazia leva às reviews
-  // (studio/scripts/revisar-categorias.ts).
+  // A categoria Comidas saiu na #142, sem nenhum post publicado: a listagem vazia leva às reviews.
   '/reviews/comidas': '/reviews',
 };

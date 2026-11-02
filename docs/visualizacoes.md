@@ -7,7 +7,7 @@ O "Mais lidos" (#57) ordena os posts pelo total de visualizações de todo o tem
 1. A página do post traz o [`RegistroDeVisualizacao`](../web/src/components/post/RegistroDeVisualizacao.astro), com o `_id` do post.
 2. Depois de **5 segundos com a aba visível** (trocar de aba pausa a contagem), o script manda `{"id":"<_id>"}` para `POST /api/views` com `navigator.sendBeacon` e marca o post no `sessionStorage`. Na mesma aba, o post não é mandado de novo. Sem JS, nada é contado.
 3. A rota ([`registrar.ts`](../web/src/lib/views/registrar.ts)) descarta, sem tocar no Redis:
-   - qualquer deploy que não seja o de produção (`VERCEL_ENV` diferente de `production`): previews, testes E2E e `pnpm dev`;
+   - qualquer deploy que não seja o de produção (`VERCEL_ENV` diferente de `production`): previews e `pnpm dev`;
    - requisições sem `User-Agent` ou com um `User-Agent` de bot, segundo o [`isbot`](https://github.com/omrilotan/isbot) (inclui `curl`);
    - um `id` fora da lista de posts publicados, que é gerada no build e embutida na função ([`ids-publicados.ts`](../web/src/lib/sanity/ids-publicados.ts)). Um post novo só conta depois do rebuild que o publica.
 4. Para não contar a mesma pessoa duas vezes: `SET seen:{sha256(ip|ua|id|sal)} 1 NX EX 1800`. O sal é o token do Upstash mais o dia em São Paulo, então o IP nunca fica em claro e o hash não pode ser revertido testando todos os IPs. A chave expira em 30 minutos. Na virada do dia o sal muda, e quem estiver relendo um post à meia-noite pode contar de novo.

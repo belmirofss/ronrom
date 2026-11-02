@@ -1,7 +1,7 @@
 # Formatação, lint, diagnóstico de tipos, testes e build. Sem branch protection no plano Free,
 # estes checks são a principal barreira de qualidade: não faça merge com check vermelho.
-# Repositório privado tem cota mensal de minutos do Actions, então o workflow é enxuto:
-# quatro jobs em paralelo, cache do store do pnpm e cancelamento de execuções antigas.
+# O workflow é enxuto: quatro jobs em paralelo, cache do store do pnpm e cancelamento de
+# execuções antigas.
 name: ci
 
 on:

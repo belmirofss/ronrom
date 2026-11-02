@@ -31,11 +31,10 @@ curl -s https://ronrom.blog/api/health
 
 O `commit` da resposta tem que ser o hash do merge na `main` (`git log -1 --format=%H origin/main`). Num preview, abra `/api/health` no navegador logado na Vercel. Mais verificações (cabeçalhos, cache das páginas estáticas) em [`ambientes.md`](ambientes.md#conferir-em-produção) e, para os cabeçalhos de segurança e a CSP, em [`cabecalhos.md`](cabecalhos.md#conferir).
 
-### Deploy com erro ou bloqueado
+### Deploy com erro
 
 - **Build com erro:** a Vercel manda e-mail para o dono e mantém no ar o último deploy bom. Abra o deploy no painel, leia o log do build e reproduza com `pnpm build` local. O CI do PR costuma pegar o mesmo erro antes.
-- **Bloqueado pelo autor do commit:** o e-mail do commit não é o do dono. Veja [como corrigir](desenvolvimento.md#deploy-bloqueado-pelo-autor-do-commit).
-- **Refazer o mesmo commit:** no painel, abra o deploy e use **Redeploy**. Serve para deploy bloqueado, falha passageira ou variável de ambiente alterada (variável nova só vale a partir do próximo build).
+- **Refazer o mesmo commit:** no painel, abra o deploy e use **Redeploy**. Serve para falha passageira ou variável de ambiente alterada (variável nova só vale a partir do próximo build).
 
 ### Voltar uma versão (rollback)
 

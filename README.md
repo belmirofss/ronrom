@@ -1,147 +1,132 @@
-# ronrom
+# Ronrom 🐈
 
 [![ci](https://github.com/belmirofss/ronrom/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/belmirofss/ronrom/actions/workflows/ci.yml)
 
-O **Ronrom** é um blog de reviews (filmes, séries, documentários, livros, restaurantes e outros lugares) e de pensamentos (textos, opiniões e frases soltas). A autora escreve no Sanity Studio; o site é gerado pelo Astro e publicado na Vercel. Quem mantém o código é o dono do repositório; a autora só usa o Studio.
+**[ronrom.blog](https://ronrom.blog)** · o blog que a minha namorada sempre quis ter.
 
-| O quê        | Onde                                                                                 |
-| ------------ | ------------------------------------------------------------------------------------ |
-| Site         | https://ronrom.blog                                                                  |
-| Studio       | https://ronrom.sanity.studio (publicado pela #12)                                    |
-| Vercel       | projeto `ronrom` no [painel da Vercel](https://vercel.com/dashboard), conta do dono  |
-| Sanity       | projeto "Ronrom" (`fq2685cq`) em [sanity.io/manage](https://www.sanity.io/manage)    |
-| CI           | [GitHub Actions](https://github.com/belmirofss/ronrom/actions)                       |
-| Planejamento | [issues](https://github.com/belmirofss/ronrom/issues) e milestones M1 a M5 no GitHub |
+Ela queria um cantinho dela na internet para guardar o que anda vendo, lendo, comendo e pensando: reviews de filmes, séries, documentários, livros, restaurantes e lugares, com nota em corações, e textos e frases soltas. Sem rede social no meio, sem anúncio, com a cara dela. O Ronrom é esse lugar. Ela escreve num painel feito sob medida e o site atualiza sozinho.
+
+## Feito com o Claude Code
+
+O projeto inteiro (código, design, infraestrutura, CI, testes e esta documentação) foi construído com o **[Claude Code](https://claude.com/claude-code)**, usando o modelo **Claude Opus 5.5**. O trabalho foi organizado como um projeto de verdade: cada funcionalidade nasceu numa [issue](https://github.com/belmirofss/ronrom/issues), foi implementada numa branch, passou pelo CI e entrou por PR. O histórico de commits e de PRs mostra o caminho todo, do primeiro commit (28/10/2026) ao site no ar no domínio próprio.
+
+## O que tem no site
+
+- **Reviews** por categoria, com nota de meio a 5 corações e uma ficha técnica que muda conforme o tipo (diretor e duração num filme, editora e páginas num livro, endereço e faixa de preço num restaurante).
+- **Pensamentos:** textos, opiniões e frases soltas.
+- **Home** com mosaico de formas, post em destaque, abas "Últimos posts" e "Mais lidos" e a frase da semana.
+- **Busca** instantânea, sem servidor, com filtros por tipo e categoria ([Pagefind](https://pagefind.app)).
+- **Mais lidos:** contador de visualizações anônimo, sem cookies.
+- **Mapa** dos lugares avaliados e **listas do ano** com o que ela leu e assistiu.
+- **Prévia de rascunhos** dentro do editor: ela vê o post no layout do site antes de publicar e clica num texto para editar o campo.
+- SEO caprichado (JSON-LD de review, sitemap, RSS, Open Graph), acessibilidade WCAG AA, CSP em modo enforce e analytics sem cookies ([Umami](https://umami.is)).
+
+## Links
+
+| O quê    | Onde                                                                                |
+| -------- | ----------------------------------------------------------------------------------- |
+| Site     | https://ronrom.blog                                                                 |
+| Studio   | https://ronrom.sanity.studio (o painel da autora; pede login de membro do projeto)  |
+| Issues   | [github.com/belmirofss/ronrom/issues](https://github.com/belmirofss/ronrom/issues)  |
+| CI       | [GitHub Actions](https://github.com/belmirofss/ronrom/actions)                      |
+| Decisões | [ADRs em `docs/adr`](docs/adr/README.md): por que cada peça da arquitetura é como é |
 
 ## Stack
 
-- **Site** (`web/`): [Astro](https://astro.build) 7 com TypeScript no modo `strictest`, saída estática e só algumas rotas sob demanda numa Vercel Function ([ADR 0001](docs/adr/0001-site-estatico-com-rotas-sob-demanda.md)).
-- **CMS** (`studio/`): [Sanity Studio](https://www.sanity.io/docs/studio) 6, hospedado pelo Sanity. Conteúdo novo entra no site por rebuild ([ADR 0005](docs/adr/0005-rebuild-por-deploy-hook.md)).
-- **Hospedagem:** Vercel, plano Hobby, com preview em todo PR e produção na `main`.
-- **Contador de visualizações:** [Upstash Redis](https://upstash.com) pelo Marketplace da Vercel, no plano grátis (500 mil comandos/mês). Cada visualização nova custa cerca de 2 comandos, o que dá margem para cerca de 250 mil visualizações por mês ([`docs/visualizacoes.md`](docs/visualizacoes.md#custo)).
-- **Ferramentas:** pnpm com workspaces ([ADR 0003](docs/adr/0003-pnpm-e-monorepo-web-studio.md)), ESLint e Prettier ([ADR 0002](docs/adr/0002-eslint-e-prettier-em-vez-de-biome.md)), GitHub Actions e Dependabot ([ADR 0004](docs/adr/0004-dependabot-para-atualizar-dependencias.md)).
+- **Site** (`web/`): [Astro](https://astro.build) 7 com TypeScript no modo `strictest`. As páginas são estáticas, servidas pela CDN; só quatro rotas de API rodam numa função da Vercel ([ADR 0001](docs/adr/0001-site-estatico-com-rotas-sob-demanda.md)).
+- **CMS** (`studio/`): [Sanity Studio](https://www.sanity.io/docs/studio) 6 em pt-BR, com a marca do Ronrom, hospedado pelo Sanity. Publicar um post dispara um rebuild do site por deploy hook ([ADR 0005](docs/adr/0005-rebuild-por-deploy-hook.md)).
+- **Hospedagem:** [Vercel](https://vercel.com), plano Hobby, com preview em todo PR e produção na `main`.
+- **Contador de visualizações:** [Upstash Redis](https://upstash.com) pelo Marketplace da Vercel, no plano grátis.
+- **Ferramentas:** pnpm com workspaces ([ADR 0003](docs/adr/0003-pnpm-e-monorepo-web-studio.md)), ESLint e Prettier ([ADR 0002](docs/adr/0002-eslint-e-prettier-em-vez-de-biome.md)), Vitest, Lighthouse CI, lychee e Dependabot ([ADR 0004](docs/adr/0004-dependabot-para-atualizar-dependencias.md)).
 
-## Pré-requisitos
-
-- **Node 22**, a partir do 22.23.4. A versão exata está no `.nvmrc`: com o [fnm](https://github.com/Schniz/fnm) ou o nvm, `fnm use` ou `nvm use` lê o arquivo (no nvm-windows, rode `nvm install 22.23.4` e `nvm use 22.23.4`).
-- **pnpm**, na versão fixada em `packageManager` no `package.json`. O jeito mais simples é o Corepack, que já vem com o Node 22: rode `corepack enable` uma vez e o `pnpm` certo é baixado sozinho.
-- **Git** com o `user.email` igual a um e-mail verificado na sua conta do GitHub. Sem isso, a Vercel bloqueia o deploy (veja o [guia de desenvolvimento](docs/desenvolvimento.md#deploy-bloqueado-pelo-autor-do-commit)).
+Tudo roda nos planos grátis da Vercel, do Sanity, do Upstash e do Umami. O único custo é o domínio.
 
 ## Rodar localmente
 
-1. Clone o repositório e entre na pasta:
+Não precisa de conta em nenhum serviço: sem variáveis de ambiente, o site usa um conjunto de posts de exemplo (as _fixtures_), sem rede e sem segredo.
 
-   ```bash
-   git clone https://github.com/belmirofss/ronrom.git
-   ```
+Pré-requisitos:
 
-   ```bash
-   cd ronrom
-   ```
+- **Node 22**, na versão do `.nvmrc` (`fnm use` ou `nvm use` leem o arquivo).
+- **pnpm**, na versão do `packageManager` do `package.json`. O jeito mais simples é rodar `corepack enable` uma vez.
 
-2. Instale as dependências na raiz. O `pnpm install` também instala o hook de pré-commit.
+```bash
+git clone https://github.com/belmirofss/ronrom.git
+```
 
-   ```bash
-   pnpm install
-   ```
+```bash
+cd ronrom && pnpm install
+```
 
-3. (Opcional) Puxe as variáveis de ambiente da Vercel para `web/.env.local`. Só funciona com acesso ao projeto na Vercel; sem nenhuma variável, o site roda com as fixtures locais, sem Sanity e sem segredo. Dentro de `web/`, com a [Vercel CLI](https://vercel.com/docs/cli) logada na conta do dono:
+```bash
+pnpm dev
+```
 
-   ```bash
-   pnpm dlx vercel link --project ronrom
-   ```
+O site sobe em http://localhost:4321. A busca só funciona depois de um `pnpm build`, que gera o índice.
 
-   ```bash
-   pnpm dlx vercel env pull .env.local
-   ```
-
-   Sem acesso à Vercel, copie `web/.env.example` para `web/.env` e preencha só o que precisar. Detalhes em [`docs/ambientes.md`](docs/ambientes.md#variáveis-de-ambiente).
-
-4. Na raiz, suba o site em http://localhost:4321:
-
-   ```bash
-   pnpm dev
-   ```
-
-Para o Studio, copie `studio/.env.example` para `studio/.env`, preencha o ID do projeto e rode `pnpm studio:dev` (http://localhost:3333). O passo a passo está em [`studio/README.md`](studio/README.md).
-
-Antes de abrir uma branch ou um PR, leia o [guia de contribuição](CONTRIBUTING.md) e o [guia de desenvolvimento](docs/desenvolvimento.md).
+Para ligar o site a um projeto do Sanity, copie `web/.env.example` para `web/.env` e preencha (detalhes em [`docs/ambientes.md`](docs/ambientes.md#variáveis-de-ambiente)). Para o Studio, copie `studio/.env.example` para `studio/.env` e rode `pnpm studio:dev` ([`studio/README.md`](studio/README.md)).
 
 ## Scripts
 
-Rode na raiz do repositório:
+Na raiz do repositório:
 
 | Comando              | O que faz                                                   |
 | -------------------- | ----------------------------------------------------------- |
-| `pnpm install`       | Instala as dependências de todos os workspaces              |
 | `pnpm dev`           | Sobe o site em `http://localhost:4321`                      |
 | `pnpm build`         | Gera o site em `web/.vercel/output`                         |
 | `pnpm check`         | Roda o `astro check` (diagnóstico de .astro e TS)           |
 | `pnpm typecheck`     | Roda o `tsc --noEmit` no site e no Studio                   |
 | `pnpm test`          | Roda os testes do site e do Studio (Vitest)                 |
 | `pnpm test:watch`    | Roda os testes do site a cada arquivo salvo                 |
+| `pnpm lint`          | Roda o ESLint (TS, .astro e acessibilidade)                 |
+| `pnpm format`        | Formata tudo com o Prettier                                 |
 | `pnpm typegen`       | Gera os tipos das consultas GROQ (precisa do `studio/.env`) |
 | `pnpm studio:dev`    | Sobe o Sanity Studio em `http://localhost:3333`             |
-| `pnpm studio:build`  | Gera o Studio em `studio/dist`                              |
 | `pnpm studio:deploy` | Publica o Studio em `ronrom.sanity.studio`                  |
-| `pnpm lint`          | Roda o ESLint (TS, .astro e acessibilidade)                 |
-| `pnpm lint:fix`      | Roda o ESLint corrigindo o que for automático               |
-| `pnpm format`        | Formata tudo com o Prettier                                 |
-| `pnpm format:check`  | Confere a formatação sem alterar arquivos                   |
+| `pnpm seed`          | Popula o dataset `development` com conteúdo de exemplo      |
 
-Não há `pnpm preview`: o adapter da Vercel não suporta o comando. Teste as rotas sob demanda com o `pnpm dev` e o resto no preview do PR.
+Não há `pnpm preview`: o adapter da Vercel não suporta o comando. As rotas de API rodam no `pnpm dev`.
 
 ## Estrutura
 
-Monorepo com workspaces do pnpm (`pnpm-workspace.yaml`):
-
 ```
 .
-├── web/                    # site em Astro 7
-│   ├── public/             # arquivos servidos como estão (favicon etc.)
-│   ├── integracao-pagefind.mjs # índice da busca no fim do build (veja docs/busca.md)
-│   ├── vercel.json         # install, build, Ignored Build Step e região na Vercel
-│   ├── vitest.config.ts    # testes do site (veja docs/testes.md)
+├── web/                  # o site em Astro
 │   └── src/
-│       ├── assets/         # imagens e arquivos processados pelo build
-│       ├── components/
-│       │   ├── busca/      # campo de busca (home e /busca)
-│       │   ├── home/       # blocos da página inicial
-│       │   ├── layout/     # cabeçalho, rodapé e afins
-│       │   ├── post/       # partes da página do post
-│       │   └── ui/         # componentes genéricos reutilizáveis
-│       ├── layouts/        # layouts de página (LayoutBase)
-│       ├── lib/
-│       │   ├── sanity/     # consultas GROQ, tipos gerados e cliente do Sanity
-│       │   ├── utils/      # utilitários gerais
-│       │   └── views/      # contador de visualizações e ranking
-│       ├── pages/          # rotas do site (api/ para as rotas sob demanda)
-│       ├── styles/         # CSS global e tokens
-│       └── vitrine/        # vitrines dos componentes e do texto do post, só no dev (/vitrine)
-├── studio/                 # Sanity Studio (veja studio/README.md)
-│   └── schemaTypes/        # schemas de conteúdo
-├── docs/                   # documentação e ADRs (veja a tabela abaixo)
-├── scripts/                # scripts de infraestrutura (Ignored Build Step da Vercel)
-├── lighthouserc.cjs        # Lighthouse CI e orçamento (budget.json); veja docs/performance.md
-└── .github/                # CI, Dependabot e templates de issue e PR
+│       ├── components/   # componentes por área (home, post, busca, layout, ui…)
+│       ├── layouts/      # casca das páginas
+│       ├── lib/          # regras puras e testadas: URLs, SEO, JSON-LD, busca, contador…
+│       │   └── sanity/   # consultas GROQ, tipos gerados, cliente e fixtures
+│       ├── pages/        # rotas do site (api/ para as rotas sob demanda)
+│       ├── previa/       # rotas e middleware da prévia de rascunhos
+│       └── styles/       # tokens de design e CSS global
+├── studio/               # Sanity Studio: schemas, inputs customizados, marca e scripts
+├── docs/                 # documentação técnica e ADRs
+├── scripts/              # Ignored Build Step da Vercel e checagem da 404
+└── .github/              # CI, Lighthouse, Dependabot e templates
 ```
 
 Imports dentro de `web/src` usam o alias `@/*` (ex.: `import { NOME_DO_SITE } from '@/lib/utils/site'`).
 
 ## Documentação
 
-| Documento                                                 | Conteúdo                                                                    |
-| --------------------------------------------------------- | --------------------------------------------------------------------------- |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md)                      | Convenções de branch, commit, PR, CI, Dependabot, labels e milestones       |
-| [`docs/desenvolvimento.md`](docs/desenvolvimento.md)      | Dia a dia: checks locais, dependências, lint e hooks, solução de problemas  |
-| [`docs/ambientes.md`](docs/ambientes.md)                  | Projeto na Vercel, saída estática, limites do Hobby e variáveis de ambiente |
-| [`docs/deploy.md`](docs/deploy.md)                        | Como uma mudança vai ao ar, como conferir, redeploy, rollback e rebuild     |
-| [`docs/seo-urls.md`](docs/seo-urls.md)                    | Rotas, slugs, barra no final, URL base e helpers de URL                     |
-| [`docs/cabecalhos.md`](docs/cabecalhos.md)                | Cabeçalhos de segurança, CSP, cache e redirects                             |
-| [`docs/visualizacoes.md`](docs/visualizacoes.md)          | Contador de visualizações: regras, custo no Upstash, provisionar e conferir |
-| [`docs/testes.md`](docs/testes.md)                        | O que é testado no CI e o que é conferido à mão, e como escrever testes     |
-| [`docs/busca.md`](docs/busca.md)                          | Busca (Pagefind): o índice, a página /busca, o estado na URL e o dev        |
-| [`docs/performance.md`](docs/performance.md)              | Metas de performance, orçamento, Lighthouse CI e Core Web Vitals de campo   |
-| [`docs/adr/`](docs/adr/README.md)                         | Decisões de arquitetura e infraestrutura, com contexto e consequências      |
-| [`web/README.md`](web/README.md#design-tokens-e-css-base) | Site: tokens de design, regra de contraste e carregamento da DM Sans        |
-| [`studio/README.md`](studio/README.md)                    | Studio: rodar, variáveis, tokens e configuração do projeto no Sanity        |
+| Documento                                            | Conteúdo                                                              |
+| ---------------------------------------------------- | --------------------------------------------------------------------- |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md)                 | Convenções de branch, commit, PR, CI, Dependabot e labels             |
+| [`docs/desenvolvimento.md`](docs/desenvolvimento.md) | Checks locais, dependências, lint e hooks, solução de problemas       |
+| [`docs/ambientes.md`](docs/ambientes.md)             | Projetos na Vercel, prévia de rascunhos, limites do Hobby e variáveis |
+| [`docs/deploy.md`](docs/deploy.md)                   | Como código e conteúdo vão ao ar, rollback e rebuild por deploy hook  |
+| [`docs/seo-urls.md`](docs/seo-urls.md)               | Rotas, slugs, indexação, sitemap, RSS e Search Console                |
+| [`docs/cabecalhos.md`](docs/cabecalhos.md)           | Cabeçalhos de segurança, CSP, cache e redirects                       |
+| [`docs/busca.md`](docs/busca.md)                     | Busca com o Pagefind: índice, página `/busca` e estados               |
+| [`docs/visualizacoes.md`](docs/visualizacoes.md)     | Contador de visualizações e "Mais lidos"                              |
+| [`docs/analytics.md`](docs/analytics.md)             | Analytics com o Umami, eventos e privacidade                          |
+| [`docs/performance.md`](docs/performance.md)         | Metas, orçamento e Lighthouse CI                                      |
+| [`docs/testes.md`](docs/testes.md)                   | O que é testado, o que é conferido à mão e como escrever testes       |
+| [`docs/adr/`](docs/adr/README.md)                    | Decisões de arquitetura, com contexto e consequências                 |
+| [`web/README.md`](web/README.md)                     | Design tokens, contraste, layouts e componentes do site               |
+| [`studio/README.md`](studio/README.md)               | Schemas, inputs, prévia, seed, tokens e configuração do Sanity        |
+
+## Conteúdo
+
+Os textos e as fotos publicados em [ronrom.blog](https://ronrom.blog) são da autora e não fazem parte do código deste repositório.

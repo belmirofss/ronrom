@@ -4,17 +4,6 @@ O site usa o [Umami Cloud](https://umami.is), plano **Hobby** (grátis), escolhi
 
 O analytics é separado do [contador de visualizações](visualizacoes.md) do "Mais lidos": o contador é anônimo, roda no nosso servidor e conta todas as leituras (menos bots), com ou sem Do Not Track. O Umami só mede o tráfego do site para a autora.
 
-## Planos grátis comparados
-
-Conferidos na abertura da #58 (out/2026). Reconfira antes de trocar de serviço.
-
-| Serviço                  | Cota                                  | Retenção         | Observação                                      |
-| ------------------------ | ------------------------------------- | ---------------- | ----------------------------------------------- |
-| Umami Cloud Hobby        | cerca de 100 mil eventos/mês, 3 sites | cerca de 6 meses | Sem cookies, eventos customizados, link público |
-| Vercel Web Analytics     | 50 mil eventos/mês                    | 1 mês            | A coleta pausa ao estourar a cota               |
-| Cloudflare Web Analytics | sem teto declarado                    | —                | Amostragem; o script é muito bloqueado          |
-| GoatCounter              | "uso público razoável"                | —                | Mantido por doações                             |
-
 ## Como o script entra na página
 
 O [`Umami.astro`](../web/src/components/layout/Umami.astro) fica no `<head>` do [`LayoutBase`](../web/src/layouts/LayoutBase.astro) e só gera a tag quando as duas condições valem ([`configurarUmami`](../web/src/lib/analytics.ts)):
