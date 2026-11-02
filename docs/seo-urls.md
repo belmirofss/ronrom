@@ -161,7 +161,7 @@ Definidos na #64, já com o domínio próprio (#63).
 
 - **Google Search Console:** propriedade de **domínio** `sc-domain:ronrom.blog`, que cobre `https://`, `http://` e o `www`. Foi verificada em 01/11/2026 por um registro TXT `google-site-verification=…` no DNS da Hostinger. **Não apague esse TXT:** sem ele a propriedade perde a verificação. Por isso o site não tem a meta `google-site-verification`. O `ronrom-blog.vercel.app` nunca teve propriedade, então a ferramenta de mudança de endereço não foi usada: o redirect 308 basta.
 - **Sitemap:** `https://ronrom.blog/sitemap-index.xml`, enviado ao GSC em 01/11/2026 e processado sem erros.
-- **Bing Webmaster Tools:** site `https://ronrom.blog/`, adicionado à mão (sem importar do GSC, para não dar ao Bing acesso à conta do Google) e verificado em 01/11/2026 por um CNAME `23bfad46da5f1c1ca35964f973f6c0b6` → `verify.bing.com` no DNS da Hostinger. **Não apague esse CNAME.** O mesmo `sitemap-index.xml` foi enviado em 01/11/2026.
+- **Bing Webmaster Tools:** site `https://ronrom.blog/`, adicionado à mão (sem importar do GSC, para não dar ao Bing acesso à conta do Google) e verificado em 01/11/2026 por um CNAME para `verify.bing.com` no DNS da Hostinger. **Não apague esse CNAME.** O mesmo `sitemap-index.xml` foi enviado em 01/11/2026.
 - **Acesso da autora:** no GSC, Configurações → Usuários e permissões → Adicionar usuário, com permissão **Restrita** (só leitura).
 
 #### Checklist pós-publicação
@@ -209,7 +209,7 @@ Fixas: o script da #18 ([`studio/scripts/criar-taxonomia.ts`](../studio/scripts/
 | Restaurantes e cafés | `restaurantes-e-cafes` | `categoria-restaurantes-e-cafes` | `lugar`       | `/reviews/restaurantes-e-cafes` |
 | Outros lugares       | `lugares`              | `categoria-lugares`              | `lugar`       | `/reviews/lugares`              |
 
-Na #142, Documentários entrou com a ficha de filme, Lugares passou a se chamar "Outros lugares" (o slug `lugares` e as URLs não mudaram) e Comidas (`comidas`) saiu, junto com o modelo de ficha `comida`. Comidas não tinha post publicado: só a listagem vazia `/reviews/comidas`, que responde `301` para `/reviews` por [`web/redirects.mjs`](../web/redirects.mjs). A migração dos datasets é o [`studio/scripts/revisar-categorias.ts`](../studio/scripts/revisar-categorias.ts). Não reaproveite o slug `comidas` numa categoria nova: o redirect fixo esconderia a listagem dela.
+Na #142, Documentários entrou com a ficha de filme, Lugares passou a se chamar "Outros lugares" (o slug `lugares` e as URLs não mudaram) e Comidas (`comidas`) saiu, junto com o modelo de ficha `comida`. Comidas não tinha post publicado: só a listagem vazia `/reviews/comidas`, que responde `301` para `/reviews` por [`web/redirects.mjs`](../web/redirects.mjs). Não reaproveite o slug `comidas` numa categoria nova: o redirect fixo esconderia a listagem dela.
 
 ### Formatos (pensamentos)
 
@@ -218,7 +218,7 @@ Na #142, Documentários entrou com a ficha de filme, Lugares passou a se chamar 
 | Textos e opiniões | `textos` | `formato-textos` | `/pensamentos/textos` |
 | Frases soltas     | `frases` | `formato-frases` | `/pensamentos/frases` |
 
-Até a #143 eram quatro formatos: Artigos (`artigos`), Textos, Frases soltas e Opiniões (`opinioes`). Artigos e Opiniões entraram em "Textos e opiniões", que manteve o slug `textos` para os textos não mudarem de endereço. Os caminhos antigos respondem `301`: as listagens (`/pensamentos/artigos` e `/pensamentos/opinioes`, com as páginas `/pagina/N`) por [`web/redirects.mjs`](../web/redirects.mjs), e cada post pelo `slugsAnteriores` gravado na migração ([`studio/scripts/unificar-formatos.ts`](../studio/scripts/unificar-formatos.ts)). Não reaproveite esses dois slugs num formato novo: o redirect fixo esconderia a listagem dele.
+Até a #143 eram quatro formatos: Artigos (`artigos`), Textos, Frases soltas e Opiniões (`opinioes`). Artigos e Opiniões entraram em "Textos e opiniões", que manteve o slug `textos` para os textos não mudarem de endereço. Os caminhos antigos respondem `301`: as listagens (`/pensamentos/artigos` e `/pensamentos/opinioes`, com as páginas `/pagina/N`) por [`web/redirects.mjs`](../web/redirects.mjs), e cada post pelo `slugsAnteriores` gravado na migração. Não reaproveite esses dois slugs num formato novo: o redirect fixo esconderia a listagem dele.
 
 O nome exibido pode mudar à vontade; o slug de categoria e de formato fica congelado, porque trocá-lo muda a URL de todos os posts daquela categoria. Se for inevitável, entra como redirect do caminho inteiro (`/reviews/antigo/[slug]` → `/reviews/novo/[slug]`) no mecanismo da #53, no mesmo PR. Redirects fixos, fora dos posts: [`cabecalhos.md`](cabecalhos.md#redirects).
 
@@ -271,68 +271,3 @@ interface PostComRota {
 Qualquer resultado das consultas com `tipo`, `slug`, `categoria` e `formato` (rota, card, post, link interno do corpo) serve direto como `PostComRota`.
 
 O ESLint recusa, fora do `rotas.ts`, template literal ou concatenação que comece com `/reviews/` ou `/pensamentos/`, ou que termine em `/pagina/`.
-
-### `urlDoPost(post)`
-
-- Review: `/reviews/{categoria.slug}/{slug}`. Pensamento: `/pensamentos/{formato.slug}/{slug}`.
-- Recebe os slugs já resolvidos pela consulta (`"slug": slug.current`, `categoria->{ "slug": slug.current }`).
-- Lança erro, derrubando o build, se faltar slug, categoria (review) ou formato (pensamento), ou se algum slug não seguir o [formato](#formato) ou for [reservado](#slugs-reservados). Link quebrado não chega a produção. `urlDaCategoria`, `urlDoFormato` e `urlDaTag` validam o slug do mesmo jeito.
-
-### `urlDaPagina(base, n)`
-
-- `n === 1` devolve `base`; `n >= 2` devolve `{base}/pagina/{n}`.
-- Lança erro para `n` que não seja inteiro maior ou igual a 1, e para `base` que não seja um caminho sem barra no final (`/`, `posts` e `/posts/` são recusados).
-
-### `canonicalUrl(path)`
-
-- Recebe um caminho começando com `/` e devolve a URL absoluta com `URL_DO_SITE` como origem (`new URL(path, URL_DO_SITE)`, que funciona com ou sem barra no fim da `SITE_URL`).
-- Normaliza: remove query string e `#fragmento`, remove `index.html` ou `.html` do fim e remove a barra final, menos na home. Assim, `canonicalUrl('/sobre/')`, `canonicalUrl('/sobre/index.html')` e `canonicalUrl('/sobre')` dão o mesmo resultado.
-- Lança erro se receber uma URL absoluta (`https://...` ou `//outro.site/...`): a origem vem sempre da `SITE_URL`.
-
-### Exemplos (viram casos de teste)
-
-Com `SITE_URL=https://ronrom.blog`:
-
-| Chamada                                                                                | Resultado                                           |
-| -------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| `urlDoPost({ tipo: 'review', slug: 'dias-perfeitos', categoria: { slug: 'filmes' } })` | `/reviews/filmes/dias-perfeitos`                    |
-| `urlDoPost({ tipo: 'pensamento', slug: 'sobre-gatos', formato: { slug: 'frases' } })`  | `/pensamentos/frases/sobre-gatos`                   |
-| `urlDoPost({ tipo: 'review', slug: 'x' })` (sem categoria)                             | erro                                                |
-| `urlDaCategoria('restaurantes-e-cafes')`                                               | `/reviews/restaurantes-e-cafes`                     |
-| `urlDaPagina('/reviews/filmes', 1)`                                                    | `/reviews/filmes`                                   |
-| `urlDaPagina('/reviews/filmes', 2)`                                                    | `/reviews/filmes/pagina/2`                          |
-| `urlDaPagina('/posts', 0)`                                                             | erro                                                |
-| `canonicalUrl('/')`                                                                    | `https://ronrom.blog/`                              |
-| `canonicalUrl('/reviews/filmes/dias-perfeitos/')`                                      | `https://ronrom.blog/reviews/filmes/dias-perfeitos` |
-| `canonicalUrl('/busca?q=cafe')`                                                        | `https://ronrom.blog/busca`                         |
-| `canonicalUrl('https://outro.site/x')`                                                 | erro                                                |
-
-## Campos do Sanity usados pela área de SEO
-
-Os nomes finais dos campos saem dos schemas (#18, #19, #21, #24); os do post já são os do [`studio/schemaTypes/post.ts`](../studio/schemaTypes/post.ts), os da ficha estão no [README do Studio](../studio/README.md#post), e os da autora e do site são os dos singletons [`sobre`](../studio/schemaTypes/sobre.ts) e [`configuracoes`](../studio/schemaTypes/configuracoes.ts). Toda consulta que alimenta uma página de post, listagem, sitemap, RSS ou JSON-LD traz o que estiver marcado para ela.
-
-| Campo                                                 | Documento                | Usado em                                                            |
-| ----------------------------------------------------- | ------------------------ | ------------------------------------------------------------------- |
-| `_id`                                                 | post                     | Contador, ranking, `/posts-index.json`, lista de ids válidos        |
-| `slug.current`                                        | post, categoria, formato | URLs (`rotas.ts`)                                                   |
-| `slugsAnteriores[]` (caminhos completos)              | post                     | Redirects 301 (#53)                                                 |
-| `tipo` (`review` \| `pensamento`)                     | post                     | URL, JSON-LD (Review ou BlogPosting), filtros da busca              |
-| `categoria->{nome, slug, modeloFicha, descricao}`     | post (review)            | URL, breadcrumb, `itemReviewed` (#51), descrição da listagem        |
-| `formato->{nome, slug, descricao}`                    | post (pensamento)        | URL, breadcrumb, `articleSection` (#50), descrição da listagem      |
-| `titulo`                                              | post                     | `<title>`, `og:title`, `headline`, RSS                              |
-| `subtitulo`                                           | post                     | Fallback da description, metadado da busca                          |
-| `capa{asset, alt, legenda, hotspot, crop}`            | post                     | `og:image` (1200×630 no hotspot), imagens do JSON-LD, RSS, cards    |
-| `seo{titulo, descricao, imagem{asset, alt}, noindex}` | post                     | Sobrescreve título, description e imagem; `noindex` tira do sitemap |
-| `dataDePublicacao`                                    | post                     | `article:published_time`, `datePublished`, ordenação, RSS `pubDate` |
-| `_updatedAt`                                          | post, sobre              | `article:modified_time`, `dateModified`, `lastmod` do sitemap       |
-| `nota` (0,5 a 5, em meios)                            | post (review)            | `reviewRating` (#51), metadado e filtro da busca                    |
-| `ficha` (só os campos do `modeloFicha`)               | post (review)            | `itemReviewed` tipado (#51), texto indexado pela busca              |
-| `corpo` (Portable Text)                               | post                     | Fallback da description (~155 caracteres), `wordCount`, busca       |
-| `texto` (Portable Text)                               | sobre                    | Conteúdo de `/sobre` (#47)                                          |
-| `nome`, `bio`, `foto{asset, alt, hotspot, crop}`      | sobre                    | `Person` e `ProfilePage` (#50), barra lateral (#38)                 |
-| `seo{descricao, imagem{asset, alt}}`                  | sobre, configuracoes     | Description e `og:image` de `/sobre` e o padrão do site             |
-| `redes[]{rede, url}`                                  | configuracoes            | `sameAs` do `Person` (#50), contato da `/privacidade` (#146)        |
-| `fraseDaSemana{texto, autoria, data}`                 | configuracoes            | Barra lateral (#38)                                                 |
-| `postEmDestaque->`                                    | configuracoes            | Destaque da home (#44); vazio usa o post mais recente               |
-
-A nota vai de meio a 5 corações, em passos de meio (decidido na #1); o critério original da issue falava em 1–5.

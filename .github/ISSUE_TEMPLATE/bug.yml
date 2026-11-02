@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Depois de abrir, aplique os labels `area:*` e `prioridade:*` e o milestone (veja o CONTRIBUTING.md).
+        Depois de abrir, aplique os labels `area:*` e `prioridade:*` (veja o CONTRIBUTING.md).
   - type: textarea
     id: o-que-acontece
     attributes:

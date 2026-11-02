@@ -72,7 +72,7 @@ O Lighthouse 12 tirou o suporte aos budgets nativos, então o [`lighthouserc.cjs
 
 - **Nos checks do PR:** o check `lighthouse / lighthouse` leva à execução. Vermelho é asserção com erro; avisos não mudam a cor.
 - **No resumo da execução** (Actions → a execução → Summary): a tabela com as quatro notas de cada página, na mediana, e as anotações de cada asserção que falhou ou avisou.
-- **No artifact `lighthouse-preview`** (ou `lighthouse-producao`), guardado por 14 dias: o relatório HTML de cada execução, para abrir no navegador, e o JSON. O segredo da Protection Bypass sai dos arquivos antes do upload. Os relatórios não vão para o temporary-public-storage do Google: ficam só no artifact, que é privado.
+- **No artifact `lighthouse-preview`** (ou `lighthouse-producao`), guardado por 14 dias: o relatório HTML de cada execução, para abrir no navegador, e o JSON. O segredo da Protection Bypass sai dos arquivos antes do upload. Os relatórios não vão para o temporary-public-storage do Google, mas o artifact de um repositório público pode ser baixado por qualquer pessoa logada no GitHub.
 
 Para rodar de novo contra qualquer deploy: Actions → lighthouse → Run workflow, com a URL base e o ambiente.
 

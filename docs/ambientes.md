@@ -6,7 +6,7 @@ O site (`web/`) é publicado na Vercel, plano **Hobby** (grátis), no projeto `r
 
 | Configuração          | Valor                                                     |
 | --------------------- | --------------------------------------------------------- |
-| Repositório           | `belmirofss/ronrom` (conta pessoal, privado)              |
+| Repositório           | `belmirofss/ronrom` (conta pessoal, público)              |
 | Root Directory        | `web`                                                     |
 | Framework             | Astro                                                     |
 | Install Command       | `pnpm install --frozen-lockfile`                          |
@@ -101,7 +101,7 @@ O build gera `web/.vercel/output`, que a Vercel publica como está:
 - `static/`: as páginas e os assets (as mesmas páginas ficam em `web/dist/client`, que o CI guarda como artifact).
 - `functions/_render.func`: **uma única função** com todas as rotas sob demanda. Uma rota nova não cria outra função, só entra nas `routes` do `config.json`, apontando para `_render`.
 
-Hoje há quatro rotas sob demanda. A [`/api/health`](../web/src/pages/api/health.ts) é a rota de fumaça: responde `{ "ok": true, "commit": "<sha>" }` com `Cache-Control: no-store`. O `commit` vem da variável de sistema `VERCEL_GIT_COMMIT_SHA`, fixada no build; fora da Vercel, é `null`. A [`/api/csp-report`](../web/src/pages/api/csp-report.ts) recebe os relatórios de violação da CSP e os escreve no log ([`cabecalhos.md`](cabecalhos.md#report-only-e-a-passagem-para-enforce)). A [`/api/views`](../web/src/pages/api/views.ts) registra as visualizações dos posts no Upstash Redis, e a [`/api/mais-lidos`](../web/src/pages/api/mais-lidos.ts) devolve o ranking, em cache no CDN por uma hora ([`visualizacoes.md`](visualizacoes.md)). Cabeçalhos de segurança e de cache de todas as respostas: [`cabecalhos.md`](cabecalhos.md).
+Hoje há quatro rotas sob demanda. A [`/api/health`](../web/src/pages/api/health.ts) é a rota de fumaça: responde `{ "ok": true, "commit": "<sha>" }` com `Cache-Control: no-store`. O `commit` vem da variável de sistema `VERCEL_GIT_COMMIT_SHA`, fixada no build; fora da Vercel, é `null`. A [`/api/csp-report`](../web/src/pages/api/csp-report.ts) recebe os relatórios de violação da CSP e os escreve no log ([`cabecalhos.md`](cabecalhos.md#modo-enforce-e-relatórios)). A [`/api/views`](../web/src/pages/api/views.ts) registra as visualizações dos posts no Upstash Redis, e a [`/api/mais-lidos`](../web/src/pages/api/mais-lidos.ts) devolve o ranking, em cache no CDN por uma hora ([`visualizacoes.md`](visualizacoes.md)). Cabeçalhos de segurança e de cache de todas as respostas: [`cabecalhos.md`](cabecalhos.md).
 
 ### Como adicionar uma rota sob demanda
 
@@ -155,7 +155,7 @@ curl -sI https://ronrom.blog/
 
 ### Conferir no preview
 
-O link do preview está no comentário da Vercel no PR. Por causa da Vercel Authentication, um `curl` sem login recebe `302` para o SSO da Vercel (já com `x-robots-tag: noindex`). Abra `<url-do-preview>/api/health` no navegador logado na conta da Vercel: deve mostrar `{ "ok": true, "commit": "<sha>" }` com o hash do último commit do PR. Para conferir por script (os testes E2E da #49), use o cabeçalho `x-vercel-protection-bypass` com o segredo da Protection Bypass for Automation.
+O link do preview está no comentário da Vercel no PR. Por causa da Vercel Authentication, um `curl` sem login recebe `302` para o SSO da Vercel (já com `x-robots-tag: noindex`). Abra `<url-do-preview>/api/health` no navegador logado na conta da Vercel: deve mostrar `{ "ok": true, "commit": "<sha>" }` com o hash do último commit do PR. Para conferir por script, use o cabeçalho `x-vercel-protection-bypass` com o segredo da Protection Bypass for Automation.
 
 ## Limites do Hobby
 
@@ -177,10 +177,10 @@ Conferidos em **29/10/2026** em [vercel.com/docs/limits](https://vercel.com/docs
 | Logs de runtime                   | 1 hora                                                                     |
 | Estourou a cota                   | O recurso fica parado até completar 30 dias (Web Analytics volta em 7)     |
 
-Pontos que a issue #10 pediu para conferir:
+Outros pontos do Hobby que afetam o projeto:
 
-- **Autor do commit em repo privado:** a regra de que o autor do commit precisa ser o dono do time Hobby não aparece nas páginas acima. Na prática, mantenha o `git config user.email` igual a um e-mail verificado na conta do GitHub ligada à Vercel. Conferido em 29/10/2026: os commits com `belmirofss@gmail.com` aparecem ligados à conta `belmirofss`.
-- **Protection Bypass for Automation:** disponível em todos os planos, inclusive o Hobby. O segredo vai no cabeçalho `x-vercel-protection-bypass` (variável `VERCEL_AUTOMATION_BYPASS_SECRET`), para os testes E2E da #49 e o Lighthouse CI da #60 ([`performance.md`](performance.md#configuração)).
+- **PRs de fork:** com o repositório público, a Vercel só builda o preview de um PR vindo de fork depois que o dono autoriza o deploy no próprio PR. Os secrets do GitHub também não chegam a esses PRs, então o Lighthouse CI não roda neles.
+- **Protection Bypass for Automation:** disponível em todos os planos, inclusive o Hobby. O segredo vai no cabeçalho `x-vercel-protection-bypass` (variável `VERCEL_AUTOMATION_BYPASS_SECRET`), para o Lighthouse CI ([`performance.md`](performance.md#configuração)).
 - **Vercel Authentication:** disponível no Hobby para preview e produção. Proteção por senha é só no Pro.
 - **`X-Robots-Tag: noindex` nos previews:** a Vercel adiciona sozinha em todo Preview Deployment ([guia](https://vercel.com/kb/guide/are-vercel-preview-deployment-indexed-by-search-engines)). A exceção é um domínio próprio apontado para uma branch que não é a de produção. Informação para a área de SEO (#52).
 
@@ -212,7 +212,7 @@ O schema fica em [`web/astro.config.mjs`](../web/astro.config.mjs) (`env.schema`
 
 (\*) Sem `SITE_URL`, o `astro.config.mjs` usa `https://` + `VERCEL_URL` nos previews (a URL do próprio deploy) e `https://ronrom.blog` no resto (local e CI). `VERCEL_ENV` e `VERCEL_URL` são variáveis de sistema da Vercel, expostas no build sem cadastro.
 
-**Dona** é a área (label) que decide o nome, o formato e o valor da variável. Quem cadastra segredos na Vercel e no GitHub é sempre o dono do repositório, porque o valor não deve passar por outras mãos.
+Quem cadastra segredos na Vercel e no GitHub é sempre o dono do repositório, porque o valor não deve passar por outras mãos.
 
 - **`STUDIO_URL`** é o link "Área da autora" do rodapé (#15). O padrão (`https://ronrom.sanity.studio`) é o Studio publicado; só precisa ser cadastrada se o Studio mudar de endereço.
 - **`SANITY_API_READ_TOKEN`** é o token `viewer` do Sanity, só para a [prévia de rascunhos](#prévia-de-rascunhos-ronrom-previa) (#43), onde é obrigatório. O site não o usa: sem a prévia ligada, o cliente lê só o conteúdo publicado, sem token. Foi cadastrado como **Secret** em Production e Preview do projeto `ronrom` (29/10/2026), antes de a prévia ir para o projeto `ronrom-previa`, e pode sair de lá.

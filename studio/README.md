@@ -184,54 +184,14 @@ O dataset é sempre explícito: sem `--dataset`, o script não grava nada.
 
 ### Migrações
 
-Um PR que muda o conteúdo com um script de `scripts/` (como os dois abaixo) entra em produção em duas partes: o script, que alguém roda à mão em cada dataset, e o código, que vai ao ar no merge. A Vercel builda a `main` contra o `production`, então **a migração vem antes do merge**:
+Um PR que muda o conteúdo com um script de `scripts/` entra em produção em duas partes: o script, que alguém roda à mão em cada dataset, e o código, que vai ao ar no merge. A Vercel builda a `main` contra o `production`, então **a migração vem antes do merge**:
 
-1. No PR, escreva a migração e o código que depende dela. O script tem de deixar o código no ar funcionando: entre a migração e o merge, o site é o código antigo com o dataset novo.
+1. No PR, escreva a migração e o código que depende dela. O script tem de deixar o código no ar funcionando: entre a migração e o merge, o site é o código antigo com o dataset novo. Faça o script mostrar o plano sem gravar e só gravar com `--gravar`, como faziam as migrações da #142 e da #143 (no histórico do Git).
 2. Rode o script no `development` e no `production`, primeiro sem `--gravar` (confira o plano) e depois com `--gravar`.
 3. Rode de novo o check `ci / build-producao` do PR (Re-run jobs). Ele faz o mesmo build da Vercel, só lendo o `production`, e fica vermelho enquanto o código depender de algo que o dataset ainda não tem, como um redirect fixo por cima de uma listagem que ainda está no ar (#150, #155).
 4. Só com ele verde, faça o merge.
 
 Merge antes da migração não derruba o site, mas o deploy da Vercel falha e a produção fica presa no anterior até alguém gravar a migração e fazer um redeploy.
-
-### Revisão das categorias
-
-Na #142, Documentários entrou (ficha de filme, logo depois de Séries), Lugares passou a se chamar "Outros lugares" (o slug `lugares` continua) e Comidas saiu, junto com o modelo de ficha `comida` ([`docs/seo-urls.md`](../docs/seo-urls.md#categorias-reviews)). O [`scripts/revisar-categorias.ts`](scripts/revisar-categorias.ts) leva cada dataset para a taxonomia nova, numa transação só:
-
-- grava as seis categorias de [`lib/taxonomia.ts`](lib/taxonomia.ts) (como o `taxonomia`, desfaz edições feitas nelas no Studio);
-- apaga a `categoria-comidas`, publicada e rascunho.
-
-Enquanto algum documento (publicado, rascunho ou versão de lançamento) apontar para Comidas, o script lista quais são e não grava nada: mude a categoria desses posts antes. Sem `--gravar`, só mostra o que faria. Rodar de novo não muda nada. Na raiz, confira o plano e depois grave:
-
-```bash
-pnpm --filter studio revisar-categorias --dataset production
-```
-
-```bash
-pnpm --filter studio revisar-categorias --dataset production --gravar
-```
-
-No `development`, rode antes o `pnpm seed`, que passa a review de exemplo de Comidas para Documentários. **A ordem importa:** grave no dataset antes do merge do PR. Enquanto a categoria existe, a listagem `/reviews/comidas` está no ar, e o build recusa o redirect fixo de [`web/redirects.mjs`](../web/redirects.mjs) por cima dela. O código anterior funciona com o dataset migrado: a listagem de Comidas some até o merge.
-
-### Unificação dos formatos
-
-Na #143, Artigos, Textos e Opiniões viraram um formato só, "Textos e opiniões", com o slug `textos` ([`docs/seo-urls.md`](../docs/seo-urls.md#formatos-pensamentos)). O [`scripts/unificar-formatos.ts`](scripts/unificar-formatos.ts) leva cada dataset para a taxonomia nova, numa transação só:
-
-- grava o nome, a descrição e a ordem novos dos dois formatos (como o `taxonomia`, desfaz edições feitas neles no Studio);
-- passa os posts de Artigos e Opiniões, publicados, rascunhos e versões de lançamento, para "Textos e opiniões";
-- guarda o endereço antigo de cada post publicado (`/pensamentos/artigos/slug`) em `slugsAnteriores`, como faria o "Publicar", para o build gerar o redirect 301;
-- apaga os formatos `formato-artigos` e `formato-opinioes`.
-
-Sem `--gravar`, só mostra o que faria. Rodar de novo não muda nada. Na raiz, confira o plano e depois grave:
-
-```bash
-pnpm --filter studio unificar-formatos --dataset production
-```
-
-```bash
-pnpm --filter studio unificar-formatos --dataset production --gravar
-```
-
-Rode no `development` do mesmo jeito (o `pnpm seed` já grava os posts no formato novo, mas não apaga os formatos antigos). **A ordem importa:** grave no dataset antes do merge do PR. Enquanto um formato antigo tem posts, a listagem dele está no ar, e o build recusa o redirect fixo de [`web/redirects.mjs`](../web/redirects.mjs) por cima dela. O código anterior funciona com o dataset migrado: as listagens antigas somem até o merge, e os posts já redirecionam pelo `slugsAnteriores`.
 
 ### Seed
 

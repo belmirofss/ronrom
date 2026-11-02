@@ -4,7 +4,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Depois de abrir, aplique um label de cada grupo (`area:*`, `tipo:*`, `prioridade:*`) e o milestone (veja o CONTRIBUTING.md).
+        Depois de abrir, aplique um label de cada grupo (`area:*`, `tipo:*`, `prioridade:*`) (veja o CONTRIBUTING.md).
   - type: textarea
     id: contexto
     attributes:

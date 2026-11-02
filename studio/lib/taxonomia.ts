@@ -32,8 +32,8 @@ export interface Formato {
   ordem: number;
 }
 
-// "Outros lugares" se chamava Lugares até a #142 e manteve o slug `lugares`. As categorias que
-// deixaram de existir estão em CATEGORIAS_REMOVIDAS.
+// "Outros lugares" se chamava Lugares até a #142 e manteve o slug `lugares`. Comidas saiu na
+// mesma issue; o redirect da listagem antiga fica em web/redirects.mjs.
 export const CATEGORIAS: readonly Categoria[] = [
   {
     _id: 'categoria-filmes',
@@ -91,12 +91,8 @@ export const CATEGORIAS: readonly Categoria[] = [
   },
 ];
 
-// Categorias apagadas na #142, sem posts publicados. Usado pelo scripts/revisar-categorias.ts; o
-// redirect da listagem antiga fica em web/redirects.mjs.
-export const CATEGORIAS_REMOVIDAS = [{ _id: 'categoria-comidas', slug: 'comidas' }] as const;
-
 // "Textos e opiniões" juntou Artigos, Textos e Opiniões (#143) e manteve o slug `textos`, para não
-// mudar o endereço dos textos. Os formatos que deixaram de existir estão em FORMATOS_UNIFICADOS.
+// mudar o endereço dos textos. Os redirects das listagens antigas ficam em web/redirects.mjs.
 export const FORMATOS: readonly Formato[] = [
   {
     _id: 'formato-textos',
@@ -114,16 +110,6 @@ export const FORMATOS: readonly Formato[] = [
     ordem: 2,
   },
 ];
-
-// Formatos apagados na unificação da #143 e o formato que ficou com os posts deles. Usado pelo
-// scripts/unificar-formatos.ts; os redirects das listagens antigas ficam em web/redirects.mjs.
-export const FORMATOS_UNIFICADOS = {
-  destino: { _id: 'formato-textos', slug: 'textos' },
-  removidos: [
-    { _id: 'formato-artigos', slug: 'artigos' },
-    { _id: 'formato-opinioes', slug: 'opinioes' },
-  ],
-} as const;
 
 // Os oito documentos como são gravados no Sanity, com o slug no formato do campo. Usado pelo
 // scripts/criar-taxonomia.ts e pelo seed de desenvolvimento (scripts/seed.ts).

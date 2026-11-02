@@ -1,6 +1,8 @@
 # Como contribuir
 
-O repositório é privado numa conta GitHub Free, onde [rulesets e branch protection não ficam disponíveis](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets). Nada no GitHub impede um push direto na `main` ou um PR fora do padrão: as regras abaixo valem por convenção, e os checks do CI são a barreira. **Não faça merge com check vermelho.**
+O Ronrom é um projeto pessoal: o código é aberto para quem quiser ler e se inspirar, mas o blog tem uma autora só. Issues com bugs ou sugestões são bem-vindas; antes de abrir um PR grande, abra uma issue para conversar.
+
+Nada no GitHub impede um merge fora do padrão: as regras abaixo valem por convenção, e os checks do CI são a barreira. **Não faça merge com check vermelho.**
 
 Para instalar, rodar e entender a estrutura do projeto, veja o [README](README.md). Checks locais, dependências novas e solução de problemas estão no [guia de desenvolvimento](docs/desenvolvimento.md).
 
@@ -78,19 +80,6 @@ O [Dependabot](.github/dependabot.yml) abre PRs uma vez por mês (fuso de São P
 
 Não há auto-merge: revise e faça o squash merge à mão, só com o CI verde. Num major, leia o changelog antes. Para pedir algo ao bot, comente no PR (`@dependabot rebase`, `@dependabot recreate`). Se você der push na branch do bot, ele para de atualizar aquele PR.
 
-**Preview da Vercel bloqueado num PR do bot.** No Hobby, em repo privado, a Vercel só implanta commits cujo autor é o dono do time, então o preview de um PR do `dependabot[bot]` pode sair bloqueado. É esperado e não impede o merge:
-
-1. Confie no CI: typecheck, lint e build verdes bastam para patch e minor.
-2. Se precisar ver o site (um major do Astro, por exemplo), crie o preview você mesmo, com um commit seu na branch do bot:
-
-   ```bash
-   gh pr checkout <numero> && git commit --allow-empty -m "chore: dispara o preview" && git push
-   ```
-
-   O bot deixa de rebasear esse PR; se a `main` andar, use `@dependabot recreate` e repita.
-
-3. Depois do merge, confira se o deploy de produção saiu. Se foi bloqueado, use **Redeploy** no painel da Vercel.
-
 Os workflows disparados pelo Dependabot não recebem os secrets de Actions: um secret que o CI precise também deve ser cadastrado em **Settings → Secrets and variables → Dependabot**.
 
 ## Issues
@@ -100,7 +89,7 @@ Use um dos templates (issues em branco estão desabilitadas):
 - **Bug**: algo não funciona como deveria; já sai com o label `bug`.
 - **Tarefa**: funcionalidade, configuração ou manutenção, com contexto, o que fazer, critérios de aceite e dependências.
 
-Depois de abrir, aplique um label de cada grupo abaixo e o milestone.
+Depois de abrir, aplique um label de cada grupo abaixo.
 
 ## Labels
 
@@ -130,13 +119,3 @@ Depois de abrir, aplique um label de cada grupo abaixo e o milestone.
 | `prioridade:alta`  | Bloqueia o lançamento        |
 | `prioridade:media` | Importante, mas não bloqueia |
 | `prioridade:baixa` | Desejável / futuro           |
-
-## Milestones
-
-| Milestone               | Escopo                                                          |
-| ----------------------- | --------------------------------------------------------------- |
-| M1 · Fundação           | Projeto Astro, CI, Vercel e convenções prontos                  |
-| M2 · Conteúdo (CMS)     | Sanity com schemas, Studio da autora e integração de publicação |
-| M3 · Site               | Páginas e componentes do layout Caderno funcionando             |
-| M4 · SEO, busca e dados | SEO técnico, busca Pagefind, mais lidos e analytics             |
-| M5 · Lançamento         | Testes, conteúdo inicial, domínio e go-live                     |

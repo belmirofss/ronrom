@@ -40,9 +40,12 @@ concurrency:
 jobs:
   lighthouse:
     name: lighthouse
-    # Os PRs do Dependabot não recebem os secrets do Actions, e sem o segredo da Protection
-    # Bypass o preview não abre. A atualização entra medida no merge, em produção.
-    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    # Os PRs do Dependabot e os vindos de fork não recebem os secrets do Actions, e sem o segredo
+    # da Protection Bypass o preview não abre. A mudança entra medida no merge, em produção.
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.user.login != 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     # Até 20 minutos esperando o build da Vercel, mais o Lighthouse.
     timeout-minutes: 30
@@ -163,7 +166,8 @@ jobs:
           } >> "$GITHUB_ENV"
           echo "Páginas: $paginas"
 
-      # Sem o temporary-public-storage: os relatórios ficam só no artifact, que é privado.
+      # Sem o temporary-public-storage: os relatórios ficam só no artifact. Num repositório público o
+      # artifact pode ser baixado por qualquer pessoa logada no GitHub, por isso o segredo sai dele.
       - id: lhci
         if: env.PULAR != 'true'
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # 12.6.2

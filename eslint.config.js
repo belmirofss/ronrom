@@ -12,6 +12,8 @@ export default defineConfig(
     '**/.astro/',
     '**/.sanity/',
     '**/.vercel/',
+    // Worktrees e configuração local do Claude Code, fora do Git.
+    '.claude/',
     'web/src/lib/sanity/tipos.gerados.d.ts',
   ]),
   js.configs.recommended,
